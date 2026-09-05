@@ -200,14 +200,16 @@ function openResident(id) {
 async function syncSlackResidents() {
   try {
     const response = await fetch("/api/slack/members", { headers: { accept: "application/json" } });
-    if (!response.ok) return;
+    if (!response.ok) throw new Error("Slack sync unavailable");
     const data = await response.json();
     const summary = document.querySelector("#neighborSummary");
-    if (data.members.length > residentSlots.length) {
+    const currentUser = data.members.find(member => member.isCurrentUser);
+    const neighbors = data.members.filter(member => !member.isCurrentUser);
+    if (neighbors.length > residentSlots.length) {
       summary.textContent = `${data.total} Slack neighbors synced · map layout pending`;
       return;
     }
-    residents = data.members.map((member, index) => ({
+    residents = neighbors.map((member, index) => ({
       id: index + 1,
       slackId: member.id,
       spriteIndex: member.appearanceIndex,
@@ -229,11 +231,17 @@ async function syncSlackResidents() {
       button.disabled = button.dataset.filter !== "all";
       if (button.disabled) button.title = "Team and participation data are not connected yet";
     });
-    summary.textContent = `${data.total} Slack neighbors are open`;
+    summary.textContent = currentUser
+      ? `${data.total} Slack members · ${neighbors.length} neighbors + you`
+      : `${data.total} Slack residents + local player (identity not linked)`;
     renderResidents();
     renderQueue();
   } catch {
-    // Static/demo mode intentionally keeps the sample residents.
+    residents = [];
+    queue = [];
+    renderResidents();
+    renderQueue();
+    document.querySelector("#neighborSummary").textContent = "Slack sync temporarily unavailable · no demo residents shown";
   }
 }
 
@@ -349,9 +357,17 @@ document.addEventListener("keydown", event => {
 document.addEventListener("keyup", event => pressedKeys.delete(event.key.toLowerCase()));
 window.addEventListener("blur", () => pressedKeys.clear());
 
-renderResidents();
-renderQueue();
-syncSlackResidents();
+if (window.location.protocol === "file:") {
+  residents = [];
+  renderResidents();
+  renderQueue();
+  document.querySelector("#neighborSummary").innerHTML = `Slack is unavailable in file mode · <a href="http://127.0.0.1:4173/">Open connected town</a>`;
+  showToast("This file view cannot connect to Slack. Open the connected town link.");
+} else {
+  renderResidents();
+  renderQueue();
+  syncSlackResidents();
+}
 if (window.matchMedia("(max-width: 760px)").matches) {
   document.querySelector(".dock-body").hidden = true;
   document.querySelector("#dockHandle").setAttribute("aria-expanded", "false");

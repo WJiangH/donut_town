@@ -13,10 +13,14 @@ const config = {
   botToken: process.env.SLACK_BOT_TOKEN || "",
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   channelId: process.env.SLACK_CHANNEL_ID || "",
+  currentUserId: process.env.SLACK_CURRENT_USER_ID || "",
   allowSend: process.env.SLACK_ALLOW_SEND === "true",
   port: Number(process.env.PORT || 4173)
 };
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
+let memberCache = null;
+let memberCacheExpiresAt = 0;
+let memberSyncPromise = null;
 
 const server = createServer(async (request, response) => {
   try {
@@ -26,18 +30,23 @@ const server = createServer(async (request, response) => {
       return sendJson(response, 200, {
         configured: Boolean(config.botToken && config.channelId),
         interactivityConfigured: Boolean(config.signingSecret),
+        currentUserConfigured: Boolean(config.currentUserId),
         sendEnabled: config.allowSend
       });
     }
 
     if (request.method === "GET" && url.pathname === "/api/slack/members") {
       if (!slack || !config.channelId) return missingConfiguration(response);
-      const members = await slack.listChannelMembers(config.channelId);
+      const members = await getCachedChannelMembers();
+      const currentUserFound = members.some(member => member.id === config.currentUserId);
       return sendJson(response, 200, {
         total: members.length,
+        currentUserConfigured: Boolean(config.currentUserId),
+        currentUserFound,
         members: members.map(member => ({
           ...member,
           appearanceIndex: appearanceIndexFor(member.id),
+          isCurrentUser: member.id === config.currentUserId,
           status: "open"
         }))
       });
@@ -82,6 +91,25 @@ const server = createServer(async (request, response) => {
     return sendJson(response, error.name === "SyntaxError" ? 400 : 500, { error: error.message });
   }
 });
+
+async function getCachedChannelMembers() {
+  if (memberCache && Date.now() < memberCacheExpiresAt) return memberCache;
+  if (memberSyncPromise) return memberSyncPromise;
+  memberSyncPromise = slack.listChannelMembers(config.channelId)
+    .then(members => {
+      memberCache = members;
+      memberCacheExpiresAt = Date.now() + 5 * 60 * 1000;
+      return members;
+    })
+    .catch(error => {
+      if (memberCache) return memberCache;
+      throw error;
+    })
+    .finally(() => {
+      memberSyncPromise = null;
+    });
+  return memberSyncPromise;
+}
 
 async function handleSlackAction(payload) {
   if (!slack || payload.type !== "block_actions") return;

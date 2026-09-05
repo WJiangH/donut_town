@@ -27,7 +27,9 @@ settings into that app rather than replacing its manifest blindly.
 2. Make sure Donut Bot can access `#donut-be-strangers`. A private channel must
    explicitly contain the app.
 3. Copy `.env.example` to `.env.local`, then paste the Bot User OAuth Token,
-   Signing Secret, and channel ID. `.env.local` is ignored by Git.
+   Signing Secret, channel ID, and your personal Slack member ID. The personal
+   ID lets the controllable `You` character replace your resident instead of
+   adding a duplicate. `.env.local` is ignored by Git.
 4. Leave `SLACK_ALLOW_SEND=false`, run `npm start`, and open
    `http://127.0.0.1:4173/api/slack/members`. This performs a read-only sync.
 5. A successful response returns every non-bot channel member with a stable
