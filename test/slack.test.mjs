@@ -3,6 +3,7 @@ import { createHmac } from "node:crypto";
 import test from "node:test";
 import { SlackClient } from "../slack/client.mjs";
 import { answerInvitation, appearanceIndexFor, createInvitation, invitationMessage } from "../slack/invitations.mjs";
+import { createLaunchToken, createSessionToken, parseCookies, verifyTownToken } from "../slack/session.mjs";
 import { verifySlackRequest } from "../slack/signature.mjs";
 
 test("Slack signatures are checked and stale requests are rejected", () => {
@@ -46,4 +47,26 @@ test("an invitation can only be answered once by its invitee", () => {
   assert.equal(answerInvitation(invitation.id, "declined", "U2"), null);
   assert.equal(invitationMessage(invitation).blocks[1].elements[0].value, invitation.id);
   assert.equal(appearanceIndexFor("U2"), appearanceIndexFor("U2"));
+});
+
+test("town launch and session tokens are signed, scoped, and expire", () => {
+  const signingSecret = "test-signing-secret";
+  const now = 1788540000_000;
+  const launch = createLaunchToken({ userId: "U123ABC", channelId: "C123ABC", signingSecret, now, ttlSeconds: 300 });
+  const verifiedLaunch = verifyTownToken(launch, {
+    signingSecret,
+    expectedType: "launch",
+    expectedChannelId: "C123ABC",
+    now: now + 10_000
+  });
+  assert.equal(verifiedLaunch.sub, "U123ABC");
+  assert.equal(typeof verifiedLaunch.jti, "string");
+  assert.ok(verifiedLaunch.jti.length > 0);
+  assert.equal(verifyTownToken(`${launch}x`, { signingSecret, expectedType: "launch", expectedChannelId: "C123ABC", now }), null);
+  assert.equal(verifyTownToken(launch, { signingSecret, expectedType: "launch", expectedChannelId: "COTHER", now }), null);
+  assert.equal(verifyTownToken(launch, { signingSecret, expectedType: "launch", expectedChannelId: "C123ABC", now: now + 301_000 }), null);
+
+  const session = createSessionToken({ userId: "U123ABC", channelId: "C123ABC", signingSecret, now });
+  assert.equal(verifyTownToken(session, { signingSecret, expectedType: "session", expectedChannelId: "C123ABC", now }).sub, "U123ABC");
+  assert.deepEqual(parseCookies(`theme=green; donut_town_session=${session}`), { theme: "green", donut_town_session: session });
 });

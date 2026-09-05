@@ -4,3 +4,10 @@ assets/player-walk-atlas.png
 
 # Local Slack credentials. Never commit this file.
 .env.local
+
+# macOS metadata.
+.DS_Store
+
+# The live Apps Script includes an internal employee roster. Keep it local because
+# this repository is public; publish only the sanitized helper below.
+Google_Script/Code.gs

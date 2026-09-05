@@ -5,6 +5,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SlackClient } from "./slack/client.mjs";
 import { answerInvitation, appearanceIndexFor, createInvitation, invitationMessage } from "./slack/invitations.mjs";
+import { createLaunchToken, createSessionToken, parseCookies, verifyTownToken } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
@@ -14,7 +15,6 @@ const config = {
   botToken: process.env.SLACK_BOT_TOKEN || "",
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   channelId: process.env.SLACK_CHANNEL_ID || "",
-  currentUserId: process.env.SLACK_CURRENT_USER_ID || "",
   stagingPassword: process.env.STAGING_PASSWORD || "",
   allowSend: process.env.SLACK_ALLOW_SEND === "true",
   port: Number(process.env.PORT || 4173),
@@ -23,10 +23,14 @@ const config = {
 if (process.env.RENDER && !config.stagingPassword) {
   throw new Error("STAGING_PASSWORD is required on Render so Slack member data is not public.");
 }
+if (process.env.RENDER && (!config.botToken || !config.signingSecret || !config.channelId)) {
+  throw new Error("SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, and SLACK_CHANNEL_ID are required on Render.");
+}
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
+const usedLaunchTokens = new Map();
 
 const server = createServer(async (request, response) => {
   try {
@@ -36,7 +40,11 @@ const server = createServer(async (request, response) => {
       return sendJson(response, 200, { ok: true });
     }
 
-    if (url.pathname !== "/slack/interactions" && !isStagingRequestAuthorized(request)) {
+    if (request.method === "GET" && url.pathname === "/enter") {
+      return enterTown(url, response);
+    }
+
+    if (url.pathname !== "/slack/interactions" && !isRequestAuthorized(request)) {
       response.writeHead(401, {
         "content-type": "text/plain; charset=utf-8",
         "www-authenticate": 'Basic realm="Donut Town testing", charset="UTF-8"'
@@ -46,10 +54,12 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "GET" && url.pathname === "/api/slack/status") {
+      const session = getSlackSession(request);
+      response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
         configured: Boolean(config.botToken && config.channelId),
         interactivityConfigured: Boolean(config.signingSecret),
-        currentUserConfigured: Boolean(config.currentUserId),
+        currentUserConfigured: Boolean(session?.sub),
         sendEnabled: config.allowSend
       });
     }
@@ -57,15 +67,18 @@ const server = createServer(async (request, response) => {
     if (request.method === "GET" && url.pathname === "/api/slack/members") {
       if (!slack || !config.channelId) return missingConfiguration(response);
       const members = await getCachedChannelMembers();
-      const currentUserFound = members.some(member => member.id === config.currentUserId);
+      const session = getSlackSession(request);
+      const currentUserId = session?.sub;
+      const currentUserFound = members.some(member => member.id === currentUserId);
+      response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
         total: members.length,
-        currentUserConfigured: Boolean(config.currentUserId),
+        currentUserConfigured: Boolean(currentUserId),
         currentUserFound,
         members: members.map(member => ({
           ...member,
           appearanceIndex: appearanceIndexFor(member.id),
-          isCurrentUser: member.id === config.currentUserId,
+          isCurrentUser: member.id === currentUserId,
           status: "open"
         }))
       });
@@ -99,7 +112,8 @@ const server = createServer(async (request, response) => {
       const payload = JSON.parse(encodedPayload);
       response.writeHead(200);
       response.end();
-      queueMicrotask(() => handleSlackAction(payload).catch(error => console.error("Slack action failed", error)));
+      const publicBaseUrl = getPublicBaseUrl();
+      queueMicrotask(() => handleSlackAction(payload, publicBaseUrl).catch(error => console.error("Slack action failed", error)));
       return;
     }
 
@@ -110,6 +124,32 @@ const server = createServer(async (request, response) => {
     return sendJson(response, error.name === "SyntaxError" ? 400 : 500, { error: error.message });
   }
 });
+
+function enterTown(url, response) {
+  const launch = verifyTownToken(url.searchParams.get("token"), {
+    signingSecret: config.signingSecret,
+    expectedType: "launch",
+    expectedChannelId: config.channelId
+  });
+  if (!launch || usedLaunchTokens.has(launch.jti)) {
+    response.writeHead(401, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
+    response.end("This Donut Town link is invalid or expired. Return to Slack and click Enter Donut Town again.");
+    return;
+  }
+  usedLaunchTokens.set(launch.jti, launch.exp);
+  pruneUsedLaunchTokens();
+  const session = createSessionToken({
+    userId: launch.sub,
+    channelId: launch.channel,
+    signingSecret: config.signingSecret
+  });
+  response.writeHead(302, {
+    location: "/",
+    "cache-control": "no-store",
+    "set-cookie": `donut_town_session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=28800`
+  });
+  response.end();
+}
 
 async function getCachedChannelMembers() {
   if (memberCache && Date.now() < memberCacheExpiresAt) return memberCache;
@@ -130,10 +170,47 @@ async function getCachedChannelMembers() {
   return memberSyncPromise;
 }
 
-async function handleSlackAction(payload) {
+async function handleSlackAction(payload, publicBaseUrl) {
   if (!slack || payload.type !== "block_actions") return;
   const action = payload.actions?.[0];
-  if (!action || !["donut_accept", "donut_decline"].includes(action.action_id)) return;
+  if (!action) return;
+  if (action.action_id === "enter_donut_town") {
+    const userId = payload.user?.id;
+    const channelId = payload.channel?.id;
+    if (!userId || !channelId) return;
+    const members = await getCachedChannelMembers();
+    if (channelId !== config.channelId || !members.some(member => member.id === userId)) {
+      await slack.call("chat.postEphemeral", {
+        channel: channelId,
+        user: userId,
+        text: "Donut Town is currently limited to members of the testing channel."
+      });
+      return;
+    }
+    const token = createLaunchToken({
+      userId,
+      channelId,
+      signingSecret: config.signingSecret
+    });
+    await slack.call("chat.postEphemeral", {
+      channel: channelId,
+      user: userId,
+      text: "Your private Donut Town entrance is ready.",
+      blocks: [{
+        type: "section",
+        text: { type: "mrkdwn", text: "Your private entrance is ready. This link expires in 5 minutes. :doughnut:" },
+        accessory: {
+          type: "button",
+          action_id: "open_donut_town_url",
+          text: { type: "plain_text", text: "Enter Donut Town" },
+          style: "primary",
+          url: `${publicBaseUrl}/enter?token=${encodeURIComponent(token)}`
+        }
+      }]
+    });
+    return;
+  }
+  if (!["donut_accept", "donut_decline"].includes(action.action_id)) return;
   const status = action.action_id === "donut_accept" ? "accepted" : "declined";
   const invitation = answerInvitation(action.value, status, payload.user.id);
   if (!invitation) {
@@ -229,7 +306,8 @@ async function loadLocalEnv(filePath) {
   }
 }
 
-function isStagingRequestAuthorized(request) {
+function isRequestAuthorized(request) {
+  if (getSlackSession(request)) return true;
   if (!config.stagingPassword) return true;
   const authorization = request.headers.authorization || "";
   if (!authorization.startsWith("Basic ")) return false;
@@ -241,6 +319,28 @@ function isStagingRequestAuthorized(request) {
     return false;
   }
   return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+function getSlackSession(request) {
+  const token = parseCookies(request.headers.cookie).donut_town_session;
+  return verifyTownToken(token, {
+    signingSecret: config.signingSecret,
+    expectedType: "session",
+    expectedChannelId: config.channelId
+  });
+}
+
+function getPublicBaseUrl() {
+  if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL.replace(/\/$/, "");
+  if (process.env.RENDER_EXTERNAL_HOSTNAME) return `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`;
+  return `http://127.0.0.1:${config.port}`;
+}
+
+function pruneUsedLaunchTokens() {
+  const now = Math.floor(Date.now() / 1000);
+  for (const [id, expiresAt] of usedLaunchTokens) {
+    if (expiresAt <= now) usedLaunchTokens.delete(id);
+  }
 }
 
 server.listen(config.port, config.host, () => {

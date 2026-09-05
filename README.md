@@ -27,9 +27,7 @@ settings into that app rather than replacing its manifest blindly.
 2. Make sure Donut Bot can access `#donut-be-strangers`. A private channel must
    explicitly contain the app.
 3. Copy `.env.example` to `.env.local`, then paste the Bot User OAuth Token,
-   Signing Secret, channel ID, and your personal Slack member ID. The personal
-   ID lets the controllable `You` character replace your resident instead of
-   adding a duplicate. `.env.local` is ignored by Git.
+   Signing Secret, and testing channel ID. `.env.local` is ignored by Git.
 4. Leave `SLACK_ALLOW_SEND=false`, run `npm start`, and open
    `http://127.0.0.1:4173/api/slack/members`. This performs a read-only sync.
 5. A successful response returns every non-bot channel member with a stable
@@ -50,8 +48,10 @@ after reviewing that preview.
 This is an integration spike, not yet production-ready:
 
 - Invitation state is held in memory and is lost when the server restarts.
-- The API does not yet authenticate the person operating the town. It must not
-  be exposed publicly until Slack sign-in or a signed launch flow is added.
+- Slack-launched sessions expire after eight hours. Direct staging-password
+  access remains deliberately unlinked to a Slack member.
+- Used five-minute launch links are remembered only in process memory; a server
+  restart can make an unexpired link usable again.
 - Accepted invitations are not yet persisted to the historical sheet or a
   database.
 - The current map is intentionally not auto-filled with 60+ live members yet;
@@ -62,6 +62,8 @@ This is an integration spike, not yet production-ready:
 - Channel member sync excludes bots and deleted users and does not request email.
 - Slack IDs map deterministically to one of the approved resident appearances.
 - Slack request signatures and five-minute replay protection are checked.
+- The channel entrance identifies the clicker and exchanges a five-minute,
+  one-use launch link for an eight-hour web session.
 - Private invitations have Accept and Not this week actions.
 - Real DM sending is disabled by default; dry-run is the default behavior.
 - Residents can be filtered and inspected in the product prototype.
@@ -69,8 +71,8 @@ This is an integration spike, not yet production-ready:
 - A user can rank up to three invitations.
 - Booked and pending residents have visible status without revealing partners.
 
-Slack user authentication, the historical sheet import, and durable persistence
-remain intentionally out of scope for this integration spike.
+The historical sheet import and durable invitation persistence remain out of
+scope for this integration spike.
 
 ## Deploy the protected testing build to Render
 
@@ -97,6 +99,29 @@ The Blueprint uses Render's free plan for a visual/testing deploy. Free web
 services spin down after inactivity, so they are not reliable for Slack's
 time-sensitive interaction callbacks. Use an always-on instance before treating
 the Enter Donut Town button as production-ready.
+
+## Connect the Slack entrance button
+
+The existing Apps Script does **not** need a `doPost(e)` function. It publishes
+the channel message; Render receives and verifies the Slack button callback.
+
+1. Wait until Render has deployed the latest commit and its health check passes.
+2. Save a copy of the current URL in Slack **Interactivity & Shortcuts** for
+   rollback. Replace it with
+   `https://donut-town.onrender.com/slack/interactions` and save.
+3. Copy `postDonutTownEntrance()` from
+   `Google_Script/DonutTownEntry.example.gs` into the existing Sheet-bound Apps
+   Script project. A local copy has also been added to the end of the live
+   `Google_Script/Code.gs` file.
+4. Run `postDonutTownEntrance()` manually once. This is the step that sends the
+   real entrance message to the configured testing channel.
+5. Click **Enter Donut Town** in Slack. The bot responds only to that member with
+   a private five-minute link. Opening it creates the web session and maps the
+   clicker's Slack ID to the controllable `You` character.
+
+Because this GitHub repository is public, `Google_Script/Code.gs` is ignored: it
+contains the internal team roster. The sanitized entrance helper is safe to
+version and contains no Token, channel ID, or employee email addresses.
 
 ## Repository skill
 
