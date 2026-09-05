@@ -99,7 +99,7 @@
           <strong><span id="queueCount">0</span>/3</strong>
         </button>
         <div class="dock-body">
-          <p class="dock-help">We invite one person at a time, in this order.</p>
+          <p class="dock-help">Rank up to three people. This test sends only the first choice.</p>
           <ol class="queue-list" id="queueList"></ol>
           <div class="queue-empty" id="queueEmpty">Choose up to three neighbors from the town.</div>
           <button class="send-button" id="sendInvites" disabled>Send invitations</button>
@@ -130,7 +130,7 @@
       <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
         <div class="bot-badge" aria-hidden="true">DB</div>
         <h2 id="confirmTitle">Ready for Donut Bot?</h2>
-        <p>The bot will privately invite your first choice. If they pass or do not reply, it moves to the next person.</p>
+        <p>For this test, the bot will privately invite your first choice. The remaining choices will not be contacted yet.</p>
         <div class="modal-actions">
           <button class="secondary-button" id="cancelSend">Not yet</button>
           <button class="send-button" id="confirmSend">Send now</button>
@@ -139,6 +139,6 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
   </body>
 </html>

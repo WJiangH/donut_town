@@ -334,11 +334,42 @@ document.querySelector("#mapWorld").addEventListener("click", event => {
 
 sendButton.addEventListener("click", () => document.querySelector("#modalScrim").hidden = false);
 document.querySelector("#cancelSend").addEventListener("click", () => document.querySelector("#modalScrim").hidden = true);
-document.querySelector("#confirmSend").addEventListener("click", () => {
-  document.querySelector("#modalScrim").hidden = true;
+document.querySelector("#confirmSend").addEventListener("click", async event => {
   const first = queue[0];
-  closeDrawer();
-  showToast(`Preview ready for ${first.name}; no Slack message was sent.`);
+  if (!first?.slackId) return;
+  const button = event.currentTarget;
+  button.disabled = true;
+  button.textContent = "Sending…";
+  try {
+    const response = await fetch("/api/slack/invitations", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify({ inviteeId: first.slackId, priority: 1 })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "invitation_failed");
+    document.querySelector("#modalScrim").hidden = true;
+    closeDrawer();
+    if (result.dryRun) {
+      showToast(`Safe preview passed for ${first.name}; Slack sending is still disabled.`);
+      return;
+    }
+    first.status = "pending";
+    planActive = true;
+    renderResidents();
+    renderQueue();
+    showToast(`Donut Bot sent a private invitation to ${first.name}.`);
+  } catch (error) {
+    const messages = {
+      slack_login_required: "Please enter again from Slack before sending.",
+      invitation_already_pending: "An invitation to this person is already pending.",
+      pending_invitation_limit: "You already have three pending invitations."
+    };
+    showToast(messages[error.message] || "The invitation could not be sent. Please try again.");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Send now";
+  }
 });
 
 document.addEventListener("keydown", event => {

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHmac, generateKeyPairSync, sign as rsaSign } from "node:crypto";
 import test from "node:test";
 import { SlackClient } from "../slack/client.mjs";
-import { answerInvitation, appearanceIndexFor, createInvitation, invitationMessage } from "../slack/invitations.mjs";
+import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, pendingInvitationsFor, resolveInvitationActors } from "../slack/invitations.mjs";
 import { buildSlackAuthorizeUrl, verifySlackIdToken } from "../slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "../slack/session.mjs";
 import { verifySlackRequest } from "../slack/signature.mjs";
@@ -63,6 +63,25 @@ test("an invitation can only be answered once by its invitee", () => {
   assert.equal(answerInvitation(invitation.id, "declined", "U2"), null);
   assert.equal(invitationMessage(invitation).blocks[1].elements[0].value, invitation.id);
   assert.equal(appearanceIndexFor("U2"), appearanceIndexFor("U2"));
+});
+
+test("invitation identity comes from the Slack session and channel roster", () => {
+  const members = [
+    { id: "U1", displayName: "Maya" },
+    { id: "U2", displayName: "Avery" }
+  ];
+  assert.deepEqual(resolveInvitationActors({ sessionUserId: "U1", inviteeId: "U2", priority: 2, members }), {
+    inviterId: "U1",
+    inviterName: "Maya",
+    inviteeId: "U2",
+    priority: 2
+  });
+  assert.throws(() => resolveInvitationActors({ sessionUserId: "U1", inviteeId: "U3", members }), /must be members/);
+  assert.throws(() => resolveInvitationActors({ sessionUserId: "U1", inviteeId: "U1", members }), /yourself/);
+  const invitation = createInvitation({ inviterId: "U1", inviteeId: "U2", inviterName: "Maya", priority: 1 });
+  assert.equal(pendingInvitationsFor("U1").some(item => item.id === invitation.id), true);
+  discardInvitation(invitation.id);
+  assert.equal(pendingInvitationsFor("U1").some(item => item.id === invitation.id), false);
 });
 
 test("town launch and session tokens are signed, scoped, and expire", () => {

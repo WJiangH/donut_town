@@ -25,6 +25,33 @@ export function getInvitation(id) {
   return invitations.get(id);
 }
 
+export function discardInvitation(id) {
+  return invitations.delete(id);
+}
+
+export function pendingInvitationsFor(inviterId) {
+  return [...invitations.values()].filter(invitation => invitation.inviterId === inviterId && invitation.status === "pending");
+}
+
+export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1, members }) {
+  if (!/^[UW][A-Z0-9]+$/.test(sessionUserId || "")) throw new SyntaxError("A Slack login is required");
+  if (!/^[UW][A-Z0-9]+$/.test(inviteeId || "")) throw new SyntaxError("Invalid Slack invitee ID");
+  if (sessionUserId === inviteeId) throw new SyntaxError("Cannot invite yourself");
+  const inviter = members.find(member => member.id === sessionUserId);
+  const invitee = members.find(member => member.id === inviteeId);
+  if (!inviter || !invitee) throw new SyntaxError("Both people must be members of the Donut channel");
+  const normalizedPriority = Number(priority || 1);
+  if (!Number.isInteger(normalizedPriority) || normalizedPriority < 1 || normalizedPriority > 3) {
+    throw new SyntaxError("Priority must be 1-3");
+  }
+  return {
+    inviterId: inviter.id,
+    inviterName: inviter.displayName,
+    inviteeId: invitee.id,
+    priority: normalizedPriority
+  };
+}
+
 export function answerInvitation(id, status, responderId) {
   const invitation = invitations.get(id);
   if (!invitation || invitation.inviteeId !== responderId || invitation.status !== "pending") return null;

@@ -4,7 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SlackClient } from "./slack/client.mjs";
-import { answerInvitation, appearanceIndexFor, createInvitation, invitationMessage } from "./slack/invitations.mjs";
+import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, pendingInvitationsFor, resolveInvitationActors } from "./slack/invitations.mjs";
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
@@ -100,17 +100,36 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "POST" && url.pathname === "/api/slack/invitations") {
+      const session = getSlackSession(request);
+      if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
       const body = JSON.parse(await readBody(request));
-      validateInvitation(body);
-      const invitation = createInvitation(body);
+      const members = await getCachedChannelMembers();
+      const invitationInput = resolveInvitationActors({
+        sessionUserId: session.sub,
+        inviteeId: body.inviteeId,
+        priority: body.priority,
+        members
+      });
+      const pending = pendingInvitationsFor(session.sub);
+      if (pending.some(invitation => invitation.inviteeId === invitationInput.inviteeId)) {
+        return sendJson(response, 409, { error: "invitation_already_pending" });
+      }
+      if (pending.length >= 3) return sendJson(response, 409, { error: "pending_invitation_limit" });
+      const invitation = createInvitation(invitationInput);
       const message = invitationMessage(invitation);
       if (!config.allowSend) {
+        discardInvitation(invitation.id);
         return sendJson(response, 200, { ok: true, dryRun: true, invitation, message });
       }
       if (!slack) return missingConfiguration(response);
-      const channel = await slack.openDm(invitation.inviteeId);
-      await slack.postMessage(channel, message);
-      return sendJson(response, 201, { ok: true, dryRun: false, invitation });
+      try {
+        const channel = await slack.openDm(invitation.inviteeId);
+        await slack.postMessage(channel, message);
+        return sendJson(response, 201, { ok: true, dryRun: false, invitation });
+      } catch (error) {
+        discardInvitation(invitation.id);
+        throw error;
+      }
     }
 
     if (request.method === "POST" && url.pathname === "/slack/interactions") {
@@ -336,18 +355,6 @@ async function getExpectedSlackTeamId() {
   if (!result.team_id) throw new Error("Slack auth.test did not return a team ID");
   expectedSlackTeamId = result.team_id;
   return expectedSlackTeamId;
-}
-
-function validateInvitation(body) {
-  for (const key of ["inviterId", "inviteeId", "inviterName"]) {
-    if (typeof body[key] !== "string" || !body[key].trim()) throw new SyntaxError(`Missing ${key}`);
-  }
-  if (!/^[UW][A-Z0-9]+$/.test(body.inviterId) || !/^[UW][A-Z0-9]+$/.test(body.inviteeId)) {
-    throw new SyntaxError("Invalid Slack user ID");
-  }
-  if (body.inviterId === body.inviteeId) throw new SyntaxError("Cannot invite yourself");
-  body.priority = Number(body.priority || 1);
-  if (!Number.isInteger(body.priority) || body.priority < 1 || body.priority > 5) throw new SyntaxError("Priority must be 1-5");
 }
 
 function missingConfiguration(response) {

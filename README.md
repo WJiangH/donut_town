@@ -40,10 +40,17 @@ are ready to test one real DM.
 
 ### Safe invitation test
 
-`POST /api/slack/invitations` creates a Block Kit invitation with **Accept** and
-**Not this week** buttons. While `SLACK_ALLOW_SEND=false`, it returns the exact
-message as a dry-run and sends nothing. Only set it to `true` for a test account
-after reviewing that preview.
+The town's confirmation button calls `POST /api/slack/invitations` and creates a
+Block Kit invitation with **Accept** and **Not this week** buttons. The server
+derives the inviter from the signed Slack session and verifies that both people
+belong to the configured channel; it does not trust identity fields from the
+browser. While `SLACK_ALLOW_SEND=false`, it returns the exact message as a
+dry-run and sends nothing. Set it to `true` in Render only when one intended
+recipient is ready for a real test.
+
+The current test sends only the first person in the queue. Automatic fallback
+to the second or third choice is deliberately not enabled yet, despite the
+priority-list UI.
 
 This is an integration spike, not yet production-ready:
 
