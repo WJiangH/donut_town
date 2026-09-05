@@ -23,7 +23,3 @@ services:
         sync: false
       - key: STAGING_PASSWORD
         sync: false
-      - key: PROFILE_API_URL
-        sync: false
-      - key: PROFILE_API_SECRET
-        sync: false

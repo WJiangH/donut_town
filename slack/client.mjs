@@ -59,8 +59,12 @@ export class SlackClient {
         id: profile.id,
         displayName: details.display_name || profile.real_name || profile.name,
         realName: profile.real_name || details.real_name || "",
-        avatarUrl: details.image_72 || "",
-        timezone: profile.tz || ""
+        avatarUrl: details.image_192 || details.image_72 || "",
+        title: details.title || "",
+        pronouns: details.pronouns || "",
+        statusText: details.status_text || "",
+        timezone: profile.tz || "",
+        timezoneLabel: profile.tz_label || ""
       }];
     });
   }
@@ -70,7 +74,7 @@ export class SlackClient {
     if (cached && cached.expiresAt > Date.now()) return cached.user;
     try {
       const result = await this.call("users.info", { user: userId });
-      this.userCache.set(userId, { user: result.user, expiresAt: Date.now() + 6 * 60 * 60 * 1000 });
+      this.userCache.set(userId, { user: result.user, expiresAt: Date.now() + 10 * 60 * 1000 });
       return result.user;
     } catch (error) {
       if (error instanceof SlackApiError && ["user_not_found", "user_not_visible"].includes(error.slackError)) return null;

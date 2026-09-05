@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=8" />
+    <link rel="stylesheet" href="styles.css?v=9" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -93,15 +93,11 @@
       <div class="drawer-portrait" id="drawerPortrait" aria-hidden="true"></div>
       <span class="drawer-status" id="drawerStatus"></span>
       <h2 id="residentName"></h2>
-      <p class="drawer-team" id="residentTeam"></p>
+      <p class="drawer-team" id="residentSummary"></p>
       <dl class="resident-facts" id="residentFacts"></dl>
       <div class="donut-count">
         <div class="mini-donut" aria-hidden="true"></div>
         <span id="donutCountCopy"><strong id="residentDonuts"></strong> successful pairings</span>
-      </div>
-      <div class="topic-block">
-        <span>Happy to chat about</span>
-        <div class="topic-list" id="residentTopics"></div>
       </div>
       <p class="connection-note" id="connectionNote"></p>
       <button class="invite-button" id="inviteButton"></button>
@@ -113,35 +109,13 @@
       <div class="profile-heading">
         <div class="profile-avatar" id="profileAvatar" aria-hidden="true">...</div>
         <div>
-          <span>Your town profile</span>
+          <span>Your Slack profile</span>
           <h2 id="profileName">Loading profile</h2>
         </div>
       </div>
 
-      <form class="profile-form" id="profileForm">
-        <label>
-          <span>Team</span>
-          <input id="profileTeam" name="team" maxlength="80" autocomplete="organization" />
-        </label>
-        <label>
-          <span>Specialty</span>
-          <input id="profileSpecialty" name="specialty" maxlength="120" placeholder="What do people ask you about?" />
-        </label>
-        <label>
-          <span>Location</span>
-          <input id="profileLocation" name="location" maxlength="80" autocomplete="address-level2" />
-        </label>
-        <label>
-          <span>Pet</span>
-          <input id="profilePet" name="pet" maxlength="80" placeholder="Optional" />
-        </label>
-        <label>
-          <span>Happy to chat about</span>
-          <input id="profileTopicsInput" name="topics" maxlength="180" placeholder="Coffee, projects, hiking" />
-        </label>
-        <p class="profile-sync-note" id="profileSyncNote">Profile details are shared only inside Donut Town.</p>
-        <button class="send-button profile-save" id="saveProfile" type="submit">Save profile</button>
-      </form>
+      <dl class="resident-facts own-profile-facts" id="currentProfileFacts"></dl>
+      <p class="profile-sync-note">This information comes from Slack. Update your Slack profile to change it here.</p>
 
       <section class="my-donuts" aria-labelledby="myDonutsTitle">
         <div class="my-donuts-copy">
@@ -169,6 +143,6 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=11"></script>
+    <script src="app.js?v=12"></script>
   </body>
 </html>

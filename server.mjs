@@ -87,10 +87,7 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/api/slack/members") {
       if (!slack || !config.channelId) return missingConfiguration(response);
-      const [members, profileResult] = await Promise.all([
-        getCachedChannelMembers(),
-        getCachedProfiles()
-      ]);
+      const members = await getCachedChannelMembers();
       const session = getSlackSession(request);
       const currentUserId = session?.sub;
       const currentUserFound = members.some(member => member.id === currentUserId);
@@ -99,10 +96,10 @@ const server = createServer(async (request, response) => {
         total: members.length,
         currentUserConfigured: Boolean(currentUserId),
         currentUserFound,
-        profileConnected: profileResult.connected,
+        profileConnected: false,
         members: members.map(member => ({
           ...member,
-          profile: profileResult.profiles[member.id] || emptyProfile(),
+          donutCount: null,
           appearanceIndex: appearanceIndexFor(member.id),
           isCurrentUser: member.id === currentUserId,
           status: "open"
@@ -247,10 +244,6 @@ async function getCachedProfiles() {
   }
 }
 
-function emptyProfile() {
-  return { team: "", specialty: "", location: "", pet: "", topics: "", donuts: null };
-}
-
 async function handleSlackAction(payload, publicBaseUrl) {
   if (!slack || payload.type !== "block_actions") return;
   const action = payload.actions?.[0];
@@ -308,7 +301,7 @@ async function handleSlackAction(payload, publicBaseUrl) {
       : "Accepted! Donut Town marked you as booked for this week. :doughnut:"
     : invitation.selfTest
       ? "Self-test declined. A real decline will leave both people available."
-      : "No problem — Donut Town will leave you available for another week.";
+      : "No problem. Donut Town will leave you available for another week.";
   await slack.postMessage(payload.channel.id, { text: responderMessage });
   if (invitation.selfTest) return;
   const inviterChannel = await slack.openDm(invitation.inviterId);
@@ -545,7 +538,7 @@ server.listen(config.port, config.host, () => {
   console.log(`Donut Town is running on ${config.host}:${config.port}`);
   console.log(config.botToken && config.channelId ? "Slack member sync is configured." : "Slack is in local demo mode; add .env.local to connect.");
   console.log(isSlackLoginConfigured() ? "One-click Slack entry is configured." : "One-click Slack entry needs SLACK_CLIENT_ID and SLACK_CLIENT_SECRET.");
-  console.log(profileStore.configured ? "Sheet-backed member profiles are configured." : "Sheet-backed member profiles are not configured yet.");
+  if (profileStore.configured) console.log("Legacy Sheet profile settings detected; Slack profiles are used for town member cards.");
   console.log(config.stagingPassword ? "Staging password protection is enabled." : "Staging password protection is disabled for local development.");
   console.log(config.allowSend ? "Slack DM sending is ENABLED." : "Slack DM sending is disabled (dry-run mode)." );
 });

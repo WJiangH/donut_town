@@ -51,7 +51,6 @@ let invitesOpen = true;
 let planActive = false;
 const player = { id: 11, name: "You", x: 50, y: 80 };
 let currentUser = null;
-let profileConnected = false;
 const pressedKeys = new Set();
 let clickPath = [];
 let playerDirection = "down";
@@ -77,13 +76,42 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function parseTopics(value) {
-  return String(value || "").split(",").map(topic => topic.trim()).filter(Boolean).slice(0, 8);
-}
-
 function initialsFor(name) {
   const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
   return (parts.length > 1 ? `${parts[0][0]}${parts.at(-1)[0]}` : parts[0]?.slice(0, 2) || "?").toUpperCase();
+}
+
+function setSlackAvatar(element, person) {
+  element.replaceChildren();
+  element.classList.toggle("has-photo", Boolean(person?.avatarUrl));
+  if (!person?.avatarUrl) {
+    element.textContent = initialsFor(person?.displayName || person?.name || "Slack member");
+    return;
+  }
+  const image = document.createElement("img");
+  image.className = "slack-avatar-image";
+  image.src = person.avatarUrl;
+  image.alt = "";
+  image.referrerPolicy = "no-referrer";
+  image.addEventListener("error", () => {
+    element.classList.remove("has-photo");
+    element.textContent = initialsFor(person?.displayName || person?.name || "Slack member");
+  }, { once: true });
+  element.append(image);
+}
+
+function slackFacts(person) {
+  return [
+    ["Time zone", person?.timezoneLabel || person?.timezone],
+    ["Pronouns", person?.pronouns],
+    ["Slack status", person?.statusText]
+  ].filter(([, value]) => value);
+}
+
+function factsMarkup(facts, emptyCopy = "No additional Slack profile details have been added.") {
+  return facts.length
+    ? facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")
+    : `<div class="empty-fact">${escapeHtml(emptyCopy)}</div>`;
 }
 
 function personMarkup(person, compact = false) {
@@ -276,24 +304,14 @@ function openResident(id) {
   closeProfile();
   selectedResident = residents.find(person => person.id === id);
   document.querySelector("#residentName").textContent = selectedResident.name;
-  document.querySelector("#residentTeam").textContent = selectedResident.team;
-  const facts = [
-    ["Specialty", selectedResident.specialty],
-    ["Location", selectedResident.location],
-    ["Pet", selectedResident.pet]
-  ].filter(([, value]) => value);
-  document.querySelector("#residentFacts").innerHTML = facts.length
-    ? facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")
-    : `<div class="empty-fact">This neighbor has not completed their town profile yet.</div>`;
+  document.querySelector("#residentSummary").textContent = selectedResident.title || selectedResident.realName || "Slack member";
+  document.querySelector("#residentFacts").innerHTML = factsMarkup(slackFacts(selectedResident));
   const donutCopy = document.querySelector("#donutCountCopy");
   donutCopy.innerHTML = selectedResident.donuts === null
     ? "Donut history not connected yet"
     : `<strong id="residentDonuts">${escapeHtml(selectedResident.donuts)}</strong> successful pairings`;
-  document.querySelector("#residentTopics").innerHTML = selectedResident.topics.length
-    ? selectedResident.topics.map(topic => `<span class="topic">${escapeHtml(topic)}</span>`).join("")
-    : `<span class="topic">Not added yet</span>`;
-  document.querySelector("#connectionNote").textContent = selectedResident.note;
-  document.querySelector("#drawerPortrait").innerHTML = personMarkup(selectedResident, true);
+  document.querySelector("#connectionNote").textContent = "Profile details are synced from Slack.";
+  setSlackAvatar(document.querySelector("#drawerPortrait"), selectedResident);
   const statusLabel = selectedResident.status === "open" ? "Open to invitations" : selectedResident.status === "pending" ? "Invitation pending" : "Booked this week";
   document.querySelector("#drawerStatus").textContent = statusLabel;
 
@@ -313,7 +331,6 @@ async function syncSlackResidents() {
     const data = await response.json();
     const summary = document.querySelector("#neighborSummary");
     currentUser = data.members.find(member => member.isCurrentUser) || null;
-    profileConnected = data.profileConnected === true;
     const neighbors = data.members.filter(member => !member.isCurrentUser);
     renderCurrentProfile();
     if (neighbors.length > residentSlots.length) {
@@ -325,23 +342,24 @@ async function syncSlackResidents() {
       slackId: member.id,
       spriteIndex: member.appearanceIndex,
       name: member.displayName,
-      team: member.profile.team || "Team not added",
-      specialty: member.profile.specialty || "",
-      location: member.profile.location || "",
-      pet: member.profile.pet || "",
+      displayName: member.displayName,
+      realName: member.realName,
+      avatarUrl: member.avatarUrl,
+      title: member.title,
+      pronouns: member.pronouns,
+      statusText: member.statusText,
+      timezone: member.timezone,
+      timezoneLabel: member.timezoneLabel,
       status: "open",
-      donuts: member.profile.donuts,
-      topics: parseTopics(member.profile.topics),
-      group: currentUser?.profile.team && member.profile.team
-        ? (currentUser.profile.team === member.profile.team ? "same" : "other")
-        : "unknown",
+      donuts: member.donutCount,
+      group: "unknown",
       x: residentSlots[index].x,
       y: residentSlots[index].y,
       activity: residentSlots[index].activity,
-      note: member.profile.donuts === null
+      note: member.donutCount === null
         ? "Synced from Slack. Donut history is not connected yet."
-        : member.profile.donuts > 0
-          ? `${member.profile.donuts} completed Donut chats are recorded.`
+        : member.donutCount > 0
+          ? `${member.donutCount} completed Donut chats are recorded.`
           : "No completed Donut chats are recorded yet."
     }));
     queue = [];
@@ -360,7 +378,6 @@ async function syncSlackResidents() {
     renderQueue();
   } catch {
     currentUser = null;
-    profileConnected = false;
     residents = [];
     queue = [];
     renderResidents();
@@ -372,26 +389,21 @@ async function syncSlackResidents() {
 
 function renderCurrentProfile() {
   const name = currentUser?.displayName || "Slack member";
-  const profile = currentUser?.profile || {};
-  const initials = initialsFor(name);
-  document.querySelector("#profileButton").textContent = initials;
-  document.querySelector("#profileAvatar").textContent = initials;
+  const profileButton = document.querySelector("#profileButton");
+  setSlackAvatar(profileButton, currentUser || { displayName: name });
+  profileButton.setAttribute("aria-label", currentUser ? `Open ${name}'s Slack profile` : "Open your profile");
+  setSlackAvatar(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
   document.querySelector("#profileName").textContent = name;
-  document.querySelector("#profileTeam").value = profile.team || "";
-  document.querySelector("#profileSpecialty").value = profile.specialty || "";
-  document.querySelector("#profileLocation").value = profile.location || "";
-  document.querySelector("#profilePet").value = profile.pet || "";
-  document.querySelector("#profileTopicsInput").value = profile.topics || "";
-  const saveButton = document.querySelector("#saveProfile");
-  saveButton.disabled = !currentUser || !profileConnected;
-  document.querySelector("#profileSyncNote").textContent = profileConnected
-    ? "Saved to the private Members sheet and visible only inside Donut Town."
-    : "Profile editing will unlock after the private Members sheet connection is configured.";
-  const donutCount = profile.donuts;
+  const ownFacts = [
+    ["Role", currentUser?.title],
+    ...slackFacts(currentUser)
+  ].filter(([, value]) => value);
+  document.querySelector("#currentProfileFacts").innerHTML = factsMarkup(ownFacts, "Add a title, status, or pronouns in Slack to see more here.");
+  const donutCount = currentUser?.donutCount;
   document.querySelector("#myDonutCount").textContent = Number.isInteger(donutCount) ? donutCount : "-";
   document.querySelector("#myDonutNote").textContent = Number.isInteger(donutCount)
     ? "Completed pairings recorded in the Donut Bot sheet."
-    : "Donut history will appear when the Members sheet connection is ready.";
+    : "Donut history will appear after the Lottery history sync is connected.";
 }
 
 function openProfile() {
@@ -463,35 +475,6 @@ inviteButton.addEventListener("click", toggleSelected);
 document.querySelector("#profileButton").addEventListener("click", openProfile);
 document.querySelector("#closeProfile").addEventListener("click", closeProfile);
 document.querySelector("#profileScrim").addEventListener("click", closeProfile);
-document.querySelector("#profileForm").addEventListener("submit", async event => {
-  event.preventDefault();
-  const button = document.querySelector("#saveProfile");
-  button.disabled = true;
-  button.textContent = "Saving...";
-  const payload = Object.fromEntries(new FormData(event.currentTarget));
-  try {
-    const response = await fetch("/api/profile", {
-      method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "profile_save_failed");
-    currentUser.profile = result.profile;
-    renderCurrentProfile();
-    showToast("Your town profile is saved.");
-    syncSlackResidents();
-  } catch (error) {
-    const message = error.message === "profile_store_not_configured"
-      ? "Profile editing is not connected to the Members sheet yet."
-      : "Your profile could not be saved. Please try again.";
-    showToast(message);
-  } finally {
-    button.textContent = "Save profile";
-    button.disabled = !profileConnected;
-  }
-});
-
 document.querySelectorAll(".filter-button").forEach(button => button.addEventListener("click", () => {
   currentFilter = button.dataset.filter;
   document.querySelectorAll(".filter-button").forEach(item => item.classList.toggle("active", item === button));

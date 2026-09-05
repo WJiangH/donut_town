@@ -91,11 +91,11 @@ Blueprint:
 
 1. Sign in to Render and choose **New → Blueprint**.
 2. Connect GitHub and select `WJiangH/donut_town` on the `main` branch.
-3. Render reads `render.yaml` and asks for eight deployment values:
+3. Render reads `render.yaml` and asks for six deployment values:
    `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_CHANNEL_ID`, and
    `STAGING_PASSWORD`, plus `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` for
-   one-click Slack identity. `PROFILE_API_URL` and `PROFILE_API_SECRET` connect
-   the optional Sheet-backed member profile.
+   one-click Slack identity. Member names, avatars, roles, pronouns, statuses,
+   and time zones come from Slack rather than a second profile database.
 4. Use the testing channel ID. Keep `SLACK_ALLOW_SEND=false`.
 5. Choose a long, unique staging password and deploy. Do not upload or commit
    `.env.local`.
@@ -171,24 +171,20 @@ it. It preserves Team, Manager Slack ID, invite preference, Specialty,
 Location, Pet, and Chat Topics. Pairing rules use Manager Slack ID rather than
 hard-coded email rosters.
 
-## Connect town profiles to Members
+## Slack member profiles
 
-Member profile fields are separate columns rather than one JSON-style Profile
-cell. This keeps the Sheet readable, filterable, and safe to edit manually.
-Slack remains the source of names and IDs.
+Town profile cards use the existing `users.info` response. They show a member's
+Slack display name, avatar, role, pronouns, status, and time zone when those
+fields have been filled in. Empty fields are omitted. Members update this
+information in Slack, so Donut Town does not need a second editable profile or
+an externally accessible Google Sheet. Email and phone fields are not sent to
+the browser. Profile responses are cached for ten minutes to stay comfortably
+within Slack API limits.
 
-1. Copy `Google_Script/ProfileApi.gs` into the Sheet-bound Apps Script project,
-   then run `initializeDonutSheets()` once. Existing member rows are preserved;
-   the four profile columns are appended.
-2. Add a long random value named `TOWN_PROFILE_API_SECRET` in Apps Script
-   Project Settings under Script Properties.
-3. Deploy the Apps Script as a Web app that executes as the owner. Copy its
-   `/exec` URL into Render as `PROFILE_API_URL`.
-4. Put the same random value in Render as `PROFILE_API_SECRET`. Do not store it
-   in the Sheet or repository.
-5. Redeploy Render. A signed-in member can then edit only their own public town
-   fields. The server reads Donut counts from the existing `GuessWho` history;
-   it never sends member email or manager data to the browser.
+`Google_Script/ProfileApi.gs` and `profile-store.mjs` are retained as a record
+of the Sheet-backed prototype, but the current town interface does not call
+that bridge. Donut history still needs a separate one-way sync from the Lottery
+sheet before the collection counts can be restored.
 
 ## Repository skill
 

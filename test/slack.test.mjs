@@ -21,7 +21,7 @@ test("channel members paginate and bots are excluded", async () => {
   const replies = [
     { ok: true, members: ["U1"], response_metadata: { next_cursor: "next" } },
     { ok: true, members: ["U2"], response_metadata: { next_cursor: "" } },
-    { ok: true, user: { id: "U1", name: "maya", real_name: "Maya", profile: { display_name: "Maya C", image_72: "a.png" } } },
+    { ok: true, user: { id: "U1", name: "maya", real_name: "Maya", tz: "America/Los_Angeles", tz_label: "Pacific Time", profile: { display_name: "Maya C", image_72: "small.png", image_192: "large.png", title: "Materials Scientist", pronouns: "she/her", status_text: "In the lab" } } },
     { ok: true, user: { id: "U2", name: "bot", is_bot: true, profile: {} } }
   ];
   const methods = [];
@@ -36,7 +36,17 @@ test("channel members paginate and bots are excluded", async () => {
   assert.match(requests[0].headers["content-type"], /^application\/x-www-form-urlencoded/);
   assert.equal(requests[0].body.get("channel"), "C1");
   assert.equal(requests[2].body.get("user"), "U1");
-  assert.deepEqual(members, [{ id: "U1", displayName: "Maya C", realName: "Maya", avatarUrl: "a.png", timezone: "" }]);
+  assert.deepEqual(members, [{
+    id: "U1",
+    displayName: "Maya C",
+    realName: "Maya",
+    avatarUrl: "large.png",
+    title: "Materials Scientist",
+    pronouns: "she/her",
+    statusText: "In the lab",
+    timezone: "America/Los_Angeles",
+    timezoneLabel: "Pacific Time"
+  }]);
 });
 
 test("member profiles are cached between town refreshes", async () => {
