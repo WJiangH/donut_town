@@ -1,0 +1,4 @@
+interface:
+  display_name: "Donut Town Pixel Art"
+  short_description: "Generate and validate game-ready pixel residents"
+  default_prompt: "Use $donut-town-pixel-art to turn this pixel-art character reference into a validated directional walk atlas."

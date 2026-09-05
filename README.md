@@ -26,3 +26,10 @@ Then visit `http://localhost:4173`.
 - Successful historical pairings are represented as collectible donuts.
 
 Slack authentication, real DMs, the historical sheet import and persistence are intentionally mocked in this design version.
+
+## Repository skill
+
+The reusable pixel-art generation and animation workflow lives at
+`.agents/skills/donut-town-pixel-art/`. It covers prompt construction, atlas
+validation, CSS integration, map placement, movement QA, and stable future
+Slack-to-character assignment.
