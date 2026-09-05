@@ -26,12 +26,16 @@ test("channel members paginate and bots are excluded", async () => {
     ], response_metadata: { next_cursor: "" } }
   ];
   const methods = [];
-  const client = new SlackClient("xoxb-test", async url => {
+  const requests = [];
+  const client = new SlackClient("xoxb-test", async (url, options) => {
     methods.push(url.split("/").pop());
+    requests.push(options);
     return { ok: true, json: async () => replies.shift() };
   });
   const members = await client.listChannelMembers("C1");
   assert.deepEqual(methods, ["conversations.members", "conversations.members", "users.list"]);
+  assert.match(requests[0].headers["content-type"], /^application\/x-www-form-urlencoded/);
+  assert.equal(requests[0].body.get("channel"), "C1");
   assert.deepEqual(members, [{ id: "U1", displayName: "Maya C", realName: "Maya", avatarUrl: "a.png", timezone: "" }]);
 });
 

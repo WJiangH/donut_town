@@ -1,4 +1,4 @@
-const residents = [
+let residents = [
   { id: 1, name: "Maya Chen", team: "Materials", status: "open", donuts: 12, topics: ["coffee", "new projects", "hiking"], group: "other", x: 27, y: 31, skin: "#d9a47f", hair: "#352a27", shirt: "#c15362", note: "You have not had a Donut chat yet." },
   { id: 2, name: "Luis Ortega", team: "Process", status: "open", donuts: 4, topics: ["music", "process tools", "food"], group: "other", x: 47, y: 22, skin: "#b97953", hair: "#252927", shirt: "#497f74", note: "New face from another team." },
   { id: 3, name: "Priya Nair", team: "Device", status: "booked", donuts: 9, topics: ["books", "mentoring", "travel"], group: "other", x: 63, y: 34, skin: "#9a5c3c", hair: "#242020", shirt: "#b56577", note: "Already booked for this week." },
@@ -10,6 +10,7 @@ const residents = [
   { id: 9, name: "Amina Yusuf", team: "Packaging", status: "open", donuts: 10, topics: ["community", "science", "local food"], group: "other", x: 67, y: 59, skin: "#70462f", hair: "#292021", shirt: "#bc5d49", note: "New face from another team." },
   { id: 10, name: "Evan Brooks", team: "Analytics", status: "booked", donuts: 3, topics: ["data", "baseball", "podcasts"], group: "other", x: 50, y: 13, skin: "#e2b08d", hair: "#704f35", shirt: "#4b7888", note: "Already booked for this week." }
 ];
+const residentSlots = residents.map(({ x, y }) => ({ x, y }));
 
 let queue = [];
 let selectedResident = null;
@@ -33,13 +34,22 @@ const queueEmpty = document.querySelector("#queueEmpty");
 const sendButton = document.querySelector("#sendInvites");
 const toast = document.querySelector("#toast");
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function personMarkup(person, compact = false) {
-  const atlasIndex = (person.id - 1) % 12;
+  const atlasIndex = person.spriteIndex ?? ((person.id - 1) % 12);
   const columnPositions = [0, 33.333, 66.667, 100];
   const rowPositions = [0, 50, 100];
   const spriteX = columnPositions[atlasIndex % 4];
   const spriteY = rowPositions[Math.floor(atlasIndex / 4)];
-  return `<div class="pixel-person" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${person.name.split(" ")[0]}</span>`}`;
+  return `<div class="pixel-person" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${escapeHtml(person.name.split(" ")[0])}</span>`}`;
 }
 
 function playerMarkup() {
@@ -49,8 +59,8 @@ function playerMarkup() {
 
 function renderResidents() {
   const residentsMarkup = residents.map(person => {
-    const visible = currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts <= 2);
-    return `<button class="resident-pin ${person.status} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%" data-id="${person.id}" aria-label="Open ${person.name}'s profile">
+    const visible = currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts !== null && person.donuts <= 2);
+    return `<button class="resident-pin ${person.status} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
   }).join("");
@@ -166,8 +176,13 @@ function openResident(id) {
   selectedResident = residents.find(person => person.id === id);
   document.querySelector("#residentName").textContent = selectedResident.name;
   document.querySelector("#residentTeam").textContent = selectedResident.team;
-  document.querySelector("#residentDonuts").textContent = selectedResident.donuts;
-  document.querySelector("#residentTopics").innerHTML = selectedResident.topics.map(topic => `<span class="topic">${topic}</span>`).join("");
+  const donutCopy = document.querySelector("#donutCountCopy");
+  donutCopy.innerHTML = selectedResident.donuts === null
+    ? "Donut history not connected yet"
+    : `<strong id="residentDonuts">${escapeHtml(selectedResident.donuts)}</strong> successful pairings`;
+  document.querySelector("#residentTopics").innerHTML = selectedResident.topics.length
+    ? selectedResident.topics.map(topic => `<span class="topic">${escapeHtml(topic)}</span>`).join("")
+    : `<span class="topic">Not added yet</span>`;
   document.querySelector("#connectionNote").textContent = selectedResident.note;
   document.querySelector("#drawerPortrait").innerHTML = personMarkup(selectedResident, true);
   const statusLabel = selectedResident.status === "open" ? "Open to invitations" : selectedResident.status === "pending" ? "Invitation pending" : "Booked this week";
@@ -180,6 +195,46 @@ function openResident(id) {
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
   drawerScrim.hidden = false;
+}
+
+async function syncSlackResidents() {
+  try {
+    const response = await fetch("/api/slack/members", { headers: { accept: "application/json" } });
+    if (!response.ok) return;
+    const data = await response.json();
+    const summary = document.querySelector("#neighborSummary");
+    if (data.members.length > residentSlots.length) {
+      summary.textContent = `${data.total} Slack neighbors synced · map layout pending`;
+      return;
+    }
+    residents = data.members.map((member, index) => ({
+      id: index + 1,
+      slackId: member.id,
+      spriteIndex: member.appearanceIndex,
+      name: member.displayName,
+      team: "Testing channel",
+      status: "open",
+      donuts: null,
+      topics: [],
+      group: "unknown",
+      x: residentSlots[index].x,
+      y: residentSlots[index].y,
+      note: "Synced from Slack. Donut history and interests are not connected yet."
+    }));
+    queue = [];
+    selectedResident = null;
+    currentFilter = "all";
+    document.querySelectorAll(".filter-button").forEach(button => {
+      button.classList.toggle("active", button.dataset.filter === "all");
+      button.disabled = button.dataset.filter !== "all";
+      if (button.disabled) button.title = "Team and participation data are not connected yet";
+    });
+    summary.textContent = `${data.total} Slack neighbors are open`;
+    renderResidents();
+    renderQueue();
+  } catch {
+    // Static/demo mode intentionally keeps the sample residents.
+  }
 }
 
 function closeDrawer() {
@@ -204,11 +259,11 @@ function renderQueue() {
   sendButton.textContent = planActive ? "Invitation plan active" : "Send invitations";
   queueList.innerHTML = queue.map((person, index) => `<li class="queue-item">
     <span class="priority-number">${index + 1}</span>
-    <span class="queue-name">${person.name}</span>
+    <span class="queue-name">${escapeHtml(person.name)}</span>
     <span class="queue-actions">
-      <button data-move="up" data-id="${person.id}" aria-label="Move ${person.name} up" ${planActive ? "disabled" : ""}>↑</button>
-      <button data-move="down" data-id="${person.id}" aria-label="Move ${person.name} down" ${planActive ? "disabled" : ""}>↓</button>
-      <button data-move="remove" data-id="${person.id}" aria-label="Remove ${person.name}" ${planActive ? "disabled" : ""}>×</button>
+      <button data-move="up" data-id="${person.id}" aria-label="Move ${escapeHtml(person.name)} up" ${planActive ? "disabled" : ""}>↑</button>
+      <button data-move="down" data-id="${person.id}" aria-label="Move ${escapeHtml(person.name)} down" ${planActive ? "disabled" : ""}>↓</button>
+      <button data-move="remove" data-id="${person.id}" aria-label="Remove ${escapeHtml(person.name)}" ${planActive ? "disabled" : ""}>×</button>
     </span>
   </li>`).join("");
   queueList.querySelectorAll("button").forEach(button => button.addEventListener("click", () => updateQueue(Number(button.dataset.id), button.dataset.move)));
@@ -274,13 +329,8 @@ document.querySelector("#cancelSend").addEventListener("click", () => document.q
 document.querySelector("#confirmSend").addEventListener("click", () => {
   document.querySelector("#modalScrim").hidden = true;
   const first = queue[0];
-  first.status = "pending";
-  first.note = "Donut Bot sent your private invitation.";
-  planActive = true;
-  renderQueue();
-  renderResidents();
   closeDrawer();
-  showToast(`Donut Bot privately invited ${first.name}.`);
+  showToast(`Preview ready for ${first.name}; no Slack message was sent.`);
 });
 
 document.addEventListener("keydown", event => {
@@ -301,6 +351,7 @@ window.addEventListener("blur", () => pressedKeys.clear());
 
 renderResidents();
 renderQueue();
+syncSlackResidents();
 if (window.matchMedia("(max-width: 760px)").matches) {
   document.querySelector(".dock-body").hidden = true;
   document.querySelector("#dockHandle").setAttribute("aria-expanded", "false");

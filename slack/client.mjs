@@ -16,13 +16,17 @@ export class SlackClient {
   }
 
   async call(method, body = {}) {
+    const form = new URLSearchParams();
+    for (const [key, value] of Object.entries(body)) {
+      form.set(key, typeof value === "object" ? JSON.stringify(value) : String(value));
+    }
     const response = await this.fetch(`${SLACK_API}/${method}`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${this.token}`,
-        "content-type": "application/json; charset=utf-8"
+        "content-type": "application/x-www-form-urlencoded; charset=utf-8"
       },
-      body: JSON.stringify(body)
+      body: form
     });
     const result = await response.json();
     if (!response.ok || !result.ok) throw new SlackApiError(method, result);
