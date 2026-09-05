@@ -64,11 +64,12 @@ export function answerInvitation(id, status, responderId) {
 
 export function invitationMessage(invitation) {
   const text = invitation.selfTest
-    ? "This is your Donut Town test invitation."
+    ? `Test preview: ${invitation.inviterName} invited you to a Donut chat.`
     : `${invitation.inviterName} invited you to a Donut chat.`;
+  const invitationCopy = `<@${invitation.inviterId}> would like to have a Donut chat with you this week. :doughnut:`;
   const message = invitation.selfTest
-    ? "*Donut Town test invitation* :doughnut:\nThis is what a teammate will receive when you invite them. Try either button below."
-    : `*${escapeSlackText(invitation.inviterName)}* would like to have a Donut chat with you this week. :doughnut:`;
+    ? `*Test preview — sent only to you*\n${invitationCopy}\nThis is how the invitation will look to a teammate.`
+    : invitationCopy;
   return {
     text,
     blocks: [
@@ -100,8 +101,4 @@ export function invitationMessage(invitation) {
       }
     ]
   };
-}
-
-function escapeSlackText(value) {
-  return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }

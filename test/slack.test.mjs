@@ -82,10 +82,14 @@ test("invitation identity comes from the Slack session and channel roster", () =
   const selfTestInput = resolveInvitationActors({ sessionUserId: "U1", inviteeId: "U1", members, allowSelfInvite: true });
   assert.equal(selfTestInput.selfTest, true);
   const selfTestInvitation = createInvitation(selfTestInput);
-  assert.match(invitationMessage(selfTestInvitation).text, /test invitation/i);
+  const selfTestMessage = invitationMessage(selfTestInvitation);
+  assert.match(selfTestMessage.text, /Test preview: Maya invited you/);
+  assert.match(selfTestMessage.blocks[0].text.text, /Test preview/);
+  assert.match(selfTestMessage.blocks[0].text.text, /<@U1> would like to have a Donut chat/);
   assert.equal(pendingInvitationsFor("U1").some(item => item.id === selfTestInvitation.id), false);
   discardInvitation(selfTestInvitation.id);
   const invitation = createInvitation({ inviterId: "U1", inviteeId: "U2", inviterName: "Maya", priority: 1 });
+  assert.match(invitationMessage(invitation).blocks[0].text.text, /<@U1> would like to have a Donut chat/);
   assert.equal(pendingInvitationsFor("U1").some(item => item.id === invitation.id), true);
   discardInvitation(invitation.id);
   assert.equal(pendingInvitationsFor("U1").some(item => item.id === invitation.id), false);
