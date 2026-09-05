@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { timingSafeEqual } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,9 +15,14 @@ const config = {
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   channelId: process.env.SLACK_CHANNEL_ID || "",
   currentUserId: process.env.SLACK_CURRENT_USER_ID || "",
+  stagingPassword: process.env.STAGING_PASSWORD || "",
   allowSend: process.env.SLACK_ALLOW_SEND === "true",
-  port: Number(process.env.PORT || 4173)
+  port: Number(process.env.PORT || 4173),
+  host: process.env.HOST || (process.env.RENDER ? "0.0.0.0" : "127.0.0.1")
 };
+if (process.env.RENDER && !config.stagingPassword) {
+  throw new Error("STAGING_PASSWORD is required on Render so Slack member data is not public.");
+}
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
 let memberCache = null;
 let memberCacheExpiresAt = 0;
@@ -25,6 +31,19 @@ let memberSyncPromise = null;
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
+
+    if (request.method === "GET" && url.pathname === "/api/health") {
+      return sendJson(response, 200, { ok: true });
+    }
+
+    if (url.pathname !== "/slack/interactions" && !isStagingRequestAuthorized(request)) {
+      response.writeHead(401, {
+        "content-type": "text/plain; charset=utf-8",
+        "www-authenticate": 'Basic realm="Donut Town testing", charset="UTF-8"'
+      });
+      response.end("Donut Town testing access required.");
+      return;
+    }
 
     if (request.method === "GET" && url.pathname === "/api/slack/status") {
       return sendJson(response, 200, {
@@ -210,8 +229,23 @@ async function loadLocalEnv(filePath) {
   }
 }
 
-server.listen(config.port, "127.0.0.1", () => {
-  console.log(`Donut Town is running at http://127.0.0.1:${config.port}`);
+function isStagingRequestAuthorized(request) {
+  if (!config.stagingPassword) return true;
+  const authorization = request.headers.authorization || "";
+  if (!authorization.startsWith("Basic ")) return false;
+  const expected = Buffer.from(`donut:${config.stagingPassword}`);
+  let actual;
+  try {
+    actual = Buffer.from(authorization.slice(6), "base64");
+  } catch {
+    return false;
+  }
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+server.listen(config.port, config.host, () => {
+  console.log(`Donut Town is running on ${config.host}:${config.port}`);
   console.log(config.botToken && config.channelId ? "Slack member sync is configured." : "Slack is in local demo mode; add .env.local to connect.");
+  console.log(config.stagingPassword ? "Staging password protection is enabled." : "Staging password protection is disabled for local development.");
   console.log(config.allowSend ? "Slack DM sending is ENABLED." : "Slack DM sending is disabled (dry-run mode)." );
 });

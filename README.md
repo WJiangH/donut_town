@@ -72,6 +72,32 @@ This is an integration spike, not yet production-ready:
 Slack user authentication, the historical sheet import, and durable persistence
 remain intentionally out of scope for this integration spike.
 
+## Deploy the protected testing build to Render
+
+The repository includes `render.yaml`, so the shortest setup uses a Render
+Blueprint:
+
+1. Sign in to Render and choose **New → Blueprint**.
+2. Connect GitHub and select `WJiangH/donut_town` on the `main` branch.
+3. Render reads `render.yaml` and asks for four secret values:
+   `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_CHANNEL_ID`, and
+   `STAGING_PASSWORD`.
+4. Use the testing channel ID. Keep `SLACK_ALLOW_SEND=false`.
+5. Choose a long, unique staging password and deploy. Do not upload or commit
+   `.env.local`.
+6. When the service is live, open its `https://<name>.onrender.com` URL. The
+   temporary username is `donut`; the password is `STAGING_PASSWORD`.
+
+The health check at `/api/health` intentionally does not require the staging
+password. All pages and member APIs do. Slack's signed interaction endpoint is
+also outside Basic authentication because Slack cannot answer that prompt; it
+performs Slack signature verification instead.
+
+The Blueprint uses Render's free plan for a visual/testing deploy. Free web
+services spin down after inactivity, so they are not reliable for Slack's
+time-sensitive interaction callbacks. Use an always-on instance before treating
+the Enter Donut Town button as production-ready.
+
 ## Repository skill
 
 The reusable pixel-art generation and animation workflow lives at
