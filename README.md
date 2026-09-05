@@ -109,25 +109,23 @@ the channel message; Render receives and verifies the Slack button callback.
 2. Save a copy of the current URL in Slack **Interactivity & Shortcuts** for
    rollback. Replace it with
    `https://donut-town.onrender.com/slack/interactions` and save.
-3. Copy `postDonutTownEntrance()` from
-   `Google_Script/DonutTownEntry.example.gs` into the existing Sheet-bound Apps
-   Script project. A local copy has also been added to the end of the live
-   `Google_Script/Code.gs` file.
+3. Sync `Google_Script/Code.gs` and `Google_Script/Automation.gs` into the
+   existing Sheet-bound Apps Script project.
 4. Run `postDonutTownEntrance()` manually once. This is the step that sends the
    real entrance message to the configured testing channel.
 5. Click **Enter Donut Town** in Slack. The bot responds only to that member with
    a private five-minute link. Opening it creates the web session and maps the
    clicker's Slack ID to the controllable `You` character.
 
-Because this GitHub repository is public, `Google_Script/Code.gs` is ignored: it
-contains the internal team roster. The sanitized entrance helper is safe to
-version and contains no Token, channel ID, or employee email addresses.
+The tracked Apps Script source contains no Token, channel ID, employee email,
+or team roster. Secrets remain in Script Properties; workspace-specific member,
+manager, and channel data remain in the private Sheet tabs.
 
 ## Sheet-managed scheduling
 
-`Google_Script/Automation.example.gs` adds an internal `Configs` tab and an
-auditable `Rounds` tab. Run `setupDonutAutomation()` once after copying that
-file into the Sheet-bound Apps Script project. It removes only the old
+`Google_Script/Automation.gs` adds an internal `Configs` tab and an
+auditable `Rounds` tab. After syncing the files, run `initializeDonutSheets()`,
+fill `Configs.CHANNEL_ID`, then run `setupDonutAutomation()` once. It removes only the old
 `runGuessWhoLottery`, `runDonutLottery`, and `donutAutomationTick` time triggers,
 then installs one idempotent 15-minute automation tick.
 
@@ -137,6 +135,12 @@ code or rebuilding the trigger. Actual message timestamps and round state belong
 in `Rounds`, rather than in the global configuration table. Apps Script timing is
 approximate; the weekly post occurs on the first 15-minute tick at or after the
 configured local time.
+
+The same setup also creates `Members`. `syncDonutMembers()` refreshes Slack ID,
+display name, channel membership, and email when the app is permitted to read
+it, while preserving the manually maintained Team, Manager Slack ID, and invite
+preference columns. Pairing rules use Manager Slack ID rather than hard-coded
+email rosters.
 
 ## Repository skill
 

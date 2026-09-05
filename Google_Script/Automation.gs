@@ -6,9 +6,8 @@ var DONUT_ROUNDS_SHEET = "Rounds";
 var DONUT_AUTOMATION_HANDLER = "donutAutomationTick";
 
 function donutConfigDefaults_() {
-  var legacyChannelId = typeof LEGACY_CHANNEL_ID === "undefined" ? "" : LEGACY_CHANNEL_ID;
   return [
-    ["CHANNEL_ID", legacyChannelId, "Slack channel ID"],
+    ["CHANNEL_ID", "", "Slack channel ID; keep workspace-specific values in this private sheet"],
     ["AUTO_POST_ENABLED", "TRUE", "TRUE enables the weekly Bot message"],
     ["WEEKLY_POST_DAY", "MONDAY", "MONDAY through SUNDAY"],
     ["WEEKLY_POST_TIME", "09:00", "Local 24-hour time; checked every 15 minutes"],
@@ -19,15 +18,24 @@ function donutConfigDefaults_() {
     ["NEW_HIRE_TARGET_TEXT", "We have a new team member onboarded", "Text used to identify new-hire lotteries"],
     ["NEW_HIRE_WAIT_HOURS", "2", "Delay before processing new-hire lotteries"],
     ["WINNERS_COUNT", "3", "Number of new-hire lottery winners"],
+    ["ASSIGNED_WINNER_SLACK_ID", "", "Optional Slack ID forced as the odd-person lottery winner"],
+    ["MEMBER_SYNC_HOURS", "24", "How often the channel roster is refreshed"],
     ["WEEKLY_MESSAGE_TEMPLATE", "React with :{EMOJI}: within {SIGNUP_HOURS} hours to join the random pairing, or enter Donut Town to invite someone directly. Signup closes around {CLOSE_TIME} ({TIMEZONE}).", "Supports {EMOJI}, {SIGNUP_HOURS}, {CLOSE_TIME}, and {TIMEZONE}"],
   ];
 }
 
-// Run once after adding this file. It creates Configs/Rounds, replaces only the
-// three Donut-owned time triggers, and installs one stable 15-minute tick.
-function setupDonutAutomation() {
+function initializeDonutSheets() {
   ensureDonutConfigSheet_();
   ensureDonutRoundsSheet_();
+  ensureDonutMembersSheet_();
+  return "Sheets are ready. Fill Configs CHANNEL_ID, then run setupDonutAutomation().";
+}
+
+// Run once after filling Configs. It replaces only the three Donut-owned time
+// triggers and installs one stable 15-minute tick.
+function setupDonutAutomation() {
+  initializeDonutSheets();
+  getDonutConfig_();
 
   var managedHandlers = [DONUT_AUTOMATION_HANDLER, "runGuessWhoLottery", "runDonutLottery"];
   ScriptApp.getProjectTriggers().forEach(function (trigger) {
@@ -49,6 +57,7 @@ function donutAutomationTick() {
   if (!lock.tryLock(1000)) return;
   try {
     var config = getDonutConfig_();
+    maybeSyncDonutMembers_(config, new Date());
     if (config.AUTO_POST_ENABLED) maybePostWeeklyDonutRound_(config, new Date());
     runDonutLottery();
     runGuessWhoLottery();
@@ -161,6 +170,8 @@ function getDonutConfig_() {
     NEW_HIRE_TARGET_TEXT: String(raw.NEW_HIRE_TARGET_TEXT || "").trim(),
     NEW_HIRE_WAIT_HOURS: Number(raw.NEW_HIRE_WAIT_HOURS),
     WINNERS_COUNT: Number(raw.WINNERS_COUNT),
+    ASSIGNED_WINNER_SLACK_ID: String(raw.ASSIGNED_WINNER_SLACK_ID || "").trim(),
+    MEMBER_SYNC_HOURS: Number(raw.MEMBER_SYNC_HOURS),
     WEEKLY_MESSAGE_TEMPLATE: String(raw.WEEKLY_MESSAGE_TEMPLATE || "").trim()
   };
   validateDonutConfig_(config);
@@ -176,20 +187,35 @@ function validateDonutConfig_(config) {
   if (!(config.SIGNUP_HOURS > 0)) throw new Error("Configs SIGNUP_HOURS must be greater than zero");
   if (!(config.NEW_HIRE_WAIT_HOURS >= 0)) throw new Error("Configs NEW_HIRE_WAIT_HOURS must be zero or greater");
   if (!(config.WINNERS_COUNT > 0 && Math.floor(config.WINNERS_COUNT) === config.WINNERS_COUNT)) throw new Error("Configs WINNERS_COUNT must be a positive integer");
+  if (config.ASSIGNED_WINNER_SLACK_ID && !/^[UW][A-Z0-9]+$/.test(config.ASSIGNED_WINNER_SLACK_ID)) throw new Error("Configs ASSIGNED_WINNER_SLACK_ID is invalid");
+  if (!(config.MEMBER_SYNC_HOURS > 0)) throw new Error("Configs MEMBER_SYNC_HOURS must be greater than zero");
   if (!config.TARGET_EMOJI || !config.GUESS_WHO_TARGET_TEXT || !config.WEEKLY_MESSAGE_TEMPLATE) throw new Error("Configs message fields cannot be blank");
 }
 
 function ensureDonutConfigSheet_() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName(DONUT_CONFIG_SHEET);
-  if (sheet) return sheet;
-  sheet = spreadsheet.insertSheet(DONUT_CONFIG_SHEET);
-  var values = [["Key", "Value", "Description"]].concat(donutConfigDefaults_());
-  sheet.getRange(1, 1, values.length, values[0].length).setNumberFormat("@");
-  sheet.getRange(1, 1, values.length, values[0].length).setValues(values);
-  sheet.setFrozenRows(1);
-  sheet.getRange(1, 1, 1, 3).setFontWeight("bold");
-  sheet.autoResizeColumns(1, 3);
+  var defaults = donutConfigDefaults_();
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(DONUT_CONFIG_SHEET);
+    var values = [["Key", "Value", "Description"]].concat(defaults);
+    sheet.getRange(1, 1, values.length, values[0].length).setNumberFormat("@");
+    sheet.getRange(1, 1, values.length, values[0].length).setValues(values);
+    sheet.setFrozenRows(1);
+    sheet.getRange(1, 1, 1, 3).setFontWeight("bold");
+    sheet.autoResizeColumns(1, 3);
+    return sheet;
+  }
+
+  var existingKeys = {};
+  if (sheet.getLastRow() >= 2) {
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues().forEach(function (row) {
+      if (row[0]) existingKeys[String(row[0]).trim()] = true;
+    });
+  }
+  defaults.forEach(function (row) {
+    if (!existingKeys[row[0]]) sheet.appendRow(row);
+  });
   return sheet;
 }
 
@@ -202,6 +228,137 @@ function ensureDonutRoundsSheet_() {
   sheet.setFrozenRows(1);
   sheet.getRange(1, 1, 1, 7).setFontWeight("bold");
   return sheet;
+}
+
+function ensureDonutMembersSheet_() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheetByName("Members");
+  if (sheet) return sheet;
+  sheet = spreadsheet.insertSheet("Members");
+  sheet.appendRow(["Slack ID", "Display Name", "Email", "Team", "Manager Slack ID", "In Channel", "Invites Enabled", "Last Synced At"]);
+  sheet.setFrozenRows(1);
+  sheet.getRange(1, 1, 1, 8).setFontWeight("bold");
+  return sheet;
+}
+
+function maybeSyncDonutMembers_(config, now) {
+  var properties = PropertiesService.getScriptProperties();
+  var lastSync = Number(properties.getProperty("DONUT_LAST_MEMBER_SYNC_MS") || 0);
+  if (now.getTime() - lastSync < config.MEMBER_SYNC_HOURS * 60 * 60 * 1000) return;
+  syncDonutMembers();
+  properties.setProperty("DONUT_LAST_MEMBER_SYNC_MS", String(now.getTime()));
+}
+
+// Slack is the source of channel membership and profile names. Team,
+// Manager Slack ID, and Invites Enabled remain manually maintained in Members.
+// Email is refreshed only when the app has permission and Slack returns it.
+function syncDonutMembers() {
+  var config = getDonutConfig_();
+  var sheet = ensureDonutMembersSheet_();
+  var existing = {};
+  if (sheet.getLastRow() >= 2) {
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).getValues().forEach(function (row) {
+      if (row[0]) existing[String(row[0]).trim()] = row;
+    });
+  }
+
+  var channelMemberIds = fetchSlackChannelMemberIds_(config.CHANNEL_ID);
+  var channelMemberSet = {};
+  channelMemberIds.forEach(function (id) { channelMemberSet[id] = true; });
+  var slackUsers = fetchSlackUsers_();
+  var now = new Date();
+  var rows = [];
+  var seen = {};
+
+  slackUsers.forEach(function (user) {
+    if (!channelMemberSet[user.id] || user.deleted || user.is_bot || user.id === "USLACKBOT") return;
+    var previous = existing[user.id] || [];
+    var profile = user.profile || {};
+    rows.push([
+      user.id,
+      profile.display_name || profile.real_name || user.real_name || user.name || user.id,
+      profile.email || previous[2] || "",
+      previous[3] || "",
+      previous[4] || "",
+      true,
+      previous.length ? previous[6] !== false : true,
+      now
+    ]);
+    seen[user.id] = true;
+  });
+
+  Object.keys(existing).forEach(function (id) {
+    if (seen[id]) return;
+    var previous = existing[id];
+    rows.push([id, previous[1], previous[2], previous[3], previous[4], false, previous[6], now]);
+  });
+  rows.sort(function (a, b) {
+    if (a[5] !== b[5]) return a[5] ? -1 : 1;
+    return String(a[1]).localeCompare(String(b[1]));
+  });
+
+  if (sheet.getLastRow() >= 2) sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).clearContent();
+  if (rows.length) sheet.getRange(2, 1, rows.length, 8).setValues(rows);
+  PropertiesService.getScriptProperties().setProperty("DONUT_LAST_MEMBER_SYNC_MS", String(now.getTime()));
+  return rows.length;
+}
+
+function getDonutMemberDirectory_() {
+  var sheet = ensureDonutMembersSheet_();
+  var directory = {};
+  if (sheet.getLastRow() < 2) return directory;
+  sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).getValues().forEach(function (row) {
+    var slackId = String(row[0] || "").trim();
+    if (!slackId) return;
+    directory[slackId] = {
+      displayName: row[1],
+      email: row[2],
+      team: row[3],
+      managerSlackId: String(row[4] || "").trim(),
+      inChannel: row[5] !== false,
+      invitesEnabled: row[6] !== false
+    };
+  });
+  return directory;
+}
+
+function fetchSlackChannelMemberIds_(channelId) {
+  var ids = [];
+  var cursor = "";
+  do {
+    var data = slackApiGet_("conversations.members", { channel: channelId, limit: 200, cursor: cursor });
+    ids = ids.concat(data.members || []);
+    cursor = data.response_metadata && data.response_metadata.next_cursor || "";
+  } while (cursor);
+  return ids;
+}
+
+function fetchSlackUsers_() {
+  var users = [];
+  var cursor = "";
+  do {
+    var data = slackApiGet_("users.list", { limit: 200, cursor: cursor });
+    users = users.concat(data.members || []);
+    cursor = data.response_metadata && data.response_metadata.next_cursor || "";
+  } while (cursor);
+  return users;
+}
+
+function slackApiGet_(method, parameters) {
+  if (!SLACK_TOKEN) throw new Error("SLACK_TOKEN is missing from Script Properties");
+  var query = Object.keys(parameters).filter(function (key) {
+    return parameters[key] !== "" && parameters[key] !== null && parameters[key] !== undefined;
+  }).map(function (key) {
+    return encodeURIComponent(key) + "=" + encodeURIComponent(parameters[key]);
+  }).join("&");
+  var response = UrlFetchApp.fetch("https://slack.com/api/" + method + "?" + query, {
+    method: "get",
+    headers: { Authorization: "Bearer " + SLACK_TOKEN },
+    muteHttpExceptions: true
+  });
+  var data = JSON.parse(response.getContentText());
+  if (!data.ok) throw new Error("Slack " + method + " failed: " + data.error);
+  return data;
 }
 
 function roundExists_(roundId) {

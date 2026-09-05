@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
 
-const source = await readFile(new URL("../Google_Script/Automation.example.gs", import.meta.url), "utf8");
+const source = await readFile(new URL("../Google_Script/Automation.gs", import.meta.url), "utf8");
 
 function loadAutomation(extra = {}) {
   const context = vm.createContext({ Date, console, ...extra });
@@ -68,6 +68,8 @@ test("trigger setup is idempotent and preserves unrelated triggers", () => {
   });
   context.ensureDonutConfigSheet_ = () => {};
   context.ensureDonutRoundsSheet_ = () => {};
+  context.ensureDonutMembersSheet_ = () => {};
+  context.getDonutConfig_ = () => ({});
 
   context.setupDonutAutomation();
   context.setupDonutAutomation();
