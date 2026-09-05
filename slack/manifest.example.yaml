@@ -1,0 +1,21 @@
+display_information:
+  name: Donut Town
+features:
+  bot_user:
+    display_name: Donut Bot
+    always_online: false
+oauth_config:
+  scopes:
+    bot:
+      - channels:read
+      - groups:read
+      - users:read
+      - chat:write
+      - im:write
+settings:
+  interactivity:
+    is_enabled: true
+    request_url: https://YOUR-PUBLIC-HTTPS-URL/slack/interactions
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

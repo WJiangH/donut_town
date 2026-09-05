@@ -1,3 +1,6 @@
 # Discarded image-generation intermediates with baked checkerboard backgrounds.
 assets/donut-town-resident-atlas.png
 assets/player-walk-atlas.png
+
+# Local Slack credentials. Never commit this file.
+.env.local
