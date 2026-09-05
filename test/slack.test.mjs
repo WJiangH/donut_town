@@ -21,11 +21,8 @@ test("channel members paginate and bots are excluded", async () => {
   const replies = [
     { ok: true, members: ["U1"], response_metadata: { next_cursor: "next" } },
     { ok: true, members: ["U2"], response_metadata: { next_cursor: "" } },
-    { ok: true, members: [
-      { id: "U1", name: "maya", real_name: "Maya", profile: { display_name: "Maya C", image_72: "a.png" } },
-      { id: "U2", name: "bot", is_bot: true, profile: {} },
-      { id: "U3", name: "outside", real_name: "Outside Channel", profile: {} }
-    ], response_metadata: { next_cursor: "" } }
+    { ok: true, user: { id: "U1", name: "maya", real_name: "Maya", profile: { display_name: "Maya C", image_72: "a.png" } } },
+    { ok: true, user: { id: "U2", name: "bot", is_bot: true, profile: {} } }
   ];
   const methods = [];
   const requests = [];
@@ -35,10 +32,28 @@ test("channel members paginate and bots are excluded", async () => {
     return { ok: true, json: async () => replies.shift() };
   });
   const members = await client.listChannelMembers("C1");
-  assert.deepEqual(methods, ["conversations.members", "conversations.members", "users.list"]);
+  assert.deepEqual(methods, ["conversations.members", "conversations.members", "users.info", "users.info"]);
   assert.match(requests[0].headers["content-type"], /^application\/x-www-form-urlencoded/);
   assert.equal(requests[0].body.get("channel"), "C1");
+  assert.equal(requests[2].body.get("user"), "U1");
   assert.deepEqual(members, [{ id: "U1", displayName: "Maya C", realName: "Maya", avatarUrl: "a.png", timezone: "" }]);
+});
+
+test("member profiles are cached between town refreshes", async () => {
+  const methods = [];
+  const client = new SlackClient("xoxb-test", async url => {
+    const method = url.split("/").pop();
+    methods.push(method);
+    return {
+      ok: true,
+      json: async () => method === "conversations.members"
+        ? { ok: true, members: ["U1"], response_metadata: { next_cursor: "" } }
+        : { ok: true, user: { id: "U1", real_name: "Maya", profile: {} } }
+    };
+  });
+  await client.listChannelMembers("C1");
+  await client.listChannelMembers("C1");
+  assert.deepEqual(methods, ["conversations.members", "users.info", "conversations.members"]);
 });
 
 test("an invitation can only be answered once by its invitee", () => {

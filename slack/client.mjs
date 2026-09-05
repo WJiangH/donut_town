@@ -13,6 +13,7 @@ export class SlackClient {
   constructor(token, fetchImpl = fetch) {
     this.token = token;
     this.fetch = fetchImpl;
+    this.userCache = new Map();
   }
 
   async call(method, body = {}) {
@@ -50,27 +51,31 @@ export class SlackClient {
 
   async listChannelMembers(channelId) {
     const memberIds = await this.listChannelMemberIds(channelId);
-    const channelMembers = new Set(memberIds);
-    const members = [];
-    let cursor;
-    do {
-      const result = await this.call("users.list", {
-        limit: 200,
-        ...(cursor ? { cursor } : {})
-      });
-      for (const profile of result.members) {
-        if (!channelMembers.has(profile.id) || profile.deleted || profile.is_bot || profile.is_app_user) continue;
-        members.push({
-          id: profile.id,
-          displayName: profile.profile.display_name || profile.real_name || profile.name,
-          realName: profile.real_name || profile.profile.real_name || "",
-          avatarUrl: profile.profile.image_72 || "",
-          timezone: profile.tz || ""
-        });
-      }
-      cursor = result.response_metadata?.next_cursor || "";
-    } while (cursor);
-    return members;
+    const profiles = await mapWithConcurrency(memberIds, 5, userId => this.getUser(userId));
+    return profiles.flatMap(profile => {
+      if (!profile || profile.deleted || profile.is_bot || profile.is_app_user) return [];
+      const details = profile.profile || {};
+      return [{
+        id: profile.id,
+        displayName: details.display_name || profile.real_name || profile.name,
+        realName: profile.real_name || details.real_name || "",
+        avatarUrl: details.image_72 || "",
+        timezone: profile.tz || ""
+      }];
+    });
+  }
+
+  async getUser(userId) {
+    const cached = this.userCache.get(userId);
+    if (cached && cached.expiresAt > Date.now()) return cached.user;
+    try {
+      const result = await this.call("users.info", { user: userId });
+      this.userCache.set(userId, { user: result.user, expiresAt: Date.now() + 6 * 60 * 60 * 1000 });
+      return result.user;
+    } catch (error) {
+      if (error instanceof SlackApiError && ["user_not_found", "user_not_visible"].includes(error.slackError)) return null;
+      throw error;
+    }
   }
 
   async openDm(userId) {
@@ -81,4 +86,17 @@ export class SlackClient {
   async postMessage(channel, message) {
     return this.call("chat.postMessage", { channel, ...message });
   }
+}
+
+async function mapWithConcurrency(items, concurrency, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  async function worker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await mapper(items[index], index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  return results;
 }
