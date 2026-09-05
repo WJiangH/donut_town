@@ -95,7 +95,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   width: 72px;
   height: 94px;
   transition: transform 150ms ease;
-  background-image: url("assets/donut-town-resident-atlas-transparent.png");
+  background-image: url("assets/donut-town-resident-atlas-transparent.png?v=2");
   background-repeat: no-repeat;
   background-size: 400% 300%;
   background-position: var(--sprite-x) var(--sprite-y);
@@ -115,7 +115,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .player-character {
   width: 76px;
   height: 92px;
-  background-image: url("assets/player-walk-atlas-transparent.png");
+  background-image: url("assets/player-walk-atlas-transparent.png?v=2");
   background-repeat: no-repeat;
   background-size: 300% 400%;
   background-position: var(--frame-x) var(--direction-y);
