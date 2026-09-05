@@ -10,7 +10,39 @@ let residents = [
   { id: 9, name: "Amina Yusuf", team: "Packaging", status: "open", donuts: 10, topics: ["community", "science", "local food"], group: "other", x: 67, y: 59, skin: "#70462f", hair: "#292021", shirt: "#bc5d49", note: "New face from another team." },
   { id: 10, name: "Evan Brooks", team: "Analytics", status: "booked", donuts: 3, topics: ["data", "baseball", "podcasts"], group: "other", x: 50, y: 13, skin: "#e2b08d", hair: "#704f35", shirt: "#4b7888", note: "Already booked for this week." }
 ];
-const residentSlots = residents.map(({ x, y }) => ({ x, y }));
+const residentSlots = [
+  { x: 48, y: 25, activity: "path" },
+  { x: 39, y: 38, activity: "bench" },
+  { x: 59, y: 38, activity: "bench" },
+  { x: 29, y: 47, activity: "path" },
+  { x: 71, y: 47, activity: "path" },
+  { x: 37, y: 62, activity: "bench" },
+  { x: 62, y: 62, activity: "bench" },
+  { x: 49, y: 74, activity: "path" },
+  { x: 29, y: 33, activity: "cafe" },
+  { x: 51, y: 13, activity: "path" }
+];
+
+const walkCorridors = [
+  { from: [49.5, 0], to: [49.5, 33], width: 5.5 },
+  { from: [49.5, 62], to: [49.5, 100], width: 5.4 },
+  { from: [9, 39], to: [36, 47], width: 5.2 },
+  { from: [12, 61], to: [37, 56], width: 4.8 },
+  { from: [63, 46], to: [91, 34], width: 4.8 },
+  { from: [62, 55], to: [92, 63], width: 4.8 },
+  { from: [79, 42], to: [82, 25], width: 3.4 },
+  { from: [22, 61], to: [18, 51], width: 3.5 }
+];
+
+const mapObstacles = [
+  { x: 50, y: 47, rx: 12.6, ry: 15.4 },
+  { x: 38.5, y: 36.5, rx: 3.1, ry: 4.1 },
+  { x: 60.3, y: 36.5, rx: 3.1, ry: 4.1 },
+  { x: 32.4, y: 48.5, rx: 2.5, ry: 5.1 },
+  { x: 67.5, y: 49, rx: 2.5, ry: 5.1 },
+  { x: 39.8, y: 63.5, rx: 3.6, ry: 3.4 },
+  { x: 59.8, y: 63.5, rx: 3.6, ry: 3.4 }
+];
 
 let queue = [];
 let selectedResident = null;
@@ -18,8 +50,10 @@ let currentFilter = "all";
 let invitesOpen = true;
 let planActive = false;
 const player = { id: 11, name: "You", x: 50, y: 80 };
+let currentUser = null;
+let profileConnected = false;
 const pressedKeys = new Set();
-let clickTarget = null;
+let clickPath = [];
 let playerDirection = "down";
 let playerFrame = 1;
 let lastFrameChange = 0;
@@ -43,6 +77,15 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function parseTopics(value) {
+  return String(value || "").split(",").map(topic => topic.trim()).filter(Boolean).slice(0, 8);
+}
+
+function initialsFor(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  return (parts.length > 1 ? `${parts[0][0]}${parts.at(-1)[0]}` : parts[0]?.slice(0, 2) || "?").toUpperCase();
+}
+
 function personMarkup(person, compact = false) {
   const atlasIndex = person.spriteIndex ?? ((person.id - 1) % 12);
   const columnPositions = [0, 33.333, 66.667, 100];
@@ -60,28 +103,36 @@ function playerMarkup() {
 function renderResidents() {
   const residentsMarkup = residents.map(person => {
     const visible = currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts !== null && person.donuts <= 2);
-    return `<button class="resident-pin ${person.status} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
+    return `<button class="resident-pin ${person.status} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
   }).join("");
-  layer.innerHTML = `${residentsMarkup}<div class="player-pin" id="playerPin" style="left:${player.x}%;top:${player.y}%">
+  layer.innerHTML = `${residentsMarkup}<div class="player-pin" id="playerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
     ${playerMarkup()}
   </div>`;
   document.querySelector("#mapEmpty").hidden = layer.querySelectorAll(".resident-pin:not(.hidden)").length > 0;
   layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
 }
 
-function isInsideFountain(x, y) {
-  const dx = (x - 50) / 10.5;
-  const dy = (y - 47) / 12.5;
+function isInsideEllipse(x, y, ellipse) {
+  const dx = (x - ellipse.x) / ellipse.rx;
+  const dy = (y - ellipse.y) / ellipse.ry;
   return dx * dx + dy * dy < 1;
 }
 
+function distanceToSegment(x, y, segment) {
+  const [x1, y1] = segment.from;
+  const [x2, y2] = segment.to;
+  const lengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+  const t = Math.max(0, Math.min(1, ((x - x1) * (x2 - x1) + (y - y1) * (y2 - y1)) / lengthSquared));
+  return Math.hypot(x - (x1 + t * (x2 - x1)), y - (y1 + t * (y2 - y1)));
+}
+
 function isWalkable(x, y) {
-  const verticalPath = x >= 43 && x <= 57 && y >= 5 && y <= 96;
-  const horizontalPath = x >= 11 && x <= 89 && y >= 30 && y <= 64;
-  const plaza = x >= 32 && x <= 68 && y >= 24 && y <= 70;
-  return (verticalPath || horizontalPath || plaza) && !isInsideFountain(x, y);
+  const plaza = isInsideEllipse(x, y, { x: 50, y: 48.5, rx: 23.5, ry: 20.5 });
+  const corridor = walkCorridors.some(segment => distanceToSegment(x, y, segment) <= segment.width);
+  const obstacle = mapObstacles.some(item => isInsideEllipse(x, y, item));
+  return (plaza || corridor) && !obstacle;
 }
 
 function nearestWalkable(x, y) {
@@ -99,11 +150,59 @@ function nearestWalkable(x, y) {
   return best;
 }
 
+function findWalkPath(start, goal) {
+  const from = nearestWalkable(Math.round(start.x), Math.round(start.y));
+  const to = nearestWalkable(Math.round(goal.x), Math.round(goal.y));
+  const startKey = `${from.x},${from.y}`;
+  const goalKey = `${to.x},${to.y}`;
+  const open = [{ ...from, score: Math.hypot(to.x - from.x, to.y - from.y) }];
+  const openKeys = new Set([startKey]);
+  const cameFrom = new Map();
+  const cost = new Map([[startKey, 0]]);
+  const visited = new Set();
+
+  while (open.length) {
+    open.sort((left, right) => left.score - right.score);
+    const current = open.shift();
+    const currentKey = `${current.x},${current.y}`;
+    openKeys.delete(currentKey);
+    if (currentKey === goalKey) {
+      const path = [to];
+      let key = goalKey;
+      while (cameFrom.has(key)) {
+        const previous = cameFrom.get(key);
+        if (previous.key !== startKey) path.push({ x: previous.x, y: previous.y });
+        key = previous.key;
+      }
+      return path.reverse();
+    }
+    if (visited.has(currentKey)) continue;
+    visited.add(currentKey);
+
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+      const x = current.x + dx;
+      const y = current.y + dy;
+      if (!isWalkable(x, y)) return;
+      const key = `${x},${y}`;
+      const nextCost = cost.get(currentKey) + 1;
+      if (nextCost >= (cost.get(key) ?? Infinity)) return;
+      cost.set(key, nextCost);
+      cameFrom.set(key, { key: currentKey, x: current.x, y: current.y });
+      if (!openKeys.has(key)) {
+        open.push({ x, y, score: nextCost + Math.hypot(to.x - x, to.y - y) });
+        openKeys.add(key);
+      }
+    });
+  }
+  return [];
+}
+
 function updatePlayerElement(isMoving) {
   const pin = document.querySelector("#playerPin");
   if (!pin) return;
   pin.style.left = `${player.x}%`;
   pin.style.top = `${player.y}%`;
+  pin.style.zIndex = String(Math.round(player.y * 10));
   pin.classList.toggle("walking", isMoving);
   const sprite = pin.querySelector(".player-character");
   const rowByDirection = { down: 0, left: 33.333, right: 33.333, up: 100 };
@@ -129,12 +228,13 @@ function gameLoop(timestamp) {
   if (pressedKeys.has("arrowleft") || pressedKeys.has("a")) dx -= 1;
   if (pressedKeys.has("arrowright") || pressedKeys.has("d")) dx += 1;
 
-  if ((dx || dy) && clickTarget) clickTarget = null;
-  if (!dx && !dy && clickTarget) {
-    const targetDx = clickTarget.x - player.x;
-    const targetDy = clickTarget.y - player.y;
+  if ((dx || dy) && clickPath.length) clickPath = [];
+  if (!dx && !dy && clickPath.length) {
+    const target = clickPath[0];
+    const targetDx = target.x - player.x;
+    const targetDy = target.y - player.y;
     const targetDistance = Math.hypot(targetDx, targetDy);
-    if (targetDistance < 0.4) clickTarget = null;
+    if (targetDistance < 0.35) clickPath.shift();
     else {
       dx = targetDx / targetDistance;
       dy = targetDy / targetDistance;
@@ -158,7 +258,7 @@ function gameLoop(timestamp) {
       const canMoveY = isWalkable(player.x, nextY);
       if (canMoveX) player.x = nextX;
       else if (canMoveY) player.y = nextY;
-      else clickTarget = null;
+      else clickPath = [];
     }
     if (timestamp - lastFrameChange > 135) {
       playerFrame = (playerFrame + 1) % 3;
@@ -173,9 +273,18 @@ function gameLoop(timestamp) {
 }
 
 function openResident(id) {
+  closeProfile();
   selectedResident = residents.find(person => person.id === id);
   document.querySelector("#residentName").textContent = selectedResident.name;
   document.querySelector("#residentTeam").textContent = selectedResident.team;
+  const facts = [
+    ["Specialty", selectedResident.specialty],
+    ["Location", selectedResident.location],
+    ["Pet", selectedResident.pet]
+  ].filter(([, value]) => value);
+  document.querySelector("#residentFacts").innerHTML = facts.length
+    ? facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")
+    : `<div class="empty-fact">This neighbor has not completed their town profile yet.</div>`;
   const donutCopy = document.querySelector("#donutCountCopy");
   donutCopy.innerHTML = selectedResident.donuts === null
     ? "Donut history not connected yet"
@@ -203,8 +312,10 @@ async function syncSlackResidents() {
     if (!response.ok) throw new Error("Slack sync unavailable");
     const data = await response.json();
     const summary = document.querySelector("#neighborSummary");
-    const currentUser = data.members.find(member => member.isCurrentUser);
+    currentUser = data.members.find(member => member.isCurrentUser) || null;
+    profileConnected = data.profileConnected === true;
     const neighbors = data.members.filter(member => !member.isCurrentUser);
+    renderCurrentProfile();
     if (neighbors.length > residentSlots.length) {
       summary.textContent = `${data.total} Slack neighbors synced · map layout pending`;
       return;
@@ -214,21 +325,32 @@ async function syncSlackResidents() {
       slackId: member.id,
       spriteIndex: member.appearanceIndex,
       name: member.displayName,
-      team: "Testing channel",
+      team: member.profile.team || "Team not added",
+      specialty: member.profile.specialty || "",
+      location: member.profile.location || "",
+      pet: member.profile.pet || "",
       status: "open",
-      donuts: null,
-      topics: [],
-      group: "unknown",
+      donuts: member.profile.donuts,
+      topics: parseTopics(member.profile.topics),
+      group: currentUser?.profile.team && member.profile.team
+        ? (currentUser.profile.team === member.profile.team ? "same" : "other")
+        : "unknown",
       x: residentSlots[index].x,
       y: residentSlots[index].y,
-      note: "Synced from Slack. Donut history and interests are not connected yet."
+      activity: residentSlots[index].activity,
+      note: member.profile.donuts === null
+        ? "Synced from Slack. Donut history is not connected yet."
+        : member.profile.donuts > 0
+          ? `${member.profile.donuts} completed Donut chats are recorded.`
+          : "No completed Donut chats are recorded yet."
     }));
     queue = [];
     selectedResident = null;
     currentFilter = "all";
+    const filtersAvailable = residents.some(person => person.group !== "unknown" || person.donuts !== null);
     document.querySelectorAll(".filter-button").forEach(button => {
       button.classList.toggle("active", button.dataset.filter === "all");
-      button.disabled = button.dataset.filter !== "all";
+      button.disabled = button.dataset.filter !== "all" && !filtersAvailable;
       if (button.disabled) button.title = "Team and participation data are not connected yet";
     });
     summary.textContent = currentUser
@@ -237,12 +359,56 @@ async function syncSlackResidents() {
     renderResidents();
     renderQueue();
   } catch {
+    currentUser = null;
+    profileConnected = false;
     residents = [];
     queue = [];
     renderResidents();
     renderQueue();
     document.querySelector("#neighborSummary").textContent = "Slack sync temporarily unavailable · no demo residents shown";
+    renderCurrentProfile();
   }
+}
+
+function renderCurrentProfile() {
+  const name = currentUser?.displayName || "Slack member";
+  const profile = currentUser?.profile || {};
+  const initials = initialsFor(name);
+  document.querySelector("#profileButton").textContent = initials;
+  document.querySelector("#profileAvatar").textContent = initials;
+  document.querySelector("#profileName").textContent = name;
+  document.querySelector("#profileTeam").value = profile.team || "";
+  document.querySelector("#profileSpecialty").value = profile.specialty || "";
+  document.querySelector("#profileLocation").value = profile.location || "";
+  document.querySelector("#profilePet").value = profile.pet || "";
+  document.querySelector("#profileTopicsInput").value = profile.topics || "";
+  const saveButton = document.querySelector("#saveProfile");
+  saveButton.disabled = !currentUser || !profileConnected;
+  document.querySelector("#profileSyncNote").textContent = profileConnected
+    ? "Saved to the private Members sheet and visible only inside Donut Town."
+    : "Profile editing will unlock after the private Members sheet connection is configured.";
+  const donutCount = profile.donuts;
+  document.querySelector("#myDonutCount").textContent = Number.isInteger(donutCount) ? donutCount : "-";
+  document.querySelector("#myDonutNote").textContent = Number.isInteger(donutCount)
+    ? "Completed pairings recorded in the Donut Bot sheet."
+    : "Donut history will appear when the Members sheet connection is ready.";
+}
+
+function openProfile() {
+  closeDrawer();
+  const profileDrawer = document.querySelector("#profileDrawer");
+  profileDrawer.classList.add("open");
+  profileDrawer.setAttribute("aria-hidden", "false");
+  document.querySelector("#profileScrim").hidden = false;
+  document.querySelector("#profileButton").setAttribute("aria-expanded", "true");
+}
+
+function closeProfile() {
+  const profileDrawer = document.querySelector("#profileDrawer");
+  profileDrawer.classList.remove("open");
+  profileDrawer.setAttribute("aria-hidden", "true");
+  document.querySelector("#profileScrim").hidden = true;
+  document.querySelector("#profileButton").setAttribute("aria-expanded", "false");
 }
 
 function closeDrawer() {
@@ -294,19 +460,42 @@ function showToast(message) {
 document.querySelector("#closeDrawer").addEventListener("click", closeDrawer);
 drawerScrim.addEventListener("click", closeDrawer);
 inviteButton.addEventListener("click", toggleSelected);
+document.querySelector("#profileButton").addEventListener("click", openProfile);
+document.querySelector("#closeProfile").addEventListener("click", closeProfile);
+document.querySelector("#profileScrim").addEventListener("click", closeProfile);
+document.querySelector("#profileForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = document.querySelector("#saveProfile");
+  button.disabled = true;
+  button.textContent = "Saving...";
+  const payload = Object.fromEntries(new FormData(event.currentTarget));
+  try {
+    const response = await fetch("/api/profile", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "profile_save_failed");
+    currentUser.profile = result.profile;
+    renderCurrentProfile();
+    showToast("Your town profile is saved.");
+    syncSlackResidents();
+  } catch (error) {
+    const message = error.message === "profile_store_not_configured"
+      ? "Profile editing is not connected to the Members sheet yet."
+      : "Your profile could not be saved. Please try again.";
+    showToast(message);
+  } finally {
+    button.textContent = "Save profile";
+    button.disabled = !profileConnected;
+  }
+});
 
 document.querySelectorAll(".filter-button").forEach(button => button.addEventListener("click", () => {
   currentFilter = button.dataset.filter;
   document.querySelectorAll(".filter-button").forEach(item => item.classList.toggle("active", item === button));
   renderResidents();
-}));
-
-document.querySelectorAll(".nav-button").forEach(button => button.addEventListener("click", () => {
-  const town = button.dataset.view === "town";
-  document.querySelector("#townView").hidden = !town;
-  document.querySelector("#historyView").hidden = town;
-  document.querySelector("#inviteDock").hidden = !town;
-  document.querySelectorAll(".nav-button").forEach(item => item.classList.toggle("active", item === button));
 }));
 
 document.querySelector("#availabilityButton").addEventListener("click", () => {
@@ -329,7 +518,8 @@ document.querySelector("#mapWorld").addEventListener("click", event => {
   const bounds = event.currentTarget.getBoundingClientRect();
   const x = ((event.clientX - bounds.left) / bounds.width) * 100;
   const y = ((event.clientY - bounds.top) / bounds.height) * 100;
-  clickTarget = nearestWalkable(x, y);
+  const destination = nearestWalkable(x, y);
+  clickPath = findWalkPath(player, destination);
 });
 
 sendButton.addEventListener("click", () => document.querySelector("#modalScrim").hidden = false);
@@ -397,9 +587,10 @@ function invitationErrorMessage(error) {
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     closeDrawer();
+    closeProfile();
     document.querySelector("#modalScrim").hidden = true;
   }
-  if (drawer.classList.contains("open") || !document.querySelector("#modalScrim").hidden) return;
+  if (drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open") || !document.querySelector("#modalScrim").hidden) return;
   const key = event.key.toLowerCase();
   if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
     event.preventDefault();

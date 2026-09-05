@@ -53,6 +53,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .nav-button, .filter-button, .availability, .close-button, .secondary-button {
   border: 0; background: transparent; cursor: pointer;
 }
+.nav-current { display: block; padding: 11px 14px 9px; border-bottom: 3px solid var(--accent); font-weight: 800; }
 .nav-button { padding: 11px 14px 9px; color: var(--muted); border-bottom: 3px solid transparent; }
 .nav-button.active { color: var(--ink); border-color: var(--accent); font-weight: 800; }
 
@@ -76,7 +77,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .town-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 120px rgba(22, 49, 38, .18); }
 
 .map-toolbar { position: absolute; z-index: 8; left: 20px; top: 18px; display: flex; align-items: flex-start; gap: 10px; }
-.week-card, .filter-group, .legend, .invite-dock, .resident-drawer, .confirm-modal {
+.week-card, .filter-group, .legend, .invite-dock, .resident-drawer, .profile-drawer, .confirm-modal {
   background: var(--surface); border: 3px solid var(--ink); box-shadow: 5px 5px 0 rgba(23, 49, 38, .82); border-radius: var(--radius);
 }
 .week-card { padding: 10px 13px; min-width: 188px; }
@@ -87,8 +88,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .filter-button:hover, .filter-button.active { color: var(--ink); background: #e3efda; }
 
 .residents-layer { position: absolute; inset: 0; z-index: 4; }
-.resident-pin { position: absolute; transform: translate(-50%, -50%); border: 0; background: transparent; cursor: pointer; padding: 0; }
-.resident-pin:hover, .resident-pin:focus-visible { z-index: 5; }
+.resident-pin { position: absolute; transform: translate(-50%, -100%); border: 0; background: transparent; cursor: pointer; padding: 0; }
+.resident-pin:hover, .resident-pin:focus-visible { z-index: 1200 !important; }
 .resident-pin:hover .pixel-person, .resident-pin:focus-visible .pixel-person { transform: translateY(-5px); }
 .pixel-person {
   position: relative;
@@ -109,7 +110,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .resident-pin.booked { filter: grayscale(.38); }
 .resident-pin.hidden { display: none; }
 
-.player-pin { position: absolute; z-index: 7; transform: translate(-50%, -50%); pointer-events: none; }
+.player-pin { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
 .player-pin .resident-label { background: var(--accent); color: #fffaf2; }
 .player-pin .resident-state { background: #f4ce55; }
 .player-character {
@@ -158,15 +159,20 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .invite-button.remove { background: #e9bd64; color: var(--ink); }
 .invite-button:disabled { background: #8c9891; cursor: not-allowed; }
 
-.drawer-scrim { position: fixed; inset: 0; z-index: 29; background: rgba(17, 33, 26, .34); backdrop-filter: blur(2px); }
-.resident-drawer { position: fixed; z-index: 30; right: 18px; top: 88px; bottom: 18px; width: min(370px, calc(100vw - 36px)); padding: 26px; transform: translateX(calc(100% + 30px)); transition: transform 260ms cubic-bezier(.16,1,.3,1); overflow: auto; }
-.resident-drawer.open { transform: translateX(0); }
+.drawer-scrim, .profile-scrim { position: fixed; inset: 0; z-index: 29; background: rgba(17, 33, 26, .34); backdrop-filter: blur(2px); }
+.resident-drawer, .profile-drawer { position: fixed; z-index: 30; right: 18px; top: 88px; bottom: 18px; width: min(390px, calc(100vw - 36px)); padding: 26px; transform: translateX(calc(100% + 30px)); transition: transform 260ms cubic-bezier(.16,1,.3,1); overflow: auto; }
+.resident-drawer.open, .profile-drawer.open { transform: translateX(0); }
 .close-button { display: block; margin-left: auto; padding: 7px 0; font-size: 10px; text-decoration: underline; }
 .drawer-portrait { width: 128px; height: 142px; margin: 4px 0 19px; background: #e4efd8; border: 3px solid var(--ink); border-radius: 12px; display: grid; place-items: center; overflow: hidden; }
 .drawer-portrait .pixel-person { width: 100px; height: 130px; }
 .drawer-status { display: inline-block; margin-bottom: 8px; color: var(--green); font-size: 10px; font-weight: 800; }
 .resident-drawer h2 { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 30px; letter-spacing: -.04em; }
 .drawer-team { color: var(--muted); font-size: 11px; margin: 7px 0 22px; }
+.resident-facts { display: grid; gap: 9px; margin: -8px 0 20px; }
+.resident-facts > div { display: grid; grid-template-columns: 84px 1fr; gap: 10px; align-items: baseline; }
+.resident-facts dt { color: var(--muted); font-size: 9px; }
+.resident-facts dd { margin: 0; font-size: 10px; font-weight: 800; }
+.resident-facts .empty-fact { display: block; color: var(--muted); font-size: 9px; line-height: 1.5; }
 .donut-count { display: flex; align-items: center; gap: 11px; padding: 14px 0; border-top: 2px solid var(--line); border-bottom: 2px solid var(--line); font-size: 10px; }
 .mini-donut, .donut { border-radius: 50%; background: #de7380; border: 4px solid #9e4d32; position: relative; box-shadow: inset 0 -4px rgba(114, 38, 42, .18); }
 .mini-donut { width: 33px; height: 33px; }
@@ -178,6 +184,24 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .topic { background: #e5efdf; border: 2px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 9px; }
 .connection-note { margin: 22px 0 0; padding: 12px; background: #fff0c9; border-left: 4px solid #d79f35; font-size: 10px; line-height: 1.5; }
 
+.profile-heading { display: grid; grid-template-columns: 62px 1fr; gap: 14px; align-items: center; margin: 5px 0 24px; }
+.profile-avatar { width: 58px; height: 58px; display: grid; place-items: center; border: 3px solid var(--ink); border-radius: 12px; background: #efb44f; box-shadow: 3px 3px 0 var(--ink); font-weight: 900; font-size: 18px; }
+.profile-heading span, .my-donuts-copy > span { color: var(--muted); font-size: 9px; }
+.profile-heading h2 { margin: 5px 0 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 27px; letter-spacing: -.04em; }
+.profile-form { display: grid; gap: 13px; }
+.profile-form label { display: grid; gap: 6px; }
+.profile-form label > span { color: var(--muted); font-size: 9px; font-weight: 800; }
+.profile-form input { width: 100%; border: 2px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); padding: 11px 12px; font: inherit; font-size: 10px; }
+.profile-form input::placeholder { color: var(--muted); opacity: .85; }
+.profile-form input:focus { outline: 3px solid rgba(47, 122, 80, .3); border-color: var(--green); }
+.profile-sync-note { min-height: 30px; margin: 0; color: var(--muted); font-size: 8px; line-height: 1.5; }
+.profile-save { margin-top: 2px; }
+.my-donuts { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; margin-top: 26px; padding-top: 22px; border-top: 2px solid var(--line); }
+.my-donuts h3 { margin: 5px 0 7px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 24px; letter-spacing: -.04em; }
+.my-donuts p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.45; }
+.donut-total { display: flex; align-items: center; gap: 9px; padding: 10px 12px; background: #e5efdf; border: 2px solid var(--line); border-radius: 10px; }
+.donut-total strong { font-size: 18px; }
+
 .modal-scrim { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(17, 33, 26, .5); backdrop-filter: blur(4px); padding: 18px; }
 .confirm-modal { width: min(440px, 100%); padding: 28px; text-align: left; }
 .confirm-modal h2 { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 28px; letter-spacing: -.04em; margin: 22px 0 10px; }
@@ -185,21 +209,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .modal-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-top: 25px; }
 .secondary-button { border: 2px solid var(--line); background: var(--paper); border-radius: 9px; cursor: pointer; }
 
-.history-view { min-height: calc(100dvh - 72px); padding: 8vh 7vw; background: #e9f1e2; display: grid; grid-template-columns: minmax(280px, .75fr) 1.2fr; gap: 8vw; align-items: center; }
-.history-copy { align-self: start; max-width: 510px; }
-.section-kicker { color: var(--accent-dark); text-transform: uppercase; letter-spacing: .12em; font-size: 10px; font-weight: 900; }
-.history-copy h1 { margin: 16px 0 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(40px, 5vw, 72px); line-height: .96; letter-spacing: -.06em; }
-.history-copy > p:last-child { color: var(--muted); font-size: 12px; line-height: 1.7; max-width: 48ch; }
-.donut-shelf { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; background: #d7b477; border: 4px solid var(--ink); border-radius: var(--radius); padding: 34px; box-shadow: 8px 8px 0 var(--ink); }
 .donut { aspect-ratio: 1; width: 100%; max-width: 120px; border-width: 8px; }
 .donut::after { width: 22%; height: 22%; border-width: 6px; background: #d7b477; }
 .donut.cocoa { background: #744737; }
 .donut.berry { background: #a75586; }
 .donut.lemon { background: #e6b84e; }
 .donut.mint { background: #6fa985; }
-.history-note { grid-column: 2; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 10px; }
-.history-note span { color: var(--muted); }
-
 .toast { position: fixed; z-index: 70; left: 50%; bottom: 22px; transform: translate(-50%, 120px); background: var(--ink); color: #f7faf4; border: 3px solid #f7faf4; border-radius: 9px; padding: 13px 18px; box-shadow: 4px 4px 0 var(--accent); font-size: 10px; opacity: 0; transition: transform 220ms ease, opacity 220ms ease; }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
 .map-empty { position: absolute; z-index: 6; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--surface-solid); border: 3px solid var(--ink); border-radius: var(--radius); padding: 20px; text-align: center; box-shadow: 5px 5px 0 var(--ink); }
@@ -217,8 +232,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 @media (prefers-color-scheme: dark) {
   :root { --ink: #dce9df; --muted: #a2b5a8; --paper: #1d2c24; --surface: rgba(24, 40, 31, .95); --surface-solid: #182a21; --line: rgba(220, 233, 223, .22); --accent: #c95868; --accent-dark: #f08a98; --shadow: 0 16px 42px rgba(5, 14, 9, .45); }
   html, body { background: #17271e; }
-  .topbar, .history-view { background: #182a21; }
-  .filter-button:hover, .filter-button.active, .queue-actions button, .topic { background: #2b4535; }
+  .topbar { background: #182a21; }
+  .filter-button:hover, .filter-button.active, .queue-actions button, .topic, .donut-total { background: #2b4535; }
   .connection-note { background: #4d3f21; border-color: #d79f35; }
   .town-map { filter: saturate(.72) brightness(.73); }
   .status-light, .resident-state, .legend-swatch { border-color: #13231b; }
@@ -234,7 +249,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 
 @media (max-width: 760px) {
   .topbar { grid-template-columns: 1fr auto; height: 66px; padding: 0 12px; }
-  .town-nav { position: fixed; z-index: 25; bottom: 0; left: 0; right: 0; justify-content: center; background: var(--surface-solid); border-top: 3px solid var(--ink); }
+  .town-nav { display: none; }
   .profile-control .availability { display: none; }
   .brand small { display: none; }
   .town-stage { height: calc(100dvh - 66px); }
@@ -242,12 +257,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   .map-toolbar { left: 10px; right: 10px; top: 10px; display: block; }
   .week-card { width: fit-content; min-width: 0; }
   .filter-group { margin-top: 8px; width: fit-content; }
-  .resident-pin { transform: translate(-50%, -50%) scale(.9); }
+  .resident-pin { transform: translate(-50%, -100%) scale(.9); }
   .legend { display: none; }
   .movement-help { left: 10px; bottom: 72px; }
   .invite-dock { right: 10px; bottom: 58px; width: min(294px, calc(100vw - 20px)); }
-  .resident-drawer { top: 76px; bottom: 58px; right: 10px; width: calc(100vw - 20px); }
-  .history-view { min-height: calc(100dvh - 66px); padding: 46px 18px 100px; grid-template-columns: 1fr; gap: 34px; }
-  .donut-shelf { grid-template-columns: repeat(4, 1fr); gap: 9px; padding: 18px; }
-  .history-note { grid-column: 1; grid-template-columns: 1fr; }
+  .resident-drawer, .profile-drawer { top: 76px; bottom: 58px; right: 10px; width: calc(100vw - 20px); }
 }

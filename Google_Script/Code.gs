@@ -530,8 +530,9 @@ function fisherYatesShuffle(arr) {
 // ╚════════════════════════════════════════════════════════════════╝
 
 // Run this manually when you want to publish a fresh entrance message in the
-// configured testing channel. Button clicks are handled by the Render service,
-// so this Apps Script does not need a doPost(e) handler for Donut Town.
+// configured testing channel. Button clicks are handled by the Render service.
+// ProfileApi.gs uses doPost(e) only as a private Sheet profile bridge; Slack
+// interactions do not use it.
 function postDonutTownEntrance() {
   var config = getDonutConfig_();
   var payload = {

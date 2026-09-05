@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=7" />
+    <link rel="stylesheet" href="styles.css?v=8" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -23,17 +23,16 @@
           </span>
         </a>
 
-        <nav class="town-nav" aria-label="Town navigation">
-          <button class="nav-button active" data-view="town">Town</button>
-          <button class="nav-button" data-view="history">My donuts</button>
-        </nav>
+        <div class="town-nav" aria-label="Current view">
+          <span class="nav-current">Town</span>
+        </div>
 
         <div class="profile-control">
           <button class="availability" id="availabilityButton" aria-pressed="true">
             <span class="status-light" aria-hidden="true"></span>
             <span id="availabilityText">Open to invites</span>
           </button>
-          <button class="user-avatar" aria-label="Open your profile">WH</button>
+          <button class="user-avatar" id="profileButton" aria-label="Open your profile" aria-expanded="false">...</button>
         </div>
       </header>
 
@@ -73,26 +72,6 @@
         </aside>
       </section>
 
-      <section class="history-view" id="historyView" hidden>
-        <div class="history-copy">
-          <p class="section-kicker">Your collection</p>
-          <h1>Eight donuts, eight new connections.</h1>
-          <p>Donuts are earned from successful pairings. They are decorative and never affect who can send an invitation.</p>
-        </div>
-        <div class="donut-shelf" aria-label="Your eight collected donuts">
-          <div class="donut pink"></div><div class="donut cocoa"></div>
-          <div class="donut berry"></div><div class="donut lemon"></div>
-          <div class="donut mint"></div><div class="donut pink"></div>
-          <div class="donut cocoa"></div><div class="donut berry"></div>
-        </div>
-        <div class="history-note">
-          <strong>5 historical matches</strong>
-          <span>Imported from the Donut Bot sheet</span>
-          <strong>3 town matches</strong>
-          <span>Accepted through Donut Town</span>
-        </div>
-      </section>
-
       <aside class="invite-dock" id="inviteDock" aria-label="Invitation priority list">
         <button class="dock-handle" id="dockHandle" aria-expanded="true">
           <span>Invite queue</span>
@@ -115,6 +94,7 @@
       <span class="drawer-status" id="drawerStatus"></span>
       <h2 id="residentName"></h2>
       <p class="drawer-team" id="residentTeam"></p>
+      <dl class="resident-facts" id="residentFacts"></dl>
       <div class="donut-count">
         <div class="mini-donut" aria-hidden="true"></div>
         <span id="donutCountCopy"><strong id="residentDonuts"></strong> successful pairings</span>
@@ -125,6 +105,55 @@
       </div>
       <p class="connection-note" id="connectionNote"></p>
       <button class="invite-button" id="inviteButton"></button>
+    </aside>
+
+    <div class="profile-scrim" id="profileScrim" hidden></div>
+    <aside class="profile-drawer" id="profileDrawer" aria-hidden="true" aria-labelledby="profileName">
+      <button class="close-button" id="closeProfile" aria-label="Close your profile">Close</button>
+      <div class="profile-heading">
+        <div class="profile-avatar" id="profileAvatar" aria-hidden="true">...</div>
+        <div>
+          <span>Your town profile</span>
+          <h2 id="profileName">Loading profile</h2>
+        </div>
+      </div>
+
+      <form class="profile-form" id="profileForm">
+        <label>
+          <span>Team</span>
+          <input id="profileTeam" name="team" maxlength="80" autocomplete="organization" />
+        </label>
+        <label>
+          <span>Specialty</span>
+          <input id="profileSpecialty" name="specialty" maxlength="120" placeholder="What do people ask you about?" />
+        </label>
+        <label>
+          <span>Location</span>
+          <input id="profileLocation" name="location" maxlength="80" autocomplete="address-level2" />
+        </label>
+        <label>
+          <span>Pet</span>
+          <input id="profilePet" name="pet" maxlength="80" placeholder="Optional" />
+        </label>
+        <label>
+          <span>Happy to chat about</span>
+          <input id="profileTopicsInput" name="topics" maxlength="180" placeholder="Coffee, projects, hiking" />
+        </label>
+        <p class="profile-sync-note" id="profileSyncNote">Profile details are shared only inside Donut Town.</p>
+        <button class="send-button profile-save" id="saveProfile" type="submit">Save profile</button>
+      </form>
+
+      <section class="my-donuts" aria-labelledby="myDonutsTitle">
+        <div class="my-donuts-copy">
+          <span>Collection</span>
+          <h3 id="myDonutsTitle">My donuts</h3>
+          <p id="myDonutNote">Connecting your Donut Bot history.</p>
+        </div>
+        <div class="donut-total">
+          <div class="mini-donut" aria-hidden="true"></div>
+          <strong id="myDonutCount">-</strong>
+        </div>
+      </section>
     </aside>
 
     <div class="modal-scrim" id="modalScrim" hidden>
@@ -140,6 +169,6 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
   </body>
 </html>

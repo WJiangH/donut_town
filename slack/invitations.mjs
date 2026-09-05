@@ -68,7 +68,7 @@ export function invitationMessage(invitation) {
     : `${invitation.inviterName} invited you to a Donut chat.`;
   const invitationCopy = `<@${invitation.inviterId}> would like to have a Donut chat with you this week. :doughnut:`;
   const message = invitation.selfTest
-    ? `*Test preview — sent only to you*\n${invitationCopy}\nThis is how the invitation will look to a teammate.`
+    ? `*Test preview - sent only to you*\n${invitationCopy}\nThis is how the invitation will look to a teammate.`
     : invitationCopy;
   return {
     text,

@@ -76,6 +76,30 @@ test("trigger setup is idempotent and preserves unrelated triggers", () => {
   assert.deepEqual(triggers.map(trigger => trigger.getHandlerFunction()).sort(), ["donutAutomationTick", "unrelatedJob"]);
 });
 
+test("existing Members sheet gains structured profile columns without replacing rows", () => {
+  const headers = [
+    "Slack ID", "Display Name", "Email", "Team", "Manager Slack ID",
+    "In Channel", "Invites Enabled", "Last Synced At"
+  ];
+  const sheet = {
+    getRange(_row, column, _rows, columns = 1) {
+      return {
+        getValues: () => [Array.from({ length: columns }, (_, index) => headers[column - 1 + index] || "")],
+        setValue: value => { headers[column - 1] = value; },
+        setFontWeight: () => {}
+      };
+    },
+    setFrozenRows: () => {}
+  };
+  const context = loadAutomation({
+    SpreadsheetApp: {
+      getActiveSpreadsheet: () => ({ getSheetByName: () => sheet })
+    }
+  });
+  context.ensureDonutMembersSheet_();
+  assert.deepEqual(headers.slice(8), ["Specialty", "Location", "Pet", "Chat Topics"]);
+});
+
 test("weekly entrance button opens the configured one-click Slack URL", () => {
   let postedPayload;
   const context = loadAutomation({

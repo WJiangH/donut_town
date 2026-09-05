@@ -82,8 +82,7 @@ This is an integration spike, not yet production-ready:
 - A user can rank up to three invitations.
 - Booked and pending residents have visible status without revealing partners.
 
-The historical sheet import and durable invitation persistence remain out of
-scope for this integration spike.
+Durable invitation persistence remains out of scope for this integration spike.
 
 ## Deploy the protected testing build to Render
 
@@ -92,10 +91,11 @@ Blueprint:
 
 1. Sign in to Render and choose **New → Blueprint**.
 2. Connect GitHub and select `WJiangH/donut_town` on the `main` branch.
-3. Render reads `render.yaml` and asks for six secret values:
+3. Render reads `render.yaml` and asks for eight deployment values:
    `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_CHANNEL_ID`, and
    `STAGING_PASSWORD`, plus `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` for
-   one-click Slack identity.
+   one-click Slack identity. `PROFILE_API_URL` and `PROFILE_API_SECRET` connect
+   the optional Sheet-backed member profile.
 4. Use the testing channel ID. Keep `SLACK_ALLOW_SEND=false`.
 5. Choose a long, unique staging password and deploy. Do not upload or commit
    `.env.local`.
@@ -128,8 +128,9 @@ the returned identity before mapping the member to a town resident.
    existing bot scopes; Donut Town does not request the OpenID `email` scope.
 4. Keep Slack **Interactivity & Shortcuts** set to
    `https://donut-town.onrender.com/slack/interactions`.
-5. Sync `Google_Script/Code.gs` and `Google_Script/Automation.gs` into the
-   existing Sheet-bound Apps Script project.
+5. Sync `Google_Script/Code.gs`, `Google_Script/Automation.gs`, and
+   `Google_Script/ProfileApi.gs` into the existing Sheet-bound Apps Script
+   project.
 6. Run `initializeDonutSheets()` once so the existing `Configs` tab gains
    `TOWN_URL`. Its default is
    `https://donut-town.onrender.com/auth/slack/start`.
@@ -166,9 +167,28 @@ configured local time.
 
 The same setup also creates `Members`. `syncDonutMembers()` refreshes Slack ID,
 display name, channel membership, and email when the app is permitted to read
-it, while preserving the manually maintained Team, Manager Slack ID, and invite
-preference columns. Pairing rules use Manager Slack ID rather than hard-coded
-email rosters.
+it. It preserves Team, Manager Slack ID, invite preference, Specialty,
+Location, Pet, and Chat Topics. Pairing rules use Manager Slack ID rather than
+hard-coded email rosters.
+
+## Connect town profiles to Members
+
+Member profile fields are separate columns rather than one JSON-style Profile
+cell. This keeps the Sheet readable, filterable, and safe to edit manually.
+Slack remains the source of names and IDs.
+
+1. Copy `Google_Script/ProfileApi.gs` into the Sheet-bound Apps Script project,
+   then run `initializeDonutSheets()` once. Existing member rows are preserved;
+   the four profile columns are appended.
+2. Add a long random value named `TOWN_PROFILE_API_SECRET` in Apps Script
+   Project Settings under Script Properties.
+3. Deploy the Apps Script as a Web app that executes as the owner. Copy its
+   `/exec` URL into Render as `PROFILE_API_URL`.
+4. Put the same random value in Render as `PROFILE_API_SECRET`. Do not store it
+   in the Sheet or repository.
+5. Redeploy Render. A signed-in member can then edit only their own public town
+   fields. The server reads Donut counts from the existing `GuessWho` history;
+   it never sends member email or manager data to the browser.
 
 ## Repository skill
 

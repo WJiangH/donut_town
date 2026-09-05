@@ -8,6 +8,7 @@ import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitati
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
+import { normalizeProfile, SheetProfileStore } from "./profile-store.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 await loadLocalEnv(join(root, ".env.local"));
@@ -19,6 +20,8 @@ const config = {
   clientId: process.env.SLACK_CLIENT_ID || "",
   clientSecret: process.env.SLACK_CLIENT_SECRET || "",
   stagingPassword: process.env.STAGING_PASSWORD || "",
+  profileApiUrl: process.env.PROFILE_API_URL || "",
+  profileApiSecret: process.env.PROFILE_API_SECRET || "",
   allowSend: process.env.SLACK_ALLOW_SEND === "true",
   port: Number(process.env.PORT || 4173),
   host: process.env.HOST || (process.env.RENDER ? "0.0.0.0" : "127.0.0.1")
@@ -30,6 +33,7 @@ if (process.env.RENDER && (!config.botToken || !config.signingSecret || !config.
   throw new Error("SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, and SLACK_CHANNEL_ID are required on Render.");
 }
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
+const profileStore = new SheetProfileStore({ url: config.profileApiUrl, secret: config.profileApiSecret });
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
@@ -37,6 +41,8 @@ const usedLaunchTokens = new Map();
 const usedOAuthStates = new Map();
 let slackJwksCache = null;
 let expectedSlackTeamId = null;
+let profileCache = null;
+let profileCacheExpiresAt = 0;
 
 const server = createServer(async (request, response) => {
   try {
@@ -81,7 +87,10 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/api/slack/members") {
       if (!slack || !config.channelId) return missingConfiguration(response);
-      const members = await getCachedChannelMembers();
+      const [members, profileResult] = await Promise.all([
+        getCachedChannelMembers(),
+        getCachedProfiles()
+      ]);
       const session = getSlackSession(request);
       const currentUserId = session?.sub;
       const currentUserFound = members.some(member => member.id === currentUserId);
@@ -90,13 +99,30 @@ const server = createServer(async (request, response) => {
         total: members.length,
         currentUserConfigured: Boolean(currentUserId),
         currentUserFound,
+        profileConnected: profileResult.connected,
         members: members.map(member => ({
           ...member,
+          profile: profileResult.profiles[member.id] || emptyProfile(),
           appearanceIndex: appearanceIndexFor(member.id),
           isCurrentUser: member.id === currentUserId,
           status: "open"
         }))
       });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/profile") {
+      const session = getSlackSession(request);
+      if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
+      if (!profileStore.configured) return sendJson(response, 503, { error: "profile_store_not_configured" });
+      const members = await getCachedChannelMembers();
+      if (!members.some(member => member.id === session.sub)) {
+        return sendJson(response, 403, { error: "profile_member_not_found" });
+      }
+      const body = JSON.parse(await readBody(request));
+      const profile = await profileStore.update(session.sub, normalizeProfile(body));
+      profileCache = null;
+      profileCacheExpiresAt = 0;
+      return sendJson(response, 200, { ok: true, profile });
     }
 
     if (request.method === "POST" && url.pathname === "/api/slack/invitations") {
@@ -204,6 +230,25 @@ async function getCachedChannelMembers() {
       memberSyncPromise = null;
     });
   return memberSyncPromise;
+}
+
+async function getCachedProfiles() {
+  if (!profileStore.configured) return { connected: false, profiles: {} };
+  if (profileCache && Date.now() < profileCacheExpiresAt) {
+    return { connected: true, profiles: profileCache };
+  }
+  try {
+    profileCache = await profileStore.list();
+    profileCacheExpiresAt = Date.now() + 5 * 60 * 1000;
+    return { connected: true, profiles: profileCache };
+  } catch (error) {
+    console.error("Profile sheet sync failed", error);
+    return { connected: false, profiles: profileCache || {} };
+  }
+}
+
+function emptyProfile() {
+  return { team: "", specialty: "", location: "", pet: "", topics: "", donuts: null };
 }
 
 async function handleSlackAction(payload, publicBaseUrl) {
@@ -500,6 +545,7 @@ server.listen(config.port, config.host, () => {
   console.log(`Donut Town is running on ${config.host}:${config.port}`);
   console.log(config.botToken && config.channelId ? "Slack member sync is configured." : "Slack is in local demo mode; add .env.local to connect.");
   console.log(isSlackLoginConfigured() ? "One-click Slack entry is configured." : "One-click Slack entry needs SLACK_CLIENT_ID and SLACK_CLIENT_SECRET.");
+  console.log(profileStore.configured ? "Sheet-backed member profiles are configured." : "Sheet-backed member profiles are not configured yet.");
   console.log(config.stagingPassword ? "Staging password protection is enabled." : "Staging password protection is disabled for local development.");
   console.log(config.allowSend ? "Slack DM sending is ENABLED." : "Slack DM sending is disabled (dry-run mode)." );
 });

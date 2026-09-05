@@ -4,6 +4,11 @@
 var DONUT_CONFIG_SHEET = "Configs";
 var DONUT_ROUNDS_SHEET = "Rounds";
 var DONUT_AUTOMATION_HANDLER = "donutAutomationTick";
+var DONUT_MEMBER_HEADERS = [
+  "Slack ID", "Display Name", "Email", "Team", "Manager Slack ID",
+  "In Channel", "Invites Enabled", "Last Synced At", "Specialty",
+  "Location", "Pet", "Chat Topics"
+];
 
 function donutConfigDefaults_() {
   return [
@@ -237,11 +242,16 @@ function ensureDonutRoundsSheet_() {
 function ensureDonutMembersSheet_() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName("Members");
-  if (sheet) return sheet;
-  sheet = spreadsheet.insertSheet("Members");
-  sheet.appendRow(["Slack ID", "Display Name", "Email", "Team", "Manager Slack ID", "In Channel", "Invites Enabled", "Last Synced At"]);
+  if (!sheet) sheet = spreadsheet.insertSheet("Members");
+  var currentHeaders = sheet.getRange(1, 1, 1, DONUT_MEMBER_HEADERS.length).getValues()[0];
+  DONUT_MEMBER_HEADERS.forEach(function (header, index) {
+    if (!currentHeaders[index]) sheet.getRange(1, index + 1).setValue(header);
+    else if (currentHeaders[index] !== header) {
+      throw new Error("Members column " + (index + 1) + " must be named " + header);
+    }
+  });
   sheet.setFrozenRows(1);
-  sheet.getRange(1, 1, 1, 8).setFontWeight("bold");
+  sheet.getRange(1, 1, 1, DONUT_MEMBER_HEADERS.length).setFontWeight("bold");
   return sheet;
 }
 
@@ -254,14 +264,15 @@ function maybeSyncDonutMembers_(config, now) {
 }
 
 // Slack is the source of channel membership and profile names. Team,
-// Manager Slack ID, and Invites Enabled remain manually maintained in Members.
+// Manager Slack ID, Invites Enabled, and profile fields remain manually
+// maintained in Members or can be updated by the authenticated Town profile.
 // Email is refreshed only when the app has permission and Slack returns it.
 function syncDonutMembers() {
   var config = getDonutConfig_();
   var sheet = ensureDonutMembersSheet_();
   var existing = {};
   if (sheet.getLastRow() >= 2) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).getValues().forEach(function (row) {
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, DONUT_MEMBER_HEADERS.length).getValues().forEach(function (row) {
       if (row[0]) existing[String(row[0]).trim()] = row;
     });
   }
@@ -286,7 +297,11 @@ function syncDonutMembers() {
       previous[4] || "",
       true,
       previous.length ? previous[6] !== false : true,
-      now
+      now,
+      previous[8] || "",
+      previous[9] || "",
+      previous[10] || "",
+      previous[11] || ""
     ]);
     seen[user.id] = true;
   });
@@ -294,15 +309,19 @@ function syncDonutMembers() {
   Object.keys(existing).forEach(function (id) {
     if (seen[id]) return;
     var previous = existing[id];
-    rows.push([id, previous[1], previous[2], previous[3], previous[4], false, previous[6], now]);
+    rows.push([
+      id, previous[1], previous[2], previous[3], previous[4], false,
+      previous[6], now, previous[8] || "", previous[9] || "",
+      previous[10] || "", previous[11] || ""
+    ]);
   });
   rows.sort(function (a, b) {
     if (a[5] !== b[5]) return a[5] ? -1 : 1;
     return String(a[1]).localeCompare(String(b[1]));
   });
 
-  if (sheet.getLastRow() >= 2) sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).clearContent();
-  if (rows.length) sheet.getRange(2, 1, rows.length, 8).setValues(rows);
+  if (sheet.getLastRow() >= 2) sheet.getRange(2, 1, sheet.getLastRow() - 1, DONUT_MEMBER_HEADERS.length).clearContent();
+  if (rows.length) sheet.getRange(2, 1, rows.length, DONUT_MEMBER_HEADERS.length).setValues(rows);
   PropertiesService.getScriptProperties().setProperty("DONUT_LAST_MEMBER_SYNC_MS", String(now.getTime()));
   return rows.length;
 }
@@ -311,7 +330,7 @@ function getDonutMemberDirectory_() {
   var sheet = ensureDonutMembersSheet_();
   var directory = {};
   if (sheet.getLastRow() < 2) return directory;
-  sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).getValues().forEach(function (row) {
+  sheet.getRange(2, 1, sheet.getLastRow() - 1, DONUT_MEMBER_HEADERS.length).getValues().forEach(function (row) {
     var slackId = String(row[0] || "").trim();
     if (!slackId) return;
     directory[slackId] = {
@@ -320,7 +339,11 @@ function getDonutMemberDirectory_() {
       team: row[3],
       managerSlackId: String(row[4] || "").trim(),
       inChannel: row[5] !== false,
-      invitesEnabled: row[6] !== false
+      invitesEnabled: row[6] !== false,
+      specialty: row[8],
+      location: row[9],
+      pet: row[10],
+      topics: row[11]
     };
   });
   return directory;
