@@ -90,6 +90,18 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 
 .residents-layer { position: absolute; inset: 0; z-index: 4; }
 .resident-pin { position: absolute; transform: translate(-50%, -100%); border: 0; background: transparent; cursor: pointer; padding: 0; }
+.resident-pin::before, .player-pin::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 43px;
+  height: 9px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(22, 48, 31, .34);
+  filter: blur(1px);
+}
 .resident-pin:hover, .resident-pin:focus-visible { z-index: 1200 !important; }
 .resident-pin:hover .pixel-person, .resident-pin:focus-visible .pixel-person { transform: translateY(-5px); }
 .pixel-person {
@@ -101,8 +113,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   background-repeat: no-repeat;
   background-size: 400% 300%;
   background-position: var(--sprite-x) var(--sprite-y);
-  filter: drop-shadow(0 5px 1px rgba(24, 48, 31, .28));
+  filter: drop-shadow(0 2px 1px rgba(24, 48, 31, .24));
   image-rendering: pixelated;
+  z-index: 1;
 }
 .resident-label { position: absolute; left: 50%; top: 92px; transform: translateX(-50%); white-space: nowrap; background: var(--surface-solid); border: 2px solid var(--ink); padding: 4px 7px; border-radius: 7px; font-size: 9px; font-weight: 800; box-shadow: 2px 2px 0 var(--ink); }
 .resident-state { position: absolute; z-index: 6; width: 12px; height: 12px; right: 2px; top: 4px; border: 2px solid var(--ink); background: var(--green); }
@@ -112,17 +125,29 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 
 .donut-workstation {
   position: absolute;
-  width: 82px;
-  height: 48px;
+  width: 100px;
+  height: 65px;
   transform: translate(-50%, -50%);
-  display: grid;
-  place-items: center;
   pointer-events: none;
+}
+.donut-workstation::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 0;
+  width: 78px;
+  height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(22, 48, 31, .3);
+  filter: blur(1px);
 }
 .workstation-copy {
   position: absolute;
-  bottom: -13px;
   left: 50%;
+  bottom: -16px;
+  z-index: 6;
   transform: translateX(-50%);
   white-space: nowrap;
   padding: 3px 6px;
@@ -133,40 +158,106 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   font-size: 7px;
   font-weight: 900;
 }
-.workstation-donut {
-  position: relative;
-  width: 30px;
-  height: 30px;
-  border: 5px solid #9e4d32;
-  border-radius: 50%;
-  background: #de7380;
-  box-shadow: inset 0 -4px rgba(114, 38, 42, .18), 2px 3px 0 rgba(23, 49, 38, .42);
+.workstation-counter {
+  position: absolute;
+  left: 7px;
+  top: 24px;
+  z-index: 2;
+  width: 86px;
+  height: 25px;
+  border: 3px solid var(--ink);
+  background: #a95f38;
+  box-shadow: inset 0 5px #c77d47, 3px 4px 0 rgba(23, 49, 38, .38);
 }
-.workstation-donut::after {
+.workstation-counter::before {
   content: "";
   position: absolute;
-  width: 7px;
-  height: 7px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  border: 3px solid #9e4d32;
-  border-radius: 50%;
-  background: var(--paper);
+  left: 7px;
+  top: 21px;
+  width: 9px;
+  height: 18px;
+  border: 3px solid var(--ink);
+  border-top: 0;
+  background: #7f4930;
+  box-shadow: 61px 0 0 #7f4930, 61px 0 0 3px var(--ink);
 }
+.workstation-counter::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: -9px;
+  width: 92px;
+  height: 12px;
+  border: 3px solid var(--ink);
+  background: #d59958;
+  box-shadow: inset 0 -3px #aa6338;
+}
+.workstation-counter i {
+  position: absolute;
+  left: 36px;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  border: 3px solid #8f4933;
+  border-radius: 50%;
+  background: #df7582;
+}
+.workstation-counter i::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #f4ce9a;
+}
+.workstation-rolling-pin {
+  position: absolute;
+  left: 19px;
+  top: 12px;
+  z-index: 4;
+  width: 43px;
+  height: 9px;
+  border: 3px solid var(--ink);
+  border-radius: 5px;
+  background: #e8b96d;
+  box-shadow: -7px 0 0 -2px #8a5033, 7px 0 0 -2px #8a5033;
+}
+.workstation-dough {
+  position: absolute;
+  right: 19px;
+  top: 13px;
+  z-index: 3;
+  width: 22px;
+  height: 10px;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: #f0cf8f;
+}
+.workstation-flour {
+  position: absolute;
+  z-index: 5;
+  width: 4px;
+  height: 4px;
+  background: #fff4d7;
+  box-shadow: 5px 3px 0 #fff4d7, -4px 6px 0 #fff4d7;
+}
+.flour-one { left: 31px; top: 8px; }
+.flour-two { left: 52px; top: 4px; }
+.flour-three { right: 27px; top: 8px; }
 
 .player-pin { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
 .player-pin .resident-label { background: var(--accent); color: #fffaf2; }
 .player-pin .resident-state { background: #f4ce55; }
 .player-pin.booked .resident-state { background: var(--booked); }
 .player-character {
+  position: relative;
+  z-index: 1;
   width: 76px;
   height: 92px;
   background-image: url("assets/player-walk-atlas-transparent.png?v=2");
   background-repeat: no-repeat;
   background-size: 300% 400%;
   background-position: var(--frame-x) var(--direction-y);
-  filter: drop-shadow(0 5px 1px rgba(24, 48, 31, .28));
+  filter: drop-shadow(0 2px 1px rgba(24, 48, 31, .24));
   image-rendering: pixelated;
 }
 .player-character.facing-left { transform: scaleX(-1); }
@@ -283,14 +374,17 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 @media (prefers-reduced-motion: no-preference) {
   .loading-donut { animation: bob 800ms steps(2, end) infinite; }
   .resident-pin:nth-child(3n + 1) .pixel-person { animation: idle 1.8s steps(2, end) infinite; }
-  .making-donut .pixel-person { animation: makeDonut 900ms steps(2, end) infinite; }
-  .player-pin.making-donut:not(.walking) { animation: makePlayerDonut 900ms steps(2, end) infinite; }
-  .workstation-donut { animation: donutTurn 1.8s steps(4, end) infinite; }
+  .making-donut .pixel-person { animation: none; }
+  .workstation-rolling-pin { animation: rollDough 1.2s steps(3, end) infinite; }
+  .workstation-dough { animation: shapeDough 1.2s steps(3, end) infinite; }
+  .workstation-flour { animation: flourPuff 1.2s steps(3, end) infinite; }
+  .flour-two { animation-delay: 200ms; }
+  .flour-three { animation-delay: 400ms; }
   @keyframes bob { 50% { transform: translateY(-5px) rotate(6deg); } }
   @keyframes idle { 50% { margin-top: -2px; } }
-  @keyframes makeDonut { 50% { transform: translateY(2px); } }
-  @keyframes makePlayerDonut { 50% { transform: translate(-50%, calc(-100% + 2px)); } }
-  @keyframes donutTurn { 50% { transform: rotate(10deg) scale(.94); } }
+  @keyframes rollDough { 50% { transform: translateX(17px); } }
+  @keyframes shapeDough { 50% { transform: scaleX(1.2) scaleY(.78); } }
+  @keyframes flourPuff { 0%, 100% { opacity: 0; transform: translateY(4px); } 40% { opacity: .9; transform: translateY(-3px); } }
 }
 
 @media (max-width: 760px) {

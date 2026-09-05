@@ -24,10 +24,10 @@ const residentSlots = [
 ];
 
 const donutStations = [
-  { x: 29, y: 31.5, left: { x: 26.8, y: 34 }, right: { x: 31.2, y: 34 } },
-  { x: 39, y: 45, left: { x: 36.8, y: 47.5 }, right: { x: 41.2, y: 47.5 } },
-  { x: 61, y: 45, left: { x: 58.8, y: 47.5 }, right: { x: 63.2, y: 47.5 } },
-  { x: 50, y: 68, left: { x: 47.8, y: 70.5 }, right: { x: 52.2, y: 70.5 } }
+  { x: 29, y: 29.7, left: { x: 25.7, y: 32.4 }, right: { x: 32.3, y: 32.4 } },
+  { x: 39, y: 43.8, left: { x: 35.7, y: 46.5 }, right: { x: 42.3, y: 46.5 } },
+  { x: 61, y: 43.8, left: { x: 57.7, y: 46.5 }, right: { x: 64.3, y: 46.5 } },
+  { x: 50, y: 66.7, left: { x: 46.7, y: 69.4 }, right: { x: 53.3, y: 69.4 } }
 ];
 
 const walkCorridors = [
@@ -144,9 +144,14 @@ function renderResidents() {
       ${personMarkup(person)}
     </button>`;
   }).join("");
-  const activityMarkup = pairActivities.map(activity => `<div class="donut-workstation" style="left:${activity.x}%;top:${activity.y}%;z-index:${Math.round(activity.y * 10) - 1}" aria-label="${escapeHtml(activity.label)}">
-    <span class="workstation-copy">Making a donut</span>
-    <span class="workstation-donut" aria-hidden="true"></span>
+  const activityMarkup = pairActivities.map(activity => `<div class="donut-workstation" style="left:${activity.x}%;top:${activity.y}%;z-index:${Math.round(activity.y * 10) - 1}" role="img" aria-label="${escapeHtml(activity.label)}">
+    <span class="workstation-copy">Making donuts</span>
+    <span class="workstation-flour flour-one" aria-hidden="true"></span>
+    <span class="workstation-flour flour-two" aria-hidden="true"></span>
+    <span class="workstation-flour flour-three" aria-hidden="true"></span>
+    <span class="workstation-rolling-pin" aria-hidden="true"></span>
+    <span class="workstation-dough" aria-hidden="true"></span>
+    <span class="workstation-counter" aria-hidden="true"><i></i></span>
   </div>`).join("");
   layer.innerHTML = `${activityMarkup}${residentsMarkup}<div class="player-pin ${currentUser?.status || "open"} ${currentUser?.status === "booked" ? "making-donut" : ""}" id="playerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
     ${playerMarkup()}
