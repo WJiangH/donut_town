@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { createHmac } from "node:crypto";
+import { createHmac, generateKeyPairSync, sign as rsaSign } from "node:crypto";
 import test from "node:test";
 import { SlackClient } from "../slack/client.mjs";
 import { answerInvitation, appearanceIndexFor, createInvitation, invitationMessage } from "../slack/invitations.mjs";
-import { createLaunchToken, createSessionToken, parseCookies, verifyTownToken } from "../slack/session.mjs";
+import { buildSlackAuthorizeUrl, verifySlackIdToken } from "../slack/oidc.mjs";
+import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "../slack/session.mjs";
 import { verifySlackRequest } from "../slack/signature.mjs";
 
 test("Slack signatures are checked and stale requests are rejected", () => {
@@ -70,3 +71,56 @@ test("town launch and session tokens are signed, scoped, and expire", () => {
   assert.equal(verifyTownToken(session, { signingSecret, expectedType: "session", expectedChannelId: "C123ABC", now }).sub, "U123ABC");
   assert.deepEqual(parseCookies(`theme=green; donut_town_session=${session}`), { theme: "green", donut_town_session: session });
 });
+
+test("OAuth state is signed, single-purpose, and expires", () => {
+  const signingSecret = "test-signing-secret";
+  const now = 1788540000_000;
+  const state = createOAuthStateToken({ signingSecret, now, ttlSeconds: 600 });
+  const verified = verifyOAuthStateToken(state, { signingSecret, now: now + 1_000 });
+  assert.equal(verified.type, "oauth_state");
+  assert.equal(typeof verified.nonce, "string");
+  assert.ok(verified.nonce.length >= 20);
+  assert.equal(verifyOAuthStateToken(`${state}x`, { signingSecret, now }), null);
+  assert.equal(verifyOAuthStateToken(state, { signingSecret, now: now + 601_000 }), null);
+});
+
+test("Slack OpenID authorization and ID token bind identity to client and nonce", () => {
+  const clientId = "123.456";
+  const nonce = "a-private-browser-nonce";
+  const redirectUri = "https://donut-town.onrender.com/auth/slack/callback";
+  const authorizeUrl = new URL(buildSlackAuthorizeUrl({ clientId, redirectUri, state: "signed-state", nonce, team: "T123ABC" }));
+  assert.equal(authorizeUrl.origin + authorizeUrl.pathname, "https://slack.com/openid/connect/authorize");
+  assert.equal(authorizeUrl.searchParams.get("scope"), "openid profile");
+  assert.equal(authorizeUrl.searchParams.get("redirect_uri"), redirectUri);
+  assert.equal(authorizeUrl.searchParams.get("response_mode"), "form_post");
+  assert.equal(authorizeUrl.searchParams.get("team"), "T123ABC");
+
+  const { publicKey, privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const jwk = publicKey.export({ format: "jwk" });
+  jwk.kid = "test-key";
+  jwk.use = "sig";
+  const now = 1788540000_000;
+  const claims = {
+    iss: "https://slack.com",
+    aud: clientId,
+    iat: Math.floor(now / 1000),
+    exp: Math.floor(now / 1000) + 300,
+    nonce,
+    sub: "U123ABC",
+    "https://slack.com/user_id": "U123ABC",
+    "https://slack.com/team_id": "T123ABC"
+  };
+  const idToken = createTestIdToken(claims, privateKey, jwk.kid);
+  assert.equal(verifySlackIdToken(idToken, { clientId, nonce, jwks: [jwk], now }).sub, "U123ABC");
+  assert.throws(() => verifySlackIdToken(idToken, { clientId, nonce: "wrong", jwks: [jwk], now }), /nonce/);
+  assert.throws(() => verifySlackIdToken(idToken, { clientId: "other-client", nonce, jwks: [jwk], now }), /audience/);
+  assert.throws(() => verifySlackIdToken(idToken, { clientId, nonce, jwks: [jwk], now: now + 301_000 }), /expired/);
+});
+
+function createTestIdToken(claims, privateKey, kid) {
+  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT", kid })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify(claims)).toString("base64url");
+  const signingInput = `${header}.${payload}`;
+  const signature = rsaSign("RSA-SHA256", Buffer.from(signingInput), privateKey).toString("base64url");
+  return `${signingInput}.${signature}`;
+}

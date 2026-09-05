@@ -5,7 +5,8 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SlackClient } from "./slack/client.mjs";
 import { answerInvitation, appearanceIndexFor, createInvitation, invitationMessage } from "./slack/invitations.mjs";
-import { createLaunchToken, createSessionToken, parseCookies, verifyTownToken } from "./slack/session.mjs";
+import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
+import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
@@ -15,6 +16,8 @@ const config = {
   botToken: process.env.SLACK_BOT_TOKEN || "",
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   channelId: process.env.SLACK_CHANNEL_ID || "",
+  clientId: process.env.SLACK_CLIENT_ID || "",
+  clientSecret: process.env.SLACK_CLIENT_SECRET || "",
   stagingPassword: process.env.STAGING_PASSWORD || "",
   allowSend: process.env.SLACK_ALLOW_SEND === "true",
   port: Number(process.env.PORT || 4173),
@@ -31,6 +34,9 @@ let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
 const usedLaunchTokens = new Map();
+const usedOAuthStates = new Map();
+let slackJwksCache = null;
+let expectedSlackTeamId = null;
 
 const server = createServer(async (request, response) => {
   try {
@@ -42,6 +48,14 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/enter") {
       return enterTown(url, response);
+    }
+
+    if (request.method === "GET" && url.pathname === "/auth/slack/start") {
+      return await startSlackLogin(request, response);
+    }
+
+    if (["GET", "POST"].includes(request.method) && url.pathname === "/auth/slack/callback") {
+      return finishSlackLogin(request, url, response);
     }
 
     if (url.pathname !== "/slack/interactions" && !isRequestAuthorized(request)) {
@@ -59,6 +73,7 @@ const server = createServer(async (request, response) => {
       return sendJson(response, 200, {
         configured: Boolean(config.botToken && config.channelId),
         interactivityConfigured: Boolean(config.signingSecret),
+        oneClickConfigured: isSlackLoginConfigured(),
         currentUserConfigured: Boolean(session?.sub),
         sendEnabled: config.allowSend
       });
@@ -146,7 +161,7 @@ function enterTown(url, response) {
   response.writeHead(302, {
     location: "/",
     "cache-control": "no-store",
-    "set-cookie": `donut_town_session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=28800`
+    "set-cookie": sessionCookie(session)
   });
   response.end();
 }
@@ -175,6 +190,10 @@ async function handleSlackAction(payload, publicBaseUrl) {
   const action = payload.actions?.[0];
   if (!action) return;
   if (action.action_id === "enter_donut_town") {
+    // New entrance messages carry a URL and the browser completes Slack OpenID.
+    // Keep the private-link response only for entrance messages posted before
+    // the one-click URL was added.
+    if (action.url || action.value === "one_click_oauth") return;
     const userId = payload.user?.id;
     const channelId = payload.channel?.id;
     if (!userId || !channelId) return;
@@ -229,6 +248,96 @@ async function handleSlackAction(payload, publicBaseUrl) {
   });
 }
 
+async function startSlackLogin(request, response) {
+  if (!isSlackLoginConfigured()) {
+    return sendAuthError(response, 503, "One-click Slack entry is not configured yet.");
+  }
+  if (getSlackSession(request)) return redirect(response, "/");
+  const state = createOAuthStateToken({ signingSecret: config.signingSecret });
+  const statePayload = verifyOAuthStateToken(state, { signingSecret: config.signingSecret });
+  const redirectUri = `${getPublicBaseUrl()}/auth/slack/callback`;
+  const authorizeUrl = buildSlackAuthorizeUrl({
+    clientId: config.clientId,
+    redirectUri,
+    state,
+    nonce: statePayload.nonce,
+    team: await getExpectedSlackTeamId()
+  });
+  response.writeHead(302, {
+    location: authorizeUrl,
+    "cache-control": "no-store",
+    "set-cookie": oauthStateCookie(state)
+  });
+  response.end();
+}
+
+async function finishSlackLogin(request, url, response) {
+  const clearStateCookie = oauthStateCookie("", 0);
+  try {
+    if (!isSlackLoginConfigured()) throw new Error("Slack OpenID is not configured");
+    const params = request.method === "POST" ? new URLSearchParams(await readBody(request)) : url.searchParams;
+    if (params.get("error")) throw new Error(`Slack authorization was denied: ${params.get("error")}`);
+    const code = params.get("code");
+    const state = params.get("state");
+    const stateCookie = parseCookies(request.headers.cookie).donut_oauth_state;
+    if (!code || !state || !stateCookie || !safeEqualText(state, stateCookie)) throw new Error("Slack authorization state does not match");
+    const statePayload = verifyOAuthStateToken(state, { signingSecret: config.signingSecret });
+    if (!statePayload || usedOAuthStates.has(statePayload.jti)) throw new Error("Slack authorization state is invalid or expired");
+
+    const redirectUri = `${getPublicBaseUrl()}/auth/slack/callback`;
+    const tokenResponse = await exchangeSlackCode({
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+      code,
+      redirectUri
+    });
+    const claims = verifySlackIdToken(tokenResponse.id_token, {
+      clientId: config.clientId,
+      nonce: statePayload.nonce,
+      jwks: await getCachedSlackJwks()
+    });
+    const userId = claims["https://slack.com/user_id"] || claims.sub;
+    const teamId = claims["https://slack.com/team_id"];
+    if (!/^[UW][A-Z0-9]+$/.test(userId || "")) throw new Error("Slack user ID is invalid");
+    if (!teamId || teamId !== await getExpectedSlackTeamId()) throw new Error("This Slack account belongs to a different workspace");
+    const members = await getCachedChannelMembers();
+    if (!members.some(member => member.id === userId)) throw new Error("This Slack account is not in the Donut testing channel");
+
+    usedOAuthStates.set(statePayload.jti, statePayload.exp);
+    pruneUsedTokens(usedOAuthStates);
+    const session = createSessionToken({ userId, channelId: config.channelId, signingSecret: config.signingSecret });
+    response.writeHead(302, {
+      location: "/",
+      "cache-control": "no-store",
+      "set-cookie": [clearStateCookie, sessionCookie(session)]
+    });
+    response.end();
+  } catch (error) {
+    console.error("Slack login failed", error);
+    response.setHeader("set-cookie", clearStateCookie);
+    return sendAuthError(response, 401, "Slack could not confirm access to this Donut Town.");
+  }
+}
+
+function isSlackLoginConfigured() {
+  return Boolean(slack && config.signingSecret && config.channelId && config.clientId && config.clientSecret);
+}
+
+async function getCachedSlackJwks() {
+  if (slackJwksCache && Date.now() < slackJwksCache.expiresAt) return slackJwksCache.keys;
+  const keys = await fetchSlackJwks();
+  slackJwksCache = { keys, expiresAt: Date.now() + 60 * 60 * 1000 };
+  return keys;
+}
+
+async function getExpectedSlackTeamId() {
+  if (expectedSlackTeamId) return expectedSlackTeamId;
+  const result = await slack.call("auth.test");
+  if (!result.team_id) throw new Error("Slack auth.test did not return a team ID");
+  expectedSlackTeamId = result.team_id;
+  return expectedSlackTeamId;
+}
+
 function validateInvitation(body) {
   for (const key of ["inviterId", "inviteeId", "inviterName"]) {
     if (typeof body[key] !== "string" || !body[key].trim()) throw new SyntaxError(`Missing ${key}`);
@@ -260,6 +369,16 @@ function sendJson(response, statusCode, data) {
   const body = JSON.stringify(data);
   response.writeHead(statusCode, { "content-type": "application/json; charset=utf-8", "content-length": Buffer.byteLength(body) });
   response.end(body);
+}
+
+function sendAuthError(response, statusCode, message) {
+  response.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
+  response.end(`${message}\n\nReturn to Slack and try Enter Donut Town again.`);
+}
+
+function redirect(response, location) {
+  response.writeHead(302, { location, "cache-control": "no-store" });
+  response.end();
 }
 
 async function serveStatic(pathname, response, headOnly) {
@@ -336,16 +455,37 @@ function getPublicBaseUrl() {
   return `http://127.0.0.1:${config.port}`;
 }
 
+function oauthStateCookie(value, maxAge = 10 * 60) {
+  const crossSite = getPublicBaseUrl().startsWith("https:") ? "; Secure; SameSite=None" : "; SameSite=Lax";
+  return `donut_oauth_state=${value}; Path=/auth/slack/callback; HttpOnly${crossSite}; Max-Age=${maxAge}`;
+}
+
+function sessionCookie(value) {
+  const secure = getPublicBaseUrl().startsWith("https:") ? "; Secure" : "";
+  return `donut_town_session=${value}; Path=/; HttpOnly${secure}; SameSite=Lax; Max-Age=28800`;
+}
+
+function safeEqualText(left, right) {
+  const leftBuffer = Buffer.from(String(left));
+  const rightBuffer = Buffer.from(String(right));
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+}
+
 function pruneUsedLaunchTokens() {
+  pruneUsedTokens(usedLaunchTokens);
+}
+
+function pruneUsedTokens(tokens) {
   const now = Math.floor(Date.now() / 1000);
-  for (const [id, expiresAt] of usedLaunchTokens) {
-    if (expiresAt <= now) usedLaunchTokens.delete(id);
+  for (const [id, expiresAt] of tokens) {
+    if (expiresAt <= now) tokens.delete(id);
   }
 }
 
 server.listen(config.port, config.host, () => {
   console.log(`Donut Town is running on ${config.host}:${config.port}`);
   console.log(config.botToken && config.channelId ? "Slack member sync is configured." : "Slack is in local demo mode; add .env.local to connect.");
+  console.log(isSlackLoginConfigured() ? "One-click Slack entry is configured." : "One-click Slack entry needs SLACK_CLIENT_ID and SLACK_CLIENT_SECRET.");
   console.log(config.stagingPassword ? "Staging password protection is enabled." : "Staging password protection is disabled for local development.");
   console.log(config.allowSend ? "Slack DM sending is ENABLED." : "Slack DM sending is disabled (dry-run mode)." );
 });

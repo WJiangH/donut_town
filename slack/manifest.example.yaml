@@ -5,7 +5,12 @@ features:
     display_name: Donut Bot
     always_online: false
 oauth_config:
+  redirect_urls:
+    - https://YOUR-PUBLIC-HTTPS-URL/auth/slack/callback
   scopes:
+    user:
+      - openid
+      - profile
     bot:
       - channels:read
       - groups:read

@@ -75,3 +75,32 @@ test("trigger setup is idempotent and preserves unrelated triggers", () => {
   context.setupDonutAutomation();
   assert.deepEqual(triggers.map(trigger => trigger.getHandlerFunction()).sort(), ["donutAutomationTick", "unrelatedJob"]);
 });
+
+test("weekly entrance button opens the configured one-click Slack URL", () => {
+  let postedPayload;
+  const context = loadAutomation({
+    SLACK_TOKEN: "xoxb-test",
+    Utilities: { formatDate: () => "Mon Sep 7, 9:00 AM" },
+    UrlFetchApp: {
+      fetch(url, options) {
+        postedPayload = JSON.parse(options.payload);
+        return { getContentText: () => JSON.stringify({ ok: true, ts: "123.456" }) };
+      }
+    }
+  });
+  context.logDonutRound_ = () => {};
+  const config = {
+    CHANNEL_ID: "C123ABC",
+    TOWN_URL: "https://donut-town.onrender.com/auth/slack/start",
+    SIGNUP_HOURS: 24,
+    TIMEZONE: "America/Los_Angeles",
+    TARGET_EMOJI: "doughnut",
+    WEEKLY_MESSAGE_TEMPLATE: "React with :{EMOJI}: within {SIGNUP_HOURS} hours. {CLOSE_TIME} {TIMEZONE}",
+    GUESS_WHO_TARGET_TEXT: "Guess Who"
+  };
+  context.postWeeklyDonutRound_(config, new Date("2026-09-07T16:00:00Z"), "manual");
+  const button = postedPayload.blocks[1].elements[0];
+  assert.equal(button.url, config.TOWN_URL);
+  assert.equal(button.action_id, "enter_donut_town");
+  assert.equal(button.value, "one_click_oauth");
+});

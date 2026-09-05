@@ -533,8 +533,9 @@ function fisherYatesShuffle(arr) {
 // configured testing channel. Button clicks are handled by the Render service,
 // so this Apps Script does not need a doPost(e) handler for Donut Town.
 function postDonutTownEntrance() {
+  var config = getDonutConfig_();
   var payload = {
-    channel: getDonutConfig_().CHANNEL_ID,
+    channel: config.CHANNEL_ID,
     text: "Donut Town is open. Enter to meet a neighbor.",
     blocks: [
       {
@@ -553,7 +554,8 @@ function postDonutTownEntrance() {
             action_id: "enter_donut_town",
             text: { type: "plain_text", text: "Enter Donut Town" },
             style: "primary",
-            value: "testing"
+            url: config.TOWN_URL,
+            value: "one_click_oauth"
           }
         ]
       }

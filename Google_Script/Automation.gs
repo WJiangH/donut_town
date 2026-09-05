@@ -8,6 +8,7 @@ var DONUT_AUTOMATION_HANDLER = "donutAutomationTick";
 function donutConfigDefaults_() {
   return [
     ["CHANNEL_ID", "", "Slack channel ID; keep workspace-specific values in this private sheet"],
+    ["TOWN_URL", "https://donut-town.onrender.com/auth/slack/start", "Public one-click Donut Town entrance URL"],
     ["AUTO_POST_ENABLED", "TRUE", "TRUE enables the weekly Bot message"],
     ["WEEKLY_POST_DAY", "MONDAY", "MONDAY through SUNDAY"],
     ["WEEKLY_POST_TIME", "09:00", "Local 24-hour time; checked every 15 minutes"],
@@ -119,7 +120,8 @@ function postWeeklyDonutRound_(config, now, source, roundId) {
             action_id: "enter_donut_town",
             text: { type: "plain_text", text: "Enter Donut Town" },
             style: "primary",
-            value: "weekly_round"
+            url: config.TOWN_URL,
+            value: "one_click_oauth"
           }
         ]
       }
@@ -158,6 +160,7 @@ function getDonutConfig_() {
   if (!timeMatch) throw new Error("Configs WEEKLY_POST_TIME must use HH:MM, for example 09:00");
   var config = {
     CHANNEL_ID: String(raw.CHANNEL_ID || "").trim(),
+    TOWN_URL: String(raw.TOWN_URL || "").trim(),
     AUTO_POST_ENABLED: String(raw.AUTO_POST_ENABLED).toUpperCase() === "TRUE",
     WEEKLY_POST_DAY: String(raw.WEEKLY_POST_DAY || "").trim().toUpperCase(),
     WEEKLY_POST_TIME: String(raw.WEEKLY_POST_TIME),
@@ -180,6 +183,7 @@ function getDonutConfig_() {
 
 function validateDonutConfig_(config) {
   if (!/^C[A-Z0-9]+$/.test(config.CHANNEL_ID)) throw new Error("Configs CHANNEL_ID is missing or invalid");
+  if (!/^https:\/\//.test(config.TOWN_URL)) throw new Error("Configs TOWN_URL must be a public HTTPS URL");
   if (["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"].indexOf(config.WEEKLY_POST_DAY) === -1) {
     throw new Error("Configs WEEKLY_POST_DAY is invalid");
   }

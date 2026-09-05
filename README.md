@@ -81,9 +81,10 @@ Blueprint:
 
 1. Sign in to Render and choose **New → Blueprint**.
 2. Connect GitHub and select `WJiangH/donut_town` on the `main` branch.
-3. Render reads `render.yaml` and asks for four secret values:
+3. Render reads `render.yaml` and asks for six secret values:
    `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_CHANNEL_ID`, and
-   `STAGING_PASSWORD`.
+   `STAGING_PASSWORD`, plus `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` for
+   one-click Slack identity.
 4. Use the testing channel ID. Keep `SLACK_ALLOW_SEND=false`.
 5. Choose a long, unique staging password and deploy. Do not upload or commit
    `.env.local`.
@@ -100,22 +101,38 @@ services spin down after inactivity, so they are not reliable for Slack's
 time-sensitive interaction callbacks. Use an always-on instance before treating
 the Enter Donut Town button as production-ready.
 
-## Connect the Slack entrance button
+## Connect the one-click Slack entrance
 
 The existing Apps Script does **not** need a `doPost(e)` function. It publishes
-the channel message; Render receives and verifies the Slack button callback.
+the channel message. The button opens Slack's OpenID flow, and Render verifies
+the returned identity before mapping the member to a town resident.
 
 1. Wait until Render has deployed the latest commit and its health check passes.
-2. Save a copy of the current URL in Slack **Interactivity & Shortcuts** for
-   rollback. Replace it with
-   `https://donut-town.onrender.com/slack/interactions` and save.
-3. Sync `Google_Script/Code.gs` and `Google_Script/Automation.gs` into the
+2. In Slack App **Basic Information**, copy the app's Client ID and Client
+   Secret into Render as `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`. These are
+   secrets and must not be added to the Sheet or repository.
+3. In Slack App **OAuth & Permissions → Redirect URLs**, add exactly
+   `https://donut-town.onrender.com/auth/slack/callback`. Under **User Token
+   Scopes**, add `openid` and `profile`, then save. Keep these separate from the
+   existing bot scopes; Donut Town does not request the OpenID `email` scope.
+4. Keep Slack **Interactivity & Shortcuts** set to
+   `https://donut-town.onrender.com/slack/interactions`.
+5. Sync `Google_Script/Code.gs` and `Google_Script/Automation.gs` into the
    existing Sheet-bound Apps Script project.
-4. Run `postDonutTownEntrance()` manually once. This is the step that sends the
-   real entrance message to the configured testing channel.
-5. Click **Enter Donut Town** in Slack. The bot responds only to that member with
-   a private five-minute link. Opening it creates the web session and maps the
-   clicker's Slack ID to the controllable `You` character.
+6. Run `initializeDonutSheets()` once so the existing `Configs` tab gains
+   `TOWN_URL`. Its default is
+   `https://donut-town.onrender.com/auth/slack/start`.
+7. Run `postDonutTownEntrance()` manually once to publish a fresh testing
+   message. Messages posted before this update still use the two-click private
+   link; only newly posted buttons contain the one-click URL.
+8. Click **Enter Donut Town**. Slack may show an authorization confirmation on
+   the first use. After confirmation, the browser enters the town with the
+   clicker's Slack ID mapped to the controllable `You` character.
+
+The callback verifies the OpenID token signature, audience, expiry, nonce,
+workspace, and current testing-channel membership. It then creates an 8-hour,
+HTTP-only town session cookie. The Slack Client Secret never reaches the
+browser.
 
 The tracked Apps Script source contains no Token, channel ID, employee email,
 or team roster. Secrets remain in Script Properties; workspace-specific member,
