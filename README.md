@@ -123,6 +123,21 @@ Because this GitHub repository is public, `Google_Script/Code.gs` is ignored: it
 contains the internal team roster. The sanitized entrance helper is safe to
 version and contains no Token, channel ID, or employee email addresses.
 
+## Sheet-managed scheduling
+
+`Google_Script/Automation.example.gs` adds an internal `Configs` tab and an
+auditable `Rounds` tab. Run `setupDonutAutomation()` once after copying that
+file into the Sheet-bound Apps Script project. It removes only the old
+`runGuessWhoLottery`, `runDonutLottery`, and `donutAutomationTick` time triggers,
+then installs one idempotent 15-minute automation tick.
+
+The tick reads `Configs` on every run. Channel ID, weekly weekday/time, timezone,
+signup duration, emoji, and message copy can therefore change without editing
+code or rebuilding the trigger. Actual message timestamps and round state belong
+in `Rounds`, rather than in the global configuration table. Apps Script timing is
+approximate; the weekly post occurs on the first 15-minute tick at or after the
+configured local time.
+
 ## Repository skill
 
 The reusable pixel-art generation and animation workflow lives at
