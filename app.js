@@ -23,6 +23,13 @@ const residentSlots = [
   { x: 51, y: 13, activity: "path" }
 ];
 
+const donutStations = [
+  { x: 29, y: 31.5, left: { x: 26.8, y: 34 }, right: { x: 31.2, y: 34 } },
+  { x: 39, y: 45, left: { x: 36.8, y: 47.5 }, right: { x: 41.2, y: 47.5 } },
+  { x: 61, y: 45, left: { x: 58.8, y: 47.5 }, right: { x: 63.2, y: 47.5 } },
+  { x: 50, y: 68, left: { x: 47.8, y: 70.5 }, right: { x: 52.2, y: 70.5 } }
+];
+
 const walkCorridors = [
   { from: [49.5, 0], to: [49.5, 33], width: 5.5 },
   { from: [49.5, 62], to: [49.5, 100], width: 5.4 },
@@ -51,6 +58,8 @@ let invitesOpen = true;
 let planActive = false;
 const player = { id: 11, name: "You", x: 50, y: 80 };
 let currentUser = null;
+let currentPairId = null;
+let pairActivities = [];
 const pressedKeys = new Set();
 let clickPath = [];
 let playerDirection = "down";
@@ -131,15 +140,62 @@ function playerMarkup() {
 function renderResidents() {
   const residentsMarkup = residents.map(person => {
     const visible = currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts !== null && person.donuts <= 2);
-    return `<button class="resident-pin ${person.status} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
+    return `<button class="resident-pin ${person.status} ${person.status === "booked" ? "making-donut" : ""} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
   }).join("");
-  layer.innerHTML = `${residentsMarkup}<div class="player-pin" id="playerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+  const activityMarkup = pairActivities.map(activity => `<div class="donut-workstation" style="left:${activity.x}%;top:${activity.y}%;z-index:${Math.round(activity.y * 10) - 1}" aria-label="${escapeHtml(activity.label)}">
+    <span class="workstation-copy">Making a donut</span>
+    <span class="workstation-donut" aria-hidden="true"></span>
+  </div>`).join("");
+  layer.innerHTML = `${activityMarkup}${residentsMarkup}<div class="player-pin ${currentUser?.status || "open"} ${currentUser?.status === "booked" ? "making-donut" : ""}" id="playerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
     ${playerMarkup()}
   </div>`;
   document.querySelector("#mapEmpty").hidden = layer.querySelectorAll(".resident-pin:not(.hidden)").length > 0;
   layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
+}
+
+function layoutBookedPairs() {
+  residents.forEach(person => {
+    person.x = person.baseX;
+    person.y = person.baseY;
+    person.activity = person.baseActivity;
+  });
+
+  const people = [...residents, ...(currentUser ? [{ ...currentUser, isPlayer: true }] : [])];
+  const bookedPairs = new Map();
+  people.filter(person => person.status === "booked" && person.pairId).forEach(person => {
+    if (!bookedPairs.has(person.pairId)) bookedPairs.set(person.pairId, []);
+    bookedPairs.get(person.pairId).push(person);
+  });
+  pairActivities = [];
+  [...bookedPairs.entries()].sort(([left], [right]) => left.localeCompare(right)).forEach(([pairId, pair], index) => {
+    if (pair.length < 2) return;
+    const station = donutStations[index % donutStations.length];
+    pair.sort((left, right) => (left.slackId || left.id).localeCompare(right.slackId || right.id));
+    pair.forEach((person, personIndex) => {
+      const spot = personIndex === 0 ? station.left : station.right;
+      if (person.isPlayer) {
+        if (currentPairId !== pairId) {
+          player.x = spot.x;
+          player.y = spot.y;
+          clickPath = [];
+        }
+      } else {
+        const resident = residents.find(item => item.slackId === person.slackId);
+        resident.x = spot.x;
+        resident.y = spot.y;
+        resident.activity = "donut-station";
+      }
+    });
+    pairActivities.push({
+      pairId,
+      x: station.x,
+      y: station.y,
+      label: `${pair.map(person => person.displayName || person.name).join(" and ")} are making a donut`
+    });
+  });
+  currentPairId = currentUser?.pairId || null;
 }
 
 function isInsideEllipse(x, y, ellipse) {
@@ -350,12 +406,17 @@ async function syncSlackResidents() {
       statusText: member.statusText,
       timezone: member.timezone,
       timezoneLabel: member.timezoneLabel,
-      status: "open",
+      status: member.status || "open",
+      partnerId: member.partnerId || null,
+      pairId: member.pairId || null,
       donuts: member.donutCount,
       group: "unknown",
       x: residentSlots[index].x,
       y: residentSlots[index].y,
       activity: residentSlots[index].activity,
+      baseX: residentSlots[index].x,
+      baseY: residentSlots[index].y,
+      baseActivity: residentSlots[index].activity,
       note: member.donutCount === null
         ? "Synced from Slack. Donut history is not connected yet."
         : member.donutCount > 0
@@ -374,6 +435,8 @@ async function syncSlackResidents() {
     summary.textContent = currentUser
       ? `${data.total} Slack members · ${neighbors.length} neighbors + you`
       : `${data.total} Slack residents + local player (identity not linked)`;
+    layoutBookedPairs();
+    updateAvailabilityControl();
     renderResidents();
     renderQueue();
   } catch {
@@ -385,6 +448,37 @@ async function syncSlackResidents() {
     document.querySelector("#neighborSummary").textContent = "Slack sync temporarily unavailable · no demo residents shown";
     renderCurrentProfile();
   }
+}
+
+async function syncInvitationStates() {
+  if (document.hidden || !residents.length) return;
+  try {
+    const response = await fetch("/api/slack/invitation-states", { headers: { accept: "application/json" } });
+    if (!response.ok) return;
+    const { states } = await response.json();
+    residents.forEach(person => Object.assign(person, states[person.slackId] || { status: "open", partnerId: null, pairId: null }));
+    if (currentUser) Object.assign(currentUser, states[currentUser.id] || { status: "open", partnerId: null, pairId: null });
+    queue = queue.filter(person => person.status === "open");
+    layoutBookedPairs();
+    updateAvailabilityControl();
+    renderResidents();
+    renderQueue();
+    if (drawer.classList.contains("open") && selectedResident) openResident(selectedResident.id);
+  } catch {
+    // Keep the last known state during a temporary network interruption.
+  }
+}
+
+function updateAvailabilityControl() {
+  const button = document.querySelector("#availabilityButton");
+  const booked = currentUser?.status === "booked";
+  button.disabled = booked;
+  button.classList.toggle("booked", booked);
+  button.classList.toggle("paused", !booked && !invitesOpen);
+  button.setAttribute("aria-pressed", String(!booked && invitesOpen));
+  document.querySelector("#availabilityText").textContent = booked
+    ? "Booked this week"
+    : invitesOpen ? "Open to invites" : "Paused this week";
 }
 
 function renderCurrentProfile() {
@@ -482,11 +576,9 @@ document.querySelectorAll(".filter-button").forEach(button => button.addEventLis
 }));
 
 document.querySelector("#availabilityButton").addEventListener("click", () => {
+  if (currentUser?.status === "booked") return;
   invitesOpen = !invitesOpen;
-  const button = document.querySelector("#availabilityButton");
-  button.classList.toggle("paused", !invitesOpen);
-  button.setAttribute("aria-pressed", String(invitesOpen));
-  document.querySelector("#availabilityText").textContent = invitesOpen ? "Open to invites" : "Paused this week";
+  updateAvailabilityControl();
   showToast(invitesOpen ? "You are open to invitations again." : "Invitations paused for this week.");
 });
 
@@ -520,7 +612,7 @@ document.querySelector("#confirmSend").addEventListener("click", async event => 
       return;
     }
     first.status = "pending";
-    planActive = true;
+    queue = [];
     renderResidents();
     renderQueue();
     showToast(`Donut Bot sent a private invitation to ${first.name}.`);
@@ -562,7 +654,9 @@ function invitationErrorMessage(error) {
   const messages = {
     slack_login_required: "Please enter again from Slack before sending.",
     invitation_already_pending: "An invitation to this person is already pending.",
-    pending_invitation_limit: "You already have three pending invitations."
+    pending_invitation_limit: "You already have three pending invitations.",
+    inviter_already_booked: "You already have a Donut chat booked this week.",
+    invitee_already_booked: "This person already has a Donut chat booked this week."
   };
   return messages[error.message] || "The invitation could not be sent. Please try again.";
 }
@@ -593,7 +687,11 @@ if (window.location.protocol === "file:") {
 } else {
   renderResidents();
   renderQueue();
-  syncSlackResidents();
+  syncSlackResidents().then(syncInvitationStates);
+  window.setInterval(syncInvitationStates, 5000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) syncInvitationStates();
+  });
 }
 if (window.matchMedia("(max-width: 760px)").matches) {
   document.querySelector(".dock-body").hidden = true;

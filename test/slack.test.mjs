@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHmac, generateKeyPairSync, sign as rsaSign } from "node:crypto";
 import test from "node:test";
 import { SlackClient } from "../slack/client.mjs";
-import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, pendingInvitationsFor, resolveInvitationActors } from "../slack/invitations.mjs";
+import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationStateFor, pendingInvitationsFor, resolveInvitationActors } from "../slack/invitations.mjs";
 import { buildSlackAuthorizeUrl, verifySlackIdToken } from "../slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "../slack/session.mjs";
 import { verifySlackRequest } from "../slack/signature.mjs";
@@ -73,6 +73,23 @@ test("an invitation can only be answered once by its invitee", () => {
   assert.equal(answerInvitation(invitation.id, "declined", "U2"), null);
   assert.equal(invitationMessage(invitation).blocks[1].elements[0].value, invitation.id);
   assert.equal(appearanceIndexFor("U2"), appearanceIndexFor("U2"));
+  discardInvitation(invitation.id);
+});
+
+test("acceptance books both people and closes their other pending invitations", () => {
+  const first = createInvitation({ inviterId: "U10", inviteeId: "U20", inviterName: "Maya" });
+  const second = createInvitation({ inviterId: "U10", inviteeId: "U30", inviterName: "Maya" });
+  assert.deepEqual(invitationStateFor("U10"), { status: "open", partnerId: null, pairId: null });
+  assert.deepEqual(invitationStateFor("U20"), { status: "pending", partnerId: "U10", pairId: null });
+
+  answerInvitation(first.id, "accepted", "U20");
+  assert.deepEqual(invitationStateFor("U10"), { status: "booked", partnerId: "U20", pairId: first.id });
+  assert.deepEqual(invitationStateFor("U20"), { status: "booked", partnerId: "U10", pairId: first.id });
+  assert.deepEqual(invitationStateFor("U30"), { status: "open", partnerId: null, pairId: null });
+  assert.equal(answerInvitation(second.id, "accepted", "U30"), null);
+
+  discardInvitation(first.id);
+  discardInvitation(second.id);
 });
 
 test("invitation identity comes from the Slack session and channel roster", () => {

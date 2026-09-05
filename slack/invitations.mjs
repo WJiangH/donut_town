@@ -34,6 +34,24 @@ export function pendingInvitationsFor(inviterId) {
   return [...invitations.values()].filter(invitation => !invitation.selfTest && invitation.inviterId === inviterId && invitation.status === "pending");
 }
 
+export function invitationStateFor(userId) {
+  const related = [...invitations.values()].filter(invitation =>
+    !invitation.selfTest && (invitation.inviterId === userId || invitation.inviteeId === userId)
+  );
+  const accepted = related.find(invitation => invitation.status === "accepted");
+  if (accepted) {
+    return {
+      status: "booked",
+      partnerId: accepted.inviterId === userId ? accepted.inviteeId : accepted.inviterId,
+      pairId: accepted.id
+    };
+  }
+  const pending = related.find(invitation => invitation.status === "pending" && invitation.inviteeId === userId);
+  return pending
+    ? { status: "pending", partnerId: pending.inviterId, pairId: null }
+    : { status: "open", partnerId: null, pairId: null };
+}
+
 export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1, members, allowSelfInvite = false }) {
   if (!/^[UW][A-Z0-9]+$/.test(sessionUserId || "")) throw new SyntaxError("A Slack login is required");
   if (!/^[UW][A-Z0-9]+$/.test(inviteeId || "")) throw new SyntaxError("Invalid Slack invitee ID");
@@ -56,9 +74,20 @@ export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1
 
 export function answerInvitation(id, status, responderId) {
   const invitation = invitations.get(id);
+  if (!["accepted", "declined"].includes(status)) return null;
   if (!invitation || invitation.inviteeId !== responderId || invitation.status !== "pending") return null;
   invitation.status = status;
   invitation.answeredAt = new Date().toISOString();
+  if (status === "accepted" && !invitation.selfTest) {
+    const bookedIds = new Set([invitation.inviterId, invitation.inviteeId]);
+    for (const other of invitations.values()) {
+      if (other.id === invitation.id || other.selfTest || other.status !== "pending") continue;
+      if (bookedIds.has(other.inviterId) || bookedIds.has(other.inviteeId)) {
+        other.status = "cancelled";
+        other.answeredAt = invitation.answeredAt;
+      }
+    }
+  }
   return invitation;
 }
 

@@ -4,7 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SlackClient } from "./slack/client.mjs";
-import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, pendingInvitationsFor, resolveInvitationActors } from "./slack/invitations.mjs";
+import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationStateFor, pendingInvitationsFor, resolveInvitationActors } from "./slack/invitations.mjs";
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
@@ -102,8 +102,17 @@ const server = createServer(async (request, response) => {
           donutCount: null,
           appearanceIndex: appearanceIndexFor(member.id),
           isCurrentUser: member.id === currentUserId,
-          status: "open"
+          ...invitationStateFor(member.id)
         }))
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/slack/invitation-states") {
+      if (!slack || !config.channelId) return missingConfiguration(response);
+      const members = await getCachedChannelMembers();
+      response.setHeader("cache-control", "private, no-store");
+      return sendJson(response, 200, {
+        states: Object.fromEntries(members.map(member => [member.id, invitationStateFor(member.id)]))
       });
     }
 
@@ -135,6 +144,12 @@ const server = createServer(async (request, response) => {
         members,
         allowSelfInvite: selfTest
       });
+      if (!selfTest && invitationStateFor(invitationInput.inviterId).status === "booked") {
+        return sendJson(response, 409, { error: "inviter_already_booked" });
+      }
+      if (!selfTest && invitationStateFor(invitationInput.inviteeId).status === "booked") {
+        return sendJson(response, 409, { error: "invitee_already_booked" });
+      }
       const pending = pendingInvitationsFor(session.sub);
       if (pending.some(invitation => invitation.inviteeId === invitationInput.inviteeId)) {
         return sendJson(response, 409, { error: "invitation_already_pending" });
