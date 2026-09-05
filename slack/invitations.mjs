@@ -7,13 +7,14 @@ export function appearanceIndexFor(slackUserId) {
   return digest.readUInt32BE(0) % 12;
 }
 
-export function createInvitation({ inviterId, inviteeId, inviterName, priority = 1 }) {
+export function createInvitation({ inviterId, inviteeId, inviterName, priority = 1, selfTest = false }) {
   const invitation = {
     id: randomUUID(),
     inviterId,
     inviteeId,
     inviterName,
     priority,
+    selfTest,
     status: "pending",
     createdAt: new Date().toISOString()
   };
@@ -30,13 +31,13 @@ export function discardInvitation(id) {
 }
 
 export function pendingInvitationsFor(inviterId) {
-  return [...invitations.values()].filter(invitation => invitation.inviterId === inviterId && invitation.status === "pending");
+  return [...invitations.values()].filter(invitation => !invitation.selfTest && invitation.inviterId === inviterId && invitation.status === "pending");
 }
 
-export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1, members }) {
+export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1, members, allowSelfInvite = false }) {
   if (!/^[UW][A-Z0-9]+$/.test(sessionUserId || "")) throw new SyntaxError("A Slack login is required");
   if (!/^[UW][A-Z0-9]+$/.test(inviteeId || "")) throw new SyntaxError("Invalid Slack invitee ID");
-  if (sessionUserId === inviteeId) throw new SyntaxError("Cannot invite yourself");
+  if (sessionUserId === inviteeId && !allowSelfInvite) throw new SyntaxError("Cannot invite yourself");
   const inviter = members.find(member => member.id === sessionUserId);
   const invitee = members.find(member => member.id === inviteeId);
   if (!inviter || !invitee) throw new SyntaxError("Both people must be members of the Donut channel");
@@ -48,7 +49,8 @@ export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1
     inviterId: inviter.id,
     inviterName: inviter.displayName,
     inviteeId: invitee.id,
-    priority: normalizedPriority
+    priority: normalizedPriority,
+    selfTest: allowSelfInvite && sessionUserId === inviteeId
   };
 }
 
@@ -61,7 +63,12 @@ export function answerInvitation(id, status, responderId) {
 }
 
 export function invitationMessage(invitation) {
-  const text = `${invitation.inviterName} invited you to a Donut chat.`;
+  const text = invitation.selfTest
+    ? "This is your Donut Town test invitation."
+    : `${invitation.inviterName} invited you to a Donut chat.`;
+  const message = invitation.selfTest
+    ? "*Donut Town test invitation* :doughnut:\nThis is what a teammate will receive when you invite them. Try either button below."
+    : `*${escapeSlackText(invitation.inviterName)}* would like to have a Donut chat with you this week. :doughnut:`;
   return {
     text,
     blocks: [
@@ -69,7 +76,7 @@ export function invitationMessage(invitation) {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*${escapeSlackText(invitation.inviterName)}* would like to have a Donut chat with you this week. :doughnut:`
+          text: message
         }
       },
       {

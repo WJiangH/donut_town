@@ -151,6 +151,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .queue-empty { padding: 12px 8px; color: var(--muted); font-size: 9px; line-height: 1.5; text-align: center; }
 .send-button, .invite-button { border: 3px solid var(--ink); background: var(--accent); color: #fffaf2; border-radius: 9px; box-shadow: 3px 3px 0 var(--ink); font-weight: 900; cursor: pointer; }
 .send-button { width: 100%; padding: 11px 14px; }
+.self-test-button { width: 100%; margin-top: 9px; padding: 9px 12px; font-weight: 800; }
 .send-button:active, .invite-button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 .send-button:disabled { opacity: .44; cursor: not-allowed; transform: none; box-shadow: 3px 3px 0 var(--ink); }
 .invite-button { width: 100%; padding: 13px; margin-top: 20px; }

@@ -52,6 +52,10 @@ The current test sends only the first person in the queue. Automatic fallback
 to the second or third choice is deliberately not enabled yet, despite the
 priority-list UI.
 
+The separate **Send test to myself** control sends the same interactive DM to
+the signed-in member without adding a formal self-invitation to their queue or
+future Donut history. It remains a test-only UI affordance.
+
 This is an integration spike, not yet production-ready:
 
 - Invitation state is held in memory and is lost when the server restarts.

@@ -104,11 +104,13 @@ const server = createServer(async (request, response) => {
       if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
       const body = JSON.parse(await readBody(request));
       const members = await getCachedChannelMembers();
+      const selfTest = body.selfTest === true;
       const invitationInput = resolveInvitationActors({
         sessionUserId: session.sub,
-        inviteeId: body.inviteeId,
+        inviteeId: selfTest ? session.sub : body.inviteeId,
         priority: body.priority,
-        members
+        members,
+        allowSelfInvite: selfTest
       });
       const pending = pendingInvitationsFor(session.sub);
       if (pending.some(invitation => invitation.inviteeId === invitationInput.inviteeId)) {
@@ -256,9 +258,14 @@ async function handleSlackAction(payload, publicBaseUrl) {
     return;
   }
   const responderMessage = status === "accepted"
-    ? "Accepted! Donut Town marked you as booked for this week. :doughnut:"
-    : "No problem — Donut Town will leave you available for another week.";
+    ? invitation.selfTest
+      ? "Self-test accepted. A real acceptance will mark both people as booked. :doughnut:"
+      : "Accepted! Donut Town marked you as booked for this week. :doughnut:"
+    : invitation.selfTest
+      ? "Self-test declined. A real decline will leave both people available."
+      : "No problem — Donut Town will leave you available for another week.";
   await slack.postMessage(payload.channel.id, { text: responderMessage });
+  if (invitation.selfTest) return;
   const inviterChannel = await slack.openDm(invitation.inviterId);
   await slack.postMessage(inviterChannel, {
     text: status === "accepted"
