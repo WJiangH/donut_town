@@ -4,7 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
-import { characterForMember } from "./characters/catalog.mjs";
+import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
 import { activeInvitations, activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
@@ -129,6 +129,7 @@ const server = createServer(async (request, response) => {
           donutCount: null,
           appearanceIndex: appearanceIndexFor(member.id),
           character: characterForMember(member.id, config.signingSecret),
+          characterKey: memberCharacterKey(member.id, config.signingSecret),
           isCurrentUser: member.id === currentUserId,
           ...invitationStateFor(member.id)
         }))
