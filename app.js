@@ -175,6 +175,57 @@ function factsMarkup(facts, emptyCopy = "No additional Slack profile details hav
     : `<div class="empty-fact">${escapeHtml(emptyCopy)}</div>`;
 }
 
+// Personal art is enabled only after its versioned PNG has loaded successfully.
+const characterImages = new Map();
+async function loadCharacterArt(character) {
+  if (!character || !/^\/assets\/residents\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(character.url)) return null;
+  if (!characterImages.has(character.url)) {
+    characterImages.set(character.url, new Promise(resolve => {
+      const image = new Image();
+      image.onload = () => resolve(image.naturalWidth === character.imageWidth && image.naturalHeight === character.imageHeight);
+      image.onerror = () => resolve(false);
+      image.src = character.url;
+    }));
+  }
+  return await characterImages.get(character.url) ? character : null;
+}
+
+function personalCharacterMarkup(character, className) {
+  return `<div class="${className} personal-character" aria-hidden="true"><span class="personal-art"></span></div>`;
+}
+
+function paintPersonalCharacter(element, character, direction = "down", frame = 1) {
+  if (!element || !character) return;
+  const row = direction === "up" ? 2 : (direction === "left" || direction === "right") ? 1 : 0;
+  const index = row * 3 + frame;
+  const signature = `${character.url}:${index}:${direction}`;
+  if (element.dataset.pose === signature) return;
+  element.dataset.pose = signature;
+  const [x, y, width, height] = character.frames[index];
+  const scale = 88 / character.frameHeight;
+  const art = element.querySelector(".personal-art");
+  art.style.width = `${width * scale}px`;
+  art.style.height = `${height * scale}px`;
+  art.style.backgroundImage = `url("${character.url}")`;
+  art.style.backgroundSize = `${character.imageWidth * scale}px ${character.imageHeight * scale}px`;
+  art.style.backgroundPosition = `${-x * scale}px ${-y * scale}px`;
+  element.classList.toggle("facing-left", direction === "left");
+}
+
+function paintResidentCharacters(container) {
+  container.querySelectorAll(".resident-pin[data-id]").forEach(pin => {
+    const person = residents.find(item => item.id === Number(pin.dataset.id));
+    if (person?.character) paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, person.pairFacing || "down");
+  });
+}
+
+function setCharacterPortrait(element, person) {
+  if (!person?.character) { setSlackAvatar(element, person); return; }
+  element.classList.remove("has-photo");
+  element.innerHTML = personalCharacterMarkup(person.character, "portrait-character");
+  paintPersonalCharacter(element.firstElementChild, person.character);
+}
+
 function personMarkup(person, compact = false) {
   const atlasIndex = person.spriteIndex ?? ((person.id - 1) % 12);
   const columnPositions = [0, 33.333, 66.667, 100];
@@ -182,14 +233,16 @@ function personMarkup(person, compact = false) {
   const spriteX = columnPositions[atlasIndex % 4];
   const spriteY = rowPositions[Math.floor(atlasIndex / 4)];
   const facingClass = person.pairFacing ? ` pair-facing-${person.pairFacing}` : "";
-  return `<div class="pixel-person${facingClass}" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${escapeHtml(person.name.split(" ")[0])}</span>`}`;
+  const custom = person.character ? personalCharacterMarkup(person.character, "pixel-person") : null;
+  return `${custom || `<div class="pixel-person${facingClass}" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>`}${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${escapeHtml(person.name.split(" ")[0])}</span>`}`;
 }
 
 function playerMarkup() {
   const directionRows = { down: 0, right: 33.333, left: 33.333, up: 100 };
   const framePositions = [0, 50, 100];
   const facingClass = playerDirection === "left" ? " facing-left" : "";
-  return `<div class="player-character${facingClass}" style="--frame-x:${framePositions[playerFrame]}%;--direction-y:${directionRows[playerDirection]}%" aria-hidden="true"></div>
+  const custom = currentUser?.character ? personalCharacterMarkup(currentUser.character, "player-character") : null;
+  return `${custom || `<div class="player-character${facingClass}" style="--frame-x:${framePositions[playerFrame]}%;--direction-y:${directionRows[playerDirection]}%" aria-hidden="true"></div>`}
     <span class="resident-state"></span><span class="resident-label">You</span>`;
 }
 
@@ -218,6 +271,8 @@ function renderResidents() {
   </div>`;
   document.querySelector("#mapEmpty").hidden = layer.querySelectorAll(".resident-pin:not(.hidden)").length > 0;
   layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
+  paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
+  updatePlayerElement(false);
   renderLivePlayers(0);
 }
 
@@ -231,6 +286,8 @@ function renderChemPod() {
   </div>`;
   roomLayer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
   renderChemPodTeamWall();
+  paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
+  updatePlayerElement(false);
   renderLivePlayers(0);
 }
 
@@ -317,6 +374,11 @@ function renderLivePlayers(deltaSeconds) {
     pin.classList.toggle("pending", person.status === "pending");
     pin.classList.toggle("booked", person.status === "booked");
     pin.dataset.direction = remote.direction;
+    if (person.character) {
+      const movingFrame = remote.moving && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
+      paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, remote.direction, movingFrame);
+    }
     pin.setAttribute("aria-label", `Open ${person.name}'s profile, online now`);
   }
   for (const [userId, element] of remotePlayerElements) {
@@ -649,6 +711,12 @@ function updatePlayerElement(isMoving) {
   pin.style.zIndex = String(Math.round(player.y * 10));
   pin.classList.toggle("walking", isMoving);
   const sprite = pin.querySelector(".player-character");
+  if (currentUser?.character) {
+    const frame = isMoving && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
+    paintPersonalCharacter(sprite, currentUser.character, playerDirection, frame);
+    return;
+  }
   const rowByDirection = { down: 0, left: 33.333, right: 33.333, up: 100 };
   const columnPositions = [0, 50, 100];
   sprite.style.setProperty("--frame-x", `${columnPositions[isMoving ? playerFrame : 1]}%`);
@@ -772,7 +840,7 @@ function openResident(id) {
     ? "Donut history not connected yet"
     : `<strong id="residentDonuts">${escapeHtml(selectedResident.donuts)}</strong> successful pairings`;
   document.querySelector("#connectionNote").textContent = "Profile details are synced from Slack.";
-  setSlackAvatar(document.querySelector("#drawerPortrait"), selectedResident);
+  setCharacterPortrait(document.querySelector("#drawerPortrait"), selectedResident);
   const statusLabel = selectedResident.status === "open" ? "Open to invitations" : selectedResident.status === "pending" ? "Invitation pending" : "Booked this week";
   document.querySelector("#drawerStatus").textContent = statusLabel;
 
@@ -862,6 +930,7 @@ async function syncSlackResidents() {
     const response = await fetch("/api/slack/members", { headers: { accept: "application/json" } });
     if (!response.ok) throw new Error("Slack sync unavailable");
     const data = await response.json();
+    await Promise.all(data.members.map(async member => { member.character = await loadCharacterArt(member.character); }));
     const summary = document.querySelector("#neighborSummary");
     outgoingInvitations = Array.isArray(data.outgoingInvitations) ? data.outgoingInvitations : [];
     currentUser = data.members.find(member => member.isCurrentUser) || null;
@@ -881,6 +950,7 @@ async function syncSlackResidents() {
       id: index + 1,
       slackId: member.id,
       spriteIndex: member.appearanceIndex,
+      character: member.character,
       name: member.displayName,
       displayName: member.displayName,
       realName: member.realName,
@@ -978,7 +1048,7 @@ function renderCurrentProfile() {
   const profileButton = document.querySelector("#profileButton");
   setSlackAvatar(profileButton, currentUser || { displayName: name });
   profileButton.setAttribute("aria-label", currentUser ? `Open ${name}'s Slack profile` : "Open your profile");
-  setSlackAvatar(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
+  setCharacterPortrait(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
   document.querySelector("#profileName").textContent = name;
   const ownFacts = [
     ["Role", currentUser?.title],

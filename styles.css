@@ -517,3 +517,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   #townView .legend { display: none; }
   .invite-dock { bottom: 12px; }
 }
+
+/* Frame rectangles keep generated art aligned without changing its source pixels. */
+.personal-character { position: relative; background-image: none !important; width: 76px; height: 92px; }
+.personal-art { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); background-repeat: no-repeat; image-rendering: pixelated; }
+.personal-character.facing-left { transform: scaleX(-1); }
+.remote-player.walking .personal-character { animation: none; }
+.portrait-character { width: 76px; height: 92px; }
+.profile-avatar:has(.portrait-character) { width: 76px; height: 98px; }

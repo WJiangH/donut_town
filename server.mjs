@@ -4,6 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
+import { characterForMember } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
 import { activeInvitations, activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
@@ -65,7 +66,7 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
 
     if (request.method === "GET" && url.pathname === "/api/health") {
-      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true, navigationV2: true, freeOverview: true });
+      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true, navigationV2: true, freeOverview: true, personalCharacters: "hmac-v1" });
     }
 
     if (request.method === "GET" && url.pathname === "/enter") {
@@ -127,6 +128,7 @@ const server = createServer(async (request, response) => {
           ...member,
           donutCount: null,
           appearanceIndex: appearanceIndexFor(member.id),
+          character: characterForMember(member.id, config.signingSecret),
           isCurrentUser: member.id === currentUserId,
           ...invitationStateFor(member.id)
         }))
