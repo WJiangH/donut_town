@@ -8,7 +8,7 @@ Use when a user requests reversible accessories, shoes, clothing variants, or a 
 - `scripts/wardrobe/build.py`: deterministic local pixel split and same-silhouette palette variants. Requires Pillow. Use local pixel editing only when authorized by the user and permitted by the active image tool rules; that was the explicitly accepted workflow for this prototype. Never infer permission to use arbitrary image editing tools from this reference alone.
 - `characters/wardrobe/r-7f3a2c.json`: rig version, common frame rectangles, base, required slots, optional slots, default items and layer order.
 - `characters/wardrobe/renderer.mjs`: shared compositing renderer. It selects one image per required slot, preserves crop/scale across all layers, and mirrors the entire composite for left.
-- `/wardrobe.html`: local fitting-room prototype with eyewear, jacket and shoe choices, four directions, walking, original comparison and reset. Selection persists only in this browser under the opaque character key. This is not a shared Town equipment setting.
+- `#profileWardrobe` in `index.html`, mounted by `profile-wardrobe.mjs`: compact English wardrobe inside the member’s own Slack profile, below My donuts. Includes eyewear, jacket/shoe swatches, four directions, walking and reset. Keep the Slack photo above it. There is no separate navigation entry; `/wardrobe.html` redirects to `/?profile=1` for old links. Selection persists only in this browser under the opaque character key, not as a shared Town equipment setting.
 
 ## Character construction contract
 

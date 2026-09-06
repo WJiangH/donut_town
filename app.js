@@ -1046,7 +1046,7 @@ function renderCurrentProfile() {
   setSlackAvatar(profileButton, currentUser || { displayName: name });
   profileButton.setAttribute("aria-label", currentUser ? `Open ${name}'s Slack profile` : "Open your profile");
   setSlackAvatar(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
-  document.querySelector("#wardrobeLink").hidden = currentUser?.character?.url !== "/assets/residents/r-7f3a2c/walk-v1.png";
+  document.querySelector("#profileWardrobe").hidden = currentUser?.character?.url !== "/assets/residents/r-7f3a2c/walk-v1.png";
   document.querySelector("#profileName").textContent = name;
   const ownFacts = [
     ["Role", currentUser?.title],
@@ -1060,6 +1060,7 @@ function renderCurrentProfile() {
     : "Donut history will appear after the Lottery history sync is connected.";
 }
 
+let wardrobeMount = null;
 function openProfile() {
   closeDrawer();
   const profileDrawer = document.querySelector("#profileDrawer");
@@ -1067,9 +1068,17 @@ function openProfile() {
   profileDrawer.setAttribute("aria-hidden", "false");
   document.querySelector("#profileScrim").hidden = false;
   document.querySelector("#profileButton").setAttribute("aria-expanded", "true");
+  const wardrobe = document.querySelector("#profileWardrobe");
+  if (!wardrobe.hidden && !wardrobeMount) {
+    wardrobeMount = import("./profile-wardrobe.mjs").then(module => module.mountWardrobe(wardrobe)).catch(() => {
+      wardrobe.querySelector('[role="status"]').textContent = "Wardrobe unavailable. Reopen to retry.";
+      wardrobeMount = null;
+    });
+  }
 }
 
 function closeProfile() {
+  document.querySelector("#profileWardrobe").dispatchEvent(new Event("wardrobe-close"));
   const profileDrawer = document.querySelector("#profileDrawer");
   profileDrawer.classList.remove("open");
   profileDrawer.setAttribute("aria-hidden", "true");
@@ -1293,6 +1302,7 @@ async function startTown() {
   if (ready) {
     loading.classList.add("done");
     document.querySelector(".app-shell").inert = false;
+    if (new URLSearchParams(location.search).get("profile") === "1") openProfile();
     syncInvitationStates();
   } else {
     message.textContent = "Could not load the town. Please try again.";

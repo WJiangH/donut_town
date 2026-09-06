@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=23" />
+    <link rel="stylesheet" href="styles.css?v=24" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -29,7 +29,6 @@
         </div>
 
         <div class="profile-control">
-          <a id="wardrobeLink" class="wardrobe-link" href="/wardrobe.html" title="Try outfits · preview saved on this device" hidden>Wardrobe</a>
           <button class="availability" id="availabilityButton" aria-pressed="true">
             <span class="status-light" aria-hidden="true"></span>
             <span id="availabilityText">Open to invites</span>
@@ -170,10 +169,23 @@
           <strong id="myDonutCount">-</strong>
         </div>
       </section>
+      <section id="profileWardrobe" class="profile-wardrobe" aria-labelledby="wardrobeTitle" hidden>
+        <h3 id="wardrobeTitle">Wardrobe</h3>
+        <div class="wardrobe-body">
+          <div class="wardrobe-preview"><canvas width="120" height="175" aria-label="Outfit preview"></canvas></div>
+          <div class="wardrobe-options">
+            <fieldset data-slot="eyewear"><legend>Eyewear</legend><button data-item="none" aria-pressed="true">Glasses</button><button data-item="smoke" aria-pressed="false">Shades</button></fieldset>
+            <fieldset data-slot="jacket"><legend>Jacket</legend><button data-item="original" aria-label="Charcoal jacket" title="Charcoal" style="--swatch:#333438" class="outfit-swatch" aria-pressed="true"></button><button data-item="navy" aria-label="Navy jacket" title="Navy" style="--swatch:#2a496c" class="outfit-swatch" aria-pressed="false"></button><button data-item="olive" aria-label="Olive jacket" title="Olive" style="--swatch:#505b36" class="outfit-swatch" aria-pressed="false"></button></fieldset>
+            <fieldset data-slot="shoes"><legend>Shoes</legend><button data-item="original" aria-label="Brown shoes" title="Brown" style="--swatch:#352920" class="outfit-swatch" aria-pressed="true"></button><button data-item="cream" aria-label="Cream shoes" title="Cream" style="--swatch:#d3cab0" class="outfit-swatch" aria-pressed="false"></button><button data-item="burgundy" aria-label="Burgundy shoes" title="Burgundy" style="--swatch:#752f35" class="outfit-swatch" aria-pressed="false"></button></fieldset>
+          </div>
+        </div>
+        <div class="wardrobe-directions"><button data-dir="down" aria-pressed="true">Front</button><button data-dir="right" aria-pressed="false">Right</button><button data-dir="up" aria-pressed="false">Back</button><button data-dir="left" aria-pressed="false">Left</button><button data-action="walk" aria-pressed="false">Walk</button><button data-action="reset">Reset</button></div>
+        <p role="status">Loading wardrobe…</p>
+      </section>
     </aside>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
-    <script src="app.js?v=27"></script>
+    <script src="app.js?v=28"></script>
   </body>
 </html>
