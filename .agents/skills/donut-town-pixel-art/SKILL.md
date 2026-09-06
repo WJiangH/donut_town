@@ -15,7 +15,11 @@ The preferred production contract is three frames for each of three source direc
 
 ## Slack avatar personalization
 
-For turning a custom Slack avatar into a persistent resident identity, read [references/avatar-personalization.md](references/avatar-personalization.md). It covers default-avatar eligibility, generation, current renderer contracts, fallback, and member edits.
+For turning a custom Slack avatar into a persistent resident identity, read [references/avatar-personalization.md](references/avatar-personalization.md). Start with a member name; no uploaded PNG is required. The reference describes the authenticated Render avatar-fetch helper, default-avatar eligibility, generation, runtime contracts, fallback, and member edits.
+
+## Production animation
+
+When asked to continue a preview into walking or production animation, follow [references/production-animation.md](references/production-animation.md). Complete the transparent atlas, measured frame manifest and interactive animation QA; an existing static preview is the input, not the deliverable.
 
 ## Workflow
 
