@@ -51,11 +51,25 @@ const mapObstacles = [
   { x: 59.8, y: 63.5, rx: 3.6, ry: 3.4 }
 ];
 
+const chemPodObstacles = [
+  { left: 8, right: 22, top: 40, bottom: 70 },
+  { left: 31, right: 66, top: 40, bottom: 67 },
+  { left: 78, right: 92, top: 40, bottom: 70 },
+  { left: 16, right: 82, top: 15, bottom: 37 }
+];
+
 let outgoingInvitations = [];
 let selectedResident = null;
 let currentFilter = "all";
 let invitesOpen = true;
 const player = { id: 11, name: "You", x: 50, y: 80 };
+const scenePlayerPositions = {
+  town: { x: player.x, y: player.y },
+  chemPod: { x: 50, y: 86 }
+};
+let currentScene = "town";
+let pendingSceneTransition = null;
+let sceneTransitioning = false;
 let currentUser = null;
 let currentPairId = null;
 let pairActivities = [];
@@ -74,6 +88,7 @@ const inviteButton = document.querySelector("#inviteButton");
 const pendingInviteList = document.querySelector("#pendingInviteList");
 const pendingInviteEmpty = document.querySelector("#pendingInviteEmpty");
 const toast = document.querySelector("#toast");
+const sceneCurtain = document.querySelector("#sceneCurtain");
 
 function escapeHtml(value) {
   return String(value)
@@ -156,11 +171,18 @@ function renderResidents() {
     <span class="workstation-dough" aria-hidden="true"></span>
     <span class="workstation-counter" aria-hidden="true"><i></i></span>
   </div>`).join("");
-  layer.innerHTML = `${activityMarkup}${residentsMarkup}<div class="player-pin ${currentUser?.status || "open"} ${currentUser?.status === "booked" ? "making-donut" : ""}" id="playerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+  layer.innerHTML = `${activityMarkup}${residentsMarkup}<div class="player-pin ${currentUser?.status || "open"} ${currentUser?.status === "booked" ? "making-donut" : ""}" id="townPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
     ${playerMarkup()}
   </div>`;
   document.querySelector("#mapEmpty").hidden = layer.querySelectorAll(".resident-pin:not(.hidden)").length > 0;
   layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
+}
+
+function renderChemPod() {
+  const roomLayer = document.querySelector("#chemPodResidentsLayer");
+  roomLayer.innerHTML = `<div class="player-pin ${currentUser?.status || "open"}" id="chemPodPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+    ${playerMarkup()}
+  </div>`;
 }
 
 function layoutBookedPairs() {
@@ -186,11 +208,12 @@ function layoutBookedPairs() {
       const spot = personIndex === 0 ? station.left : station.right;
       if (person.isPlayer) {
         if (currentPairId !== pairId) {
-          player.x = spot.x;
-          player.y = spot.y;
+          const townPosition = currentScene === "town" ? player : scenePlayerPositions.town;
+          townPosition.x = spot.x;
+          townPosition.y = spot.y;
           clickPath = [];
         }
-        playerDirection = personIndex === 0 ? "right" : "left";
+        if (currentScene === "town") playerDirection = personIndex === 0 ? "right" : "left";
       } else {
         const resident = residents.find(item => item.slackId === person.slackId);
         resident.x = spot.x;
@@ -233,20 +256,37 @@ function distanceToSegment(x, y, segment) {
   return Math.hypot(x - (x1 + t * (x2 - x1)), y - (y1 + t * (y2 - y1)));
 }
 
-function isWalkable(x, y) {
+function isTownWalkable(x, y) {
   const plaza = isInsideEllipse(x, y, { x: 50, y: 48.5, rx: 23.5, ry: 20.5 });
   const corridor = walkCorridors.some(segment => distanceToSegment(x, y, segment) <= segment.width);
   const obstacle = mapObstacles.some(item => isInsideEllipse(x, y, item));
   return (plaza || corridor) && !obstacle;
 }
 
+function isChemPodWalkable(x, y) {
+  const insideFloor = x >= 10 && x <= 90 && y >= 34 && y <= 89;
+  const blocked = chemPodObstacles.some(obstacle => x >= obstacle.left && x <= obstacle.right && y >= obstacle.top && y <= obstacle.bottom);
+  return insideFloor && !blocked;
+}
+
+function isWalkable(x, y) {
+  return currentScene === "chemPod" ? isChemPodWalkable(x, y) : isTownWalkable(x, y);
+}
+
+function activeSceneBounds() {
+  return currentScene === "chemPod"
+    ? { minX: 10, maxX: 90, minY: 34, maxY: 89 }
+    : { minX: 11, maxX: 89, minY: 5, maxY: 96 };
+}
+
 function nearestWalkable(x, y) {
-  x = Math.max(11, Math.min(89, x));
-  y = Math.max(5, Math.min(96, y));
+  const bounds = activeSceneBounds();
+  x = Math.max(bounds.minX, Math.min(bounds.maxX, x));
+  y = Math.max(bounds.minY, Math.min(bounds.maxY, y));
   if (isWalkable(x, y)) return { x, y };
   let best = { x: player.x, y: player.y, distance: Infinity };
-  for (let px = 11; px <= 89; px += 1) {
-    for (let py = 5; py <= 96; py += 1) {
+  for (let px = bounds.minX; px <= bounds.maxX; px += 1) {
+    for (let py = bounds.minY; py <= bounds.maxY; py += 1) {
       if (!isWalkable(px, py)) continue;
       const distance = (px - x) ** 2 + (py - y) ** 2;
       if (distance < best.distance) best = { x: px, y: py, distance };
@@ -303,7 +343,7 @@ function findWalkPath(start, goal) {
 }
 
 function updatePlayerElement(isMoving) {
-  const pin = document.querySelector("#playerPin");
+  const pin = document.querySelector(currentScene === "chemPod" ? "#chemPodPlayerPin" : "#townPlayerPin");
   if (!pin) return;
   pin.style.left = `${player.x}%`;
   pin.style.top = `${player.y}%`;
@@ -322,6 +362,44 @@ function setPlayerDirection(dx, dy) {
   else if (Math.abs(dy) > 0) playerDirection = dy < 0 ? "up" : "down";
 }
 
+function setScene(nextScene) {
+  if (nextScene === currentScene) return;
+  scenePlayerPositions[currentScene] = { x: player.x, y: player.y };
+  currentScene = nextScene;
+  Object.assign(player, scenePlayerPositions[currentScene]);
+  playerDirection = currentScene === "chemPod" ? "up" : "down";
+  playerFrame = 1;
+  clickPath = [];
+  pendingSceneTransition = null;
+  document.querySelector("#townView").hidden = currentScene !== "town";
+  document.querySelector("#chemPodView").hidden = currentScene !== "chemPod";
+  document.querySelector("#sceneTitle").textContent = currentScene === "chemPod" ? "Chem Pod" : "Town";
+  if (currentScene === "chemPod") renderChemPod();
+  else renderResidents();
+}
+
+function transitionToScene(nextScene) {
+  if (sceneTransitioning || nextScene === currentScene) return;
+  sceneTransitioning = true;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  sceneCurtain.classList.add("active");
+  window.setTimeout(() => {
+    setScene(nextScene);
+    showToast(nextScene === "chemPod" ? "Welcome to Chem Pod." : "Back in Donut Town.");
+    window.setTimeout(() => {
+      sceneCurtain.classList.remove("active");
+      sceneTransitioning = false;
+    }, reducedMotion ? 0 : 120);
+  }, reducedMotion ? 0 : 130);
+}
+
+function walkToScene(nextScene) {
+  const doorway = nextScene === "chemPod" ? { x: 88, y: 59 } : { x: 50, y: 87 };
+  pendingSceneTransition = nextScene;
+  clickPath = findWalkPath(player, doorway);
+  if (!clickPath.length) transitionToScene(nextScene);
+}
+
 function gameLoop(timestamp) {
   const deltaSeconds = Math.min((timestamp - lastGameTime) / 1000, 0.05);
   lastGameTime = timestamp;
@@ -333,13 +411,23 @@ function gameLoop(timestamp) {
   if (pressedKeys.has("arrowleft") || pressedKeys.has("a")) dx -= 1;
   if (pressedKeys.has("arrowright") || pressedKeys.has("d")) dx += 1;
 
-  if ((dx || dy) && clickPath.length) clickPath = [];
+  if ((dx || dy) && clickPath.length) {
+    clickPath = [];
+    pendingSceneTransition = null;
+  }
   if (!dx && !dy && clickPath.length) {
     const target = clickPath[0];
     const targetDx = target.x - player.x;
     const targetDy = target.y - player.y;
     const targetDistance = Math.hypot(targetDx, targetDy);
-    if (targetDistance < 0.35) clickPath.shift();
+    if (targetDistance < 0.35) {
+      clickPath.shift();
+      if (!clickPath.length && pendingSceneTransition) {
+        const nextScene = pendingSceneTransition;
+        pendingSceneTransition = null;
+        transitionToScene(nextScene);
+      }
+    }
     else {
       dx = targetDx / targetDistance;
       dy = targetDy / targetDistance;
@@ -363,7 +451,10 @@ function gameLoop(timestamp) {
       const canMoveY = isWalkable(player.x, nextY);
       if (canMoveX) player.x = nextX;
       else if (canMoveY) player.y = nextY;
-      else clickPath = [];
+      else {
+        clickPath = [];
+        pendingSceneTransition = null;
+      }
     }
     if (timestamp - lastFrameChange > 135) {
       playerFrame = (playerFrame + 1) % 3;
@@ -474,6 +565,7 @@ async function syncSlackResidents() {
     layoutBookedPairs();
     updateAvailabilityControl();
     renderResidents();
+    if (currentScene === "chemPod") renderChemPod();
     renderInvitationDock();
   } catch {
     currentUser = null;
@@ -499,6 +591,7 @@ async function syncInvitationStates() {
     layoutBookedPairs();
     updateAvailabilityControl();
     renderResidents();
+    if (currentScene === "chemPod") renderChemPod();
     renderInvitationDock();
     if (drawer.classList.contains("open") && selectedResident) openResident(selectedResident.id);
   } catch {
@@ -613,14 +706,21 @@ document.querySelector("#dockHandle").addEventListener("click", () => {
   document.querySelector("#dockHandle").setAttribute("aria-expanded", String(!body.hidden));
 });
 
-document.querySelector("#mapWorld").addEventListener("click", event => {
+function movePlayerFromMapClick(event) {
   if (event.target.closest("button")) return;
   const bounds = event.currentTarget.getBoundingClientRect();
   const x = ((event.clientX - bounds.left) / bounds.width) * 100;
   const y = ((event.clientY - bounds.top) / bounds.height) * 100;
   const destination = nearestWalkable(x, y);
+  pendingSceneTransition = null;
   clickPath = findWalkPath(player, destination);
-});
+}
+
+document.querySelector("#mapWorld").addEventListener("click", movePlayerFromMapClick);
+document.querySelector("#chemPodWorld").addEventListener("click", movePlayerFromMapClick);
+document.querySelector("#chemPodEntrance").addEventListener("click", () => walkToScene("chemPod"));
+document.querySelector("#chemPodExit").addEventListener("click", () => walkToScene("town"));
+document.querySelector("#leaveChemPod").addEventListener("click", () => transitionToScene("town"));
 
 async function sendSelectedInvitation() {
   const person = selectedResident;

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=13" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -24,7 +24,7 @@
         </a>
 
         <div class="town-nav" aria-label="Current view">
-          <span class="nav-current">Town</span>
+          <span class="nav-current" id="sceneTitle">Town</span>
         </div>
 
         <div class="profile-control">
@@ -53,6 +53,10 @@
           <div class="map-world" id="mapWorld">
             <img class="town-map" src="assets/donut-town-map.png" alt="A green pixel-art village with a donut cafe, fountain, cottages, paths and a garden." />
             <div class="residents-layer" id="residentsLayer" aria-live="polite"></div>
+            <button class="building-entrance" id="chemPodEntrance" aria-label="Walk to and enter Chem Pod">
+              <span>Chem Pod</span>
+              <small>Enter</small>
+            </button>
           </div>
           <div class="map-empty" id="mapEmpty" hidden>
             <strong>No neighbors found</strong>
@@ -70,6 +74,31 @@
           <span><i class="legend-swatch pending"></i>Invite pending</span>
           <span><i class="legend-swatch booked"></i>Booked this week</span>
         </aside>
+      </section>
+
+      <section class="interior-stage" id="chemPodView" aria-label="Chem Pod interior" hidden>
+        <div class="room-toolbar">
+          <button class="room-back-button" id="leaveChemPod">Back to town</button>
+          <div>
+            <span>Inside</span>
+            <strong>Chem Pod</strong>
+          </div>
+        </div>
+
+        <div class="map-wrap">
+          <div class="map-world interior-world" id="chemPodWorld">
+            <img class="town-map interior-map" src="assets/chem-pod-interior.png" alt="A warm pixel-art chemistry room with workbenches, glassware, plants and open floor paths." />
+            <div class="residents-layer" id="chemPodResidentsLayer" aria-live="polite"></div>
+            <button class="room-exit" id="chemPodExit" aria-label="Walk to the door and leave Chem Pod">
+              <span>Exit</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="movement-help room-movement-help">
+          <strong>Explore Chem Pod</strong>
+          <span>Click the floor or use WASD / arrow keys</span>
+        </div>
       </section>
 
       <aside class="invite-dock" id="inviteDock" aria-label="Your pending Donut invitations">
@@ -129,6 +158,7 @@
     </aside>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=16"></script>
+    <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
+    <script src="app.js?v=17"></script>
   </body>
 </html>

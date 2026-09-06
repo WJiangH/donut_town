@@ -64,7 +64,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .user-avatar { width: 38px; height: 38px; padding: 0; overflow: hidden; border: 3px solid var(--ink); background: #efb44f; border-radius: 10px; font-weight: 900; cursor: pointer; box-shadow: 2px 2px 0 var(--ink); }
 .slack-avatar-image { display: block; width: 100%; height: 100%; object-fit: cover; }
 
-.town-stage { position: relative; height: calc(100dvh - 72px); overflow: hidden; background: #8ec76d; }
+.town-stage, .interior-stage { position: relative; height: calc(100dvh - 72px); overflow: hidden; }
+.town-stage { background: #8ec76d; }
+.interior-stage { background: #171d18; }
 .map-wrap { position: absolute; inset: 0; overflow: hidden; }
 .map-world {
   position: absolute;
@@ -75,10 +77,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   transform: translate(-50%, -50%);
 }
 .town-map { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; filter: saturate(.88) brightness(.99); }
-.town-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 120px rgba(22, 49, 38, .18); }
+.town-stage::after, .interior-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 120px rgba(22, 49, 38, .18); }
 
 .map-toolbar { position: absolute; z-index: 8; left: 20px; top: 18px; display: flex; align-items: flex-start; gap: 10px; }
-.week-card, .filter-group, .legend, .invite-dock, .resident-drawer, .profile-drawer {
+.week-card, .filter-group, .legend, .invite-dock, .resident-drawer, .profile-drawer, .room-toolbar {
   background: var(--surface); border: 3px solid var(--ink); box-shadow: 5px 5px 0 rgba(23, 49, 38, .82); border-radius: var(--radius);
 }
 .week-card { padding: 10px 13px; min-width: 188px; }
@@ -87,6 +89,58 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .filter-group { padding: 5px; }
 .filter-button { padding: 9px 11px; border-radius: 8px; color: var(--muted); font-size: 10px; }
 .filter-button:hover, .filter-button.active { color: var(--ink); background: #e3efda; }
+
+.building-entrance, .room-exit {
+  position: absolute;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.building-entrance { left: 89%; top: 59%; width: 76px; height: 92px; transform: translate(-50%, -72%); align-content: end; }
+.building-entrance::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  width: 42px;
+  height: 16px;
+  transform: translateX(-50%);
+  border: 3px solid rgba(247, 250, 244, .92);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(23, 49, 38, .75);
+}
+.building-entrance span, .building-entrance small, .room-exit span {
+  position: relative;
+  padding: 4px 7px;
+  border: 2px solid var(--ink);
+  border-radius: 7px;
+  background: var(--surface-solid);
+  box-shadow: 2px 2px 0 var(--ink);
+  font-weight: 900;
+  white-space: nowrap;
+}
+.building-entrance span { font-size: 9px; }
+.building-entrance small { margin-top: 4px; color: var(--accent-dark); font-size: 7px; }
+.building-entrance:hover, .building-entrance:focus-visible, .room-exit:hover, .room-exit:focus-visible { transform: translate(-50%, -72%) translateY(-3px); }
+
+.interior-world { width: max(100%, calc((100dvh - 72px) * 1.5)); }
+.interior-map { filter: saturate(.88) brightness(.98); }
+.room-toolbar { position: absolute; z-index: 8; left: 20px; top: 18px; display: flex; align-items: center; gap: 13px; padding: 8px; }
+.room-toolbar div { padding-right: 7px; }
+.room-toolbar span, .room-toolbar strong { display: block; }
+.room-toolbar span { margin-bottom: 2px; color: var(--muted); font-size: 8px; }
+.room-toolbar strong { font-size: 12px; }
+.room-back-button { border: 2px solid var(--ink); border-radius: 8px; background: var(--accent-dark); color: #fffaf2; padding: 9px 11px; cursor: pointer; font-size: 9px; font-weight: 900; box-shadow: 2px 2px 0 var(--ink); }
+.room-back-button:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+.room-exit { left: 50%; top: 95%; width: 90px; height: 62px; transform: translate(-50%, -72%); align-content: end; }
+.room-exit span { color: var(--accent-dark); font-size: 8px; }
+.room-movement-help { bottom: 20px; }
+
+.scene-curtain { position: fixed; inset: 72px 0 0; z-index: 60; pointer-events: none; background: #173126; opacity: 0; transition: opacity 130ms steps(3, end); }
+.scene-curtain.active { opacity: 1; }
 
 .residents-layer { position: absolute; inset: 0; z-index: 4; }
 .resident-pin { position: absolute; transform: translate(-50%, -100%); border: 0; background: transparent; cursor: pointer; padding: 0; }
@@ -385,7 +439,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   .town-nav { display: none; }
   .profile-control .availability { display: none; }
   .brand small { display: none; }
-  .town-stage { height: calc(100dvh - 66px); }
+  .town-stage, .interior-stage { height: calc(100dvh - 66px); }
   .map-world { width: max(100%, calc((100dvh - 66px) * 1.5)); }
   .map-toolbar { left: 10px; right: 10px; top: 10px; display: block; }
   .week-card { width: fit-content; min-width: 0; }
@@ -395,4 +449,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   .movement-help { left: 10px; bottom: 72px; }
   .invite-dock { right: 10px; bottom: 58px; width: min(294px, calc(100vw - 20px)); }
   .resident-drawer, .profile-drawer { top: 76px; bottom: 58px; right: 10px; width: calc(100vw - 20px); }
+  .room-toolbar { left: 10px; top: 10px; }
+  .scene-curtain { inset: 66px 0 0; }
 }
