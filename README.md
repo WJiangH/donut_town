@@ -81,8 +81,28 @@ This is still a testing build:
 - Real DM sending is disabled by default; dry-run is the default behavior.
 - Residents can be filtered and inspected in the product prototype.
 - The current user can click paths or hold WASD / arrow keys to walk.
+- Walking is limited to the roads, lawns and bridges painted on the map.
 - A user can rank up to three invitations.
 - Booked and pending residents have visible status without revealing partners.
+
+### Where the town map can be walked
+
+`assets/town-walkmask.js` is a baked grid, one cell per 8x8 map pixels, marking
+every tile a character may stand on: paved roads, plazas, open lawn and the
+bridges between them. Everything else - water, buildings, hedges, tree cover,
+fenced farm plots - is solid, and the mask keeps only the ground you can
+actually reach on foot. `town-collision.js` reads it at runtime for collision,
+click-to-walk routing and for snapping hand-placed spots onto real ground.
+
+Regenerate it whenever the map art changes, and open the town with
+`?collision=1` to see the result painted over the map:
+
+```
+node scripts/build-town-walkmask.mjs --preview /tmp/walkmask.png
+```
+
+Bridges and deeply shaded crossings are listed as `ALLOW_SEGMENTS` inside that
+script; add to them if a new crossing reads as water to the colour pass.
 
 ### Free invitation history with Upstash
 

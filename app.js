@@ -603,7 +603,10 @@ function distanceToSegment(x, y, segment) {
   return Math.hypot(x - (x1 + t * (x2 - x1)), y - (y1 + t * (y2 - y1)));
 }
 
+// The baked mask follows the painted roads, lawns and bridges; the corridors
+// below stay as a fallback for when the mask file is missing.
 function isTownWalkable(x, y) {
+  if (window.TownCollision?.ready) return window.TownCollision.isWalkable(x, y);
   const plaza = townPlazas.some(item => isInsideEllipse(x, y, item));
   const corridor = walkCorridors.some(segment => distanceToSegment(x, y, segment) <= segment.width);
   const obstacle = mapObstacles.some(item => isInsideEllipse(x, y, item));
@@ -712,6 +715,8 @@ function nearestWalkable(x, y) {
   x = Math.max(bounds.minX, Math.min(bounds.maxX, x));
   y = Math.max(bounds.minY, Math.min(bounds.maxY, y));
   if (isWalkable(x, y)) return { x, y };
+  // The town mask is far finer than a one percent grid, so search it directly.
+  if (currentScene === "town" && window.TownCollision?.ready) return window.TownCollision.nearestWalkable(x, y, player);
   let best = { x: player.x, y: player.y, distance: Infinity };
   for (let px = bounds.minX; px <= bounds.maxX; px += 1) {
     for (let py = bounds.minY; py <= bounds.maxY; py += 1) {
@@ -724,6 +729,7 @@ function nearestWalkable(x, y) {
 }
 
 function findWalkPath(start, goal) {
+  if (currentScene === "town" && window.TownCollision?.ready) return window.TownCollision.findPath(start, goal);
   const from = nearestWalkable(Math.round(start.x), Math.round(start.y));
   const to = nearestWalkable(Math.round(goal.x), Math.round(goal.y));
   const startKey = `${from.x},${from.y}`;
@@ -1008,6 +1014,20 @@ for (let step = 0; step <= 5; step++) {
     residentSlots.push({ x, y, activity: "path" });
   }
 }
+// Hand-placed anchors predate the walk mask, so pull each one onto real ground.
+function snapTownAnchors() {
+  if (!window.TownCollision?.ready) return;
+  const snap = point => {
+    const spot = window.TownCollision.nearestWalkable(point.x, point.y);
+    point.x = spot.x;
+    point.y = spot.y;
+  };
+  residentSlots.forEach(snap);
+  donutStations.forEach(station => [station, station.left, station.right].forEach(snap));
+  [player, scenePlayerPositions.town].forEach(snap);
+}
+snapTownAnchors();
+
 residents.forEach((person, index) => Object.assign(person, populationSlot(residentSlots, index)));
 
 async function syncSlackResidents() {
