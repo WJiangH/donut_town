@@ -55,7 +55,7 @@ If transparency fails, request background extraction with the approved atlas as 
 Current implementation entry points:
 
 - `characters/assignments.json`: HMAC-SHA256 member keys mapped to opaque character IDs. No raw member IDs or display names in public bindings.
-- `characters/catalog.mjs`: server-only key computation and validated manifest lookup. Use the existing server `SLACK_SIGNING_SECRET` with domain prefix `donut-town:character:v1\0`. Never commit the key. Test correct-key lookup locally without putting real IDs into tests. Ordinary tests use invented member strings. A key rotation requires regenerating the assignments.
+- `characters/catalog.mjs`: server-only key computation and validated manifest lookup. Use the existing server `SLACK_SIGNING_SECRET` with domain prefix `donut-town:character:v1\0`. Never commit the key. Test correct-key lookup locally without putting real IDs into tests. Ordinary tests use invented member strings. A key rotation requires regenerating the assignments. For a Render deployment, use the matched member’s `characterKey` returned by the authenticated `/api/slack/members` endpoint. Do not assume the local signing secret equals the deployed secret. After deployment, verify that the member API returns the expected non-null `character.url`; an HTTP 200 for the PNG alone does not verify the binding.
 - `characters/<character-id>.json`: image URL/dimensions, common frameHeight and nine `[x,y,width,height]` source rectangles in down/right/up order.
 - `assets/residents/<character-id>/`: versioned production PNG. Keep the photo and discarded intermediates out of public assets.
 - Server `/api/slack/members` attaches `character` to each assigned member. Never select an identity by roster index or display name.
