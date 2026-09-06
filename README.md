@@ -58,9 +58,10 @@ future Donut history. It remains a test-only UI affordance.
 
 This is still a testing build:
 
-- Invitation state uses the optional private Slack ledger when
-  `SLACK_LEDGER_CHANNEL_ID` is configured. Without it, state remains in memory
-  and is lost when the server restarts.
+- Invitation state uses Upstash when `UPSTASH_REDIS_REST_URL` and
+  `UPSTASH_REDIS_REST_TOKEN` are configured. The private Slack ledger remains
+  an optional fallback; without either store, state remains in memory and is
+  lost when the server restarts.
 - Slack-launched sessions expire after eight hours. Direct staging-password
   access remains deliberately unlinked to a Slack member.
 - Used five-minute launch links are remembered only in process memory; a server
@@ -83,7 +84,19 @@ This is still a testing build:
 - A user can rank up to three invitations.
 - Booked and pending residents have visible status without revealing partners.
 
-### Free invitation history
+### Free invitation history with Upstash
+
+The preferred persistent store is an Upstash Redis database in the same region
+as Render. Copy its **REST URL** and **REST Token** into Render as
+`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. Donut Town writes one
+versioned snapshot per week and reads it once after a Render restart; normal
+town polling continues to use process memory.
+
+When Upstash is configured it is the primary store. Existing Slack-ledger data
+for the current week is imported automatically only when the Upstash week is
+still empty. Previous weekly keys remain available for future history views.
+
+### Optional Slack invitation ledger
 
 Donut Town can use a private Slack channel as a small, no-cost invitation
 ledger. Create a private channel containing only the administrator and Donut

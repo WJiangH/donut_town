@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { SlackClient } from "./slack/client.mjs";
 import { activeInvitations, activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
 import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "./slack/ledger.mjs";
+import { UpstashInvitationStore } from "./slack/upstash-store.mjs";
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
@@ -19,6 +20,8 @@ const config = {
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   channelId: process.env.SLACK_CHANNEL_ID || "",
   ledgerChannelId: process.env.SLACK_LEDGER_CHANNEL_ID || "",
+  upstashUrl: process.env.UPSTASH_REDIS_REST_URL || "",
+  upstashToken: process.env.UPSTASH_REDIS_REST_TOKEN || "",
   clientId: process.env.SLACK_CLIENT_ID || "",
   clientSecret: process.env.SLACK_CLIENT_SECRET || "",
   stagingPassword: process.env.STAGING_PASSWORD || "",
@@ -28,6 +31,9 @@ const config = {
   port: Number(process.env.PORT || 4173),
   host: process.env.HOST || (process.env.RENDER ? "0.0.0.0" : "127.0.0.1")
 };
+if (Boolean(config.upstashUrl) !== Boolean(config.upstashToken)) {
+  throw new Error("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be configured together.");
+}
 if (process.env.RENDER && !config.stagingPassword) {
   throw new Error("STAGING_PASSWORD is required on Render so Slack member data is not public.");
 }
@@ -36,6 +42,7 @@ if (process.env.RENDER && (!config.botToken || !config.signingSecret || !config.
 }
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
 const profileStore = new SheetProfileStore({ url: config.profileApiUrl, secret: config.profileApiSecret });
+const invitationStore = new UpstashInvitationStore({ url: config.upstashUrl, token: config.upstashToken });
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
@@ -45,8 +52,8 @@ let slackJwksCache = null;
 let expectedSlackTeamId = null;
 let profileCache = null;
 let profileCacheExpiresAt = 0;
-let hydratedLedgerRoundId = null;
-let ledgerHydrationPromise = null;
+let hydratedInvitationRoundId = null;
+let invitationHydrationPromise = null;
 const ledgerMessageTsByInviter = new Map();
 
 const server = createServer(async (request, response) => {
@@ -86,14 +93,16 @@ const server = createServer(async (request, response) => {
         interactivityConfigured: Boolean(config.signingSecret),
         oneClickConfigured: isSlackLoginConfigured(),
         currentUserConfigured: Boolean(session?.sub),
+        persistentStore: invitationStore.configured ? "upstash" : config.ledgerChannelId ? "slack" : "memory",
         ledgerConfigured: Boolean(config.ledgerChannelId),
+        upstashConfigured: invitationStore.configured,
         sendEnabled: config.allowSend
       });
     }
 
     if (request.method === "GET" && url.pathname === "/api/slack/members") {
       if (!slack || !config.channelId) return missingConfiguration(response);
-      await ensureInvitationLedgerHydrated();
+      await ensureInvitationStateHydrated();
       const members = await getCachedChannelMembers();
       const session = getSlackSession(request);
       const currentUserId = session?.sub;
@@ -116,7 +125,7 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/api/slack/invitation-states") {
       if (!slack || !config.channelId) return missingConfiguration(response);
-      await ensureInvitationLedgerHydrated();
+      await ensureInvitationStateHydrated();
       const members = await getCachedChannelMembers();
       response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
@@ -142,7 +151,7 @@ const server = createServer(async (request, response) => {
     if (request.method === "POST" && url.pathname === "/api/slack/invitations") {
       const session = getSlackSession(request);
       if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
-      await ensureInvitationLedgerHydrated();
+      await ensureInvitationStateHydrated();
       const body = JSON.parse(await readBody(request));
       const members = await getCachedChannelMembers();
       const selfTest = body.selfTest === true;
@@ -257,13 +266,22 @@ async function getCachedChannelMembers() {
   return memberSyncPromise;
 }
 
-async function ensureInvitationLedgerHydrated() {
-  if (!config.ledgerChannelId) return;
+async function ensureInvitationStateHydrated() {
+  if (!invitationStore.configured && !config.ledgerChannelId) return;
   const roundId = activeRoundId();
-  if (hydratedLedgerRoundId === roundId) return;
-  if (ledgerHydrationPromise) return ledgerHydrationPromise;
-  ledgerHydrationPromise = slack.listRecentMessages(config.ledgerChannelId, 200)
-    .then(messages => {
+  if (hydratedInvitationRoundId === roundId) return;
+  if (invitationHydrationPromise) return invitationHydrationPromise;
+  invitationHydrationPromise = (async () => {
+    if (invitationStore.configured) {
+      const snapshots = await invitationStore.load(roundId);
+      if (snapshots !== null || !config.ledgerChannelId) {
+        restoreInvitationSnapshots(snapshots || []);
+        hydratedInvitationRoundId = roundId;
+        return;
+      }
+    }
+    if (config.ledgerChannelId) {
+      const messages = await slack.listRecentMessages(config.ledgerChannelId, 200);
       const snapshots = new Map();
       ledgerMessageTsByInviter.clear();
       for (const message of messages) {
@@ -273,17 +291,25 @@ async function ensureInvitationLedgerHydrated() {
         ledgerMessageTsByInviter.set(snapshot.inviterId, message.ts);
       }
       restoreInvitationSnapshots([...snapshots.values()]);
-      hydratedLedgerRoundId = roundId;
-    })
-    .finally(() => {
-      ledgerHydrationPromise = null;
-    });
-  return ledgerHydrationPromise;
+      if (invitationStore.configured && snapshots.size) {
+        await invitationStore.save(roundId, [...snapshots.values()]);
+      }
+    }
+    hydratedInvitationRoundId = roundId;
+  })().finally(() => {
+    invitationHydrationPromise = null;
+  });
+  return invitationHydrationPromise;
 }
 
 async function persistInvitationSnapshots(inviterIds) {
-  if (!config.ledgerChannelId) return;
-  await ensureInvitationLedgerHydrated();
+  if (!invitationStore.configured && !config.ledgerChannelId) return;
+  await ensureInvitationStateHydrated();
+  if (invitationStore.configured) {
+    const allInviterIds = new Set(activeInvitations().map(invitation => invitation.inviterId));
+    await invitationStore.save(activeRoundId(), [...allInviterIds].map(invitationSnapshotFor));
+    return;
+  }
   for (const inviterId of new Set(inviterIds)) {
     const message = { text: encodeLedgerSnapshot(invitationSnapshotFor(inviterId)) };
     const existingTs = ledgerMessageTsByInviter.get(inviterId);
@@ -354,7 +380,7 @@ async function handleSlackAction(payload, publicBaseUrl) {
     return;
   }
   if (!["donut_accept", "donut_decline"].includes(action.action_id)) return;
-  await ensureInvitationLedgerHydrated();
+  await ensureInvitationStateHydrated();
   const status = action.action_id === "donut_accept" ? "accepted" : "declined";
   const previousStatuses = new Map(activeInvitations().map(invitation => [invitation.id, invitation.status]));
   const invitation = answerInvitation(action.value, status, payload.user.id);

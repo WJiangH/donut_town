@@ -7,6 +7,7 @@ import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "../slack/ledger.mjs"
 import { buildSlackAuthorizeUrl, verifySlackIdToken } from "../slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "../slack/session.mjs";
 import { verifySlackRequest } from "../slack/signature.mjs";
+import { keyForRound, UpstashInvitationStore } from "../slack/upstash-store.mjs";
 
 test("Slack signatures are checked and stale requests are rejected", () => {
   const signingSecret = "test-secret";
@@ -113,6 +114,49 @@ test("Slack ledger records are versioned and weekly", () => {
   const snapshot = { version: 1, roundId: "week:2026-08-31", inviterId: "U1", invitations: [] };
   assert.deepEqual(decodeLedgerSnapshot(encodeLedgerSnapshot(snapshot)), snapshot);
   assert.equal(decodeLedgerSnapshot("ordinary Slack message"), null);
+});
+
+test("Upstash stores and restores one weekly invitation snapshot", async () => {
+  const calls = [];
+  let stored = null;
+  const store = new UpstashInvitationStore({
+    url: "https://example.upstash.io/",
+    token: "test-token",
+    fetchImpl: async (url, options) => {
+      const command = JSON.parse(options.body);
+      calls.push({ url, command, authorization: options.headers.authorization });
+      if (command[0] === "SET") stored = command[2];
+      return { ok: true, json: async () => ({ result: command[0] === "GET" ? stored : "OK" }) };
+    }
+  });
+  const roundId = "week:2026-08-31";
+  const snapshots = [{ version: 1, roundId, inviterId: "U1", invitations: [] }];
+  await store.save(roundId, snapshots);
+  assert.deepEqual(await store.load(roundId), snapshots);
+  assert.equal(calls[0].url, "https://example.upstash.io");
+  assert.equal(calls[0].authorization, "Bearer test-token");
+  assert.deepEqual(calls.map(call => call.command.slice(0, 2)), [
+    ["SET", "donut-town:invitations:week:2026-08-31"],
+    ["GET", "donut-town:invitations:week:2026-08-31"]
+  ]);
+  assert.equal(keyForRound(roundId), "donut-town:invitations:week:2026-08-31");
+});
+
+test("Upstash distinguishes a missing week from an intentionally empty week", async () => {
+  let stored = null;
+  const store = new UpstashInvitationStore({
+    url: "https://example.upstash.io",
+    token: "test-token",
+    fetchImpl: async (_url, options) => {
+      const command = JSON.parse(options.body);
+      if (command[0] === "SET") stored = command[2];
+      return { ok: true, json: async () => ({ result: command[0] === "GET" ? stored : "OK" }) };
+    }
+  });
+  const roundId = "week:2026-08-31";
+  assert.equal(await store.load(roundId), null);
+  await store.save(roundId, []);
+  assert.deepEqual(await store.load(roundId), []);
 });
 
 test("invitation identity comes from the Slack session and channel roster", () => {
