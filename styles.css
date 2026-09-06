@@ -171,6 +171,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .scene-curtain.active { opacity: 1; }
 
 .residents-layer { position: absolute; inset: 0; z-index: 4; }
+.live-players-layer { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.live-players-layer .remote-player { pointer-events: auto; }
 .resident-pin { position: absolute; transform: translate(-50%, -100%); border: 0; background: transparent; cursor: pointer; padding: 0; }
 .resident-pin::before, .player-pin::before {
   content: "";
@@ -206,6 +208,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .resident-pin.pending .resident-state { background: var(--pending); }
 .resident-pin.booked .resident-state { background: var(--booked); }
 .resident-pin.hidden { display: none; }
+.online-badge { position: absolute; z-index: 7; right: -4px; top: -5px; width: 10px; height: 10px; border: 2px solid var(--surface-solid); border-radius: 50%; background: #27bd6c; box-shadow: 0 0 0 2px var(--ink); }
+.remote-player[data-direction="left"] .pixel-person { transform: scaleX(-1); }
+.remote-player:hover[data-direction="left"] .pixel-person,
+.remote-player:focus-visible[data-direction="left"] .pixel-person { transform: translateY(-5px) scaleX(-1); }
 
 .donut-workstation {
   position: absolute;
@@ -449,6 +455,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 @media (prefers-reduced-motion: no-preference) {
   .loading-donut { animation: bob 800ms steps(2, end) infinite; }
   .resident-pin:nth-child(3n + 1) .pixel-person { animation: idle 1.8s steps(2, end) infinite; }
+  .remote-player.walking .pixel-person { animation: remoteWalk 280ms steps(2, end) infinite; }
   .making-donut .pixel-person { animation: none; }
   .workstation-rolling-pin { animation: rollDough 1.2s steps(3, end) infinite; }
   .workstation-dough { animation: shapeDough 1.2s steps(3, end) infinite; }
@@ -457,6 +464,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   .flour-three { animation-delay: 400ms; }
   @keyframes bob { 50% { transform: translateY(-5px) rotate(6deg); } }
   @keyframes idle { 50% { margin-top: -2px; } }
+  @keyframes remoteWalk { 50% { translate: 0 -2px; } }
   @keyframes rollDough { 50% { transform: translateX(17px); } }
   @keyframes shapeDough { 50% { transform: scaleX(1.2) scaleY(.78); } }
   @keyframes flourPuff { 0%, 100% { opacity: 0; transform: translateY(4px); } 40% { opacity: .9; transform: translateY(-3px); } }

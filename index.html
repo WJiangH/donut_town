@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=14" />
+    <link rel="stylesheet" href="styles.css?v=15" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -53,6 +53,7 @@
           <div class="map-world" id="mapWorld">
             <img class="town-map" src="assets/donut-town-map.png" alt="A green pixel-art village with a donut cafe, fountain, cottages, paths and a garden." />
             <div class="residents-layer" id="residentsLayer" aria-live="polite"></div>
+            <div class="live-players-layer" id="townLivePlayersLayer" aria-live="polite"></div>
             <button class="building-entrance" id="chemPodEntrance" aria-label="Walk to and enter Chem Pod">
               <span>Chem Pod</span>
               <small>Enter</small>
@@ -96,6 +97,7 @@
               <div id="chemPodTeamFaces"></div>
             </section>
             <div class="residents-layer" id="chemPodResidentsLayer" aria-live="polite"></div>
+            <div class="live-players-layer" id="chemPodLivePlayersLayer" aria-live="polite"></div>
             <button class="room-exit" id="chemPodExit" aria-label="Walk to the door and leave Chem Pod">
               <span>Exit</span>
             </button>
@@ -166,6 +168,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
   </body>
 </html>

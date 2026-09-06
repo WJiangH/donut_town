@@ -82,6 +82,13 @@ let playerDirection = "down";
 let playerFrame = 1;
 let lastFrameChange = 0;
 let lastGameTime = performance.now();
+const remotePlayers = new Map();
+const remotePlayerElements = new Map();
+let realtimeSocket = null;
+let realtimeReconnectTimer = null;
+let realtimeReconnectDelay = 1000;
+let lastPresenceSentAt = 0;
+let lastPresenceSignature = "";
 
 const layer = document.querySelector("#residentsLayer");
 const drawer = document.querySelector("#residentDrawer");
@@ -157,9 +164,13 @@ function playerMarkup() {
     <span class="resident-state"></span><span class="resident-label">You</span>`;
 }
 
+function residentIsVisible(person) {
+  return currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts !== null && person.donuts <= 2);
+}
+
 function renderResidents() {
   const residentsMarkup = residents.map(person => {
-    const visible = currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts !== null && person.donuts <= 2);
+    const visible = residentIsVisible(person) && !remotePlayers.has(person.slackId);
     return `<button class="resident-pin ${person.status} ${person.status === "booked" ? "making-donut" : ""} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
@@ -178,6 +189,7 @@ function renderResidents() {
   </div>`;
   document.querySelector("#mapEmpty").hidden = layer.querySelectorAll(".resident-pin:not(.hidden)").length > 0;
   layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
+  renderLivePlayers(0);
 }
 
 function renderChemPod() {
@@ -186,6 +198,173 @@ function renderChemPod() {
     ${playerMarkup()}
   </div>`;
   renderChemPodTeamWall();
+  renderLivePlayers(0);
+}
+
+function liveLayerFor(scene) {
+  return document.querySelector(scene === "chemPod" ? "#chemPodLivePlayersLayer" : "#townLivePlayersLayer");
+}
+
+function removeRemotePlayer(userId) {
+  remotePlayers.delete(userId);
+  remotePlayerElements.get(userId)?.remove();
+  remotePlayerElements.delete(userId);
+}
+
+function clearRemotePlayers() {
+  remotePlayers.clear();
+  remotePlayerElements.forEach(element => element.remove());
+  remotePlayerElements.clear();
+  renderResidents();
+}
+
+function replaceRemotePlayers(players) {
+  const nextIds = new Set();
+  for (const state of Array.isArray(players) ? players : []) {
+    if (!state?.userId || state.userId === currentUser?.id || state.scene !== currentScene) continue;
+    nextIds.add(state.userId);
+    upsertRemotePlayer(state, false);
+  }
+  for (const userId of remotePlayers.keys()) {
+    if (!nextIds.has(userId)) removeRemotePlayer(userId);
+  }
+  renderResidents();
+}
+
+function upsertRemotePlayer(state, refreshResidents = true) {
+  if (!state?.userId || state.userId === currentUser?.id || state.scene !== currentScene) return;
+  const x = Number(state.x);
+  const y = Number(state.y);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+  const previous = remotePlayers.get(state.userId);
+  remotePlayers.set(state.userId, {
+    userId: state.userId,
+    scene: state.scene,
+    x: previous?.x ?? x,
+    y: previous?.y ?? y,
+    targetX: x,
+    targetY: y,
+    direction: ["up", "down", "left", "right"].includes(state.direction) ? state.direction : "down",
+    moving: state.moving === true
+  });
+  if (refreshResidents && !previous) renderResidents();
+}
+
+function renderLivePlayers(deltaSeconds) {
+  const expectedIds = new Set();
+  for (const remote of remotePlayers.values()) {
+    const person = residents.find(resident => resident.slackId === remote.userId);
+    if (!person || remote.scene !== currentScene || !residentIsVisible(person)) continue;
+    expectedIds.add(remote.userId);
+    const smoothing = deltaSeconds > 0 ? 1 - Math.exp(-14 * deltaSeconds) : 1;
+    remote.x += (remote.targetX - remote.x) * smoothing;
+    remote.y += (remote.targetY - remote.y) * smoothing;
+
+    let pin = remotePlayerElements.get(remote.userId);
+    if (!pin) {
+      pin = document.createElement("button");
+      pin.type = "button";
+      pin.className = `resident-pin remote-player ${person.status || "open"}`;
+      pin.dataset.userId = remote.userId;
+      pin.innerHTML = `${personMarkup(person)}<span class="online-badge" aria-hidden="true"></span>`;
+      pin.addEventListener("click", () => openResident(person.id));
+      remotePlayerElements.set(remote.userId, pin);
+    }
+    const targetLayer = liveLayerFor(remote.scene);
+    if (pin.parentElement !== targetLayer) targetLayer.append(pin);
+    pin.style.left = `${remote.x}%`;
+    pin.style.top = `${remote.y}%`;
+    pin.style.zIndex = String(Math.round(remote.y * 10));
+    pin.classList.toggle("walking", remote.moving);
+    pin.classList.toggle("pending", person.status === "pending");
+    pin.classList.toggle("booked", person.status === "booked");
+    pin.dataset.direction = remote.direction;
+    pin.setAttribute("aria-label", `Open ${person.name}'s profile, online now`);
+  }
+  for (const [userId, element] of remotePlayerElements) {
+    if (!expectedIds.has(userId)) {
+      element.remove();
+      remotePlayerElements.delete(userId);
+    }
+  }
+}
+
+function publishPresence(force = false, moving = false) {
+  if (!realtimeSocket || realtimeSocket.readyState !== WebSocket.OPEN || !currentUser?.id) return;
+  const now = performance.now();
+  const signature = `${currentScene}|${playerDirection}|${moving}`;
+  const stateChanged = signature !== lastPresenceSignature;
+  if (!force && !stateChanged && (!moving || now - lastPresenceSentAt < 125)) return;
+  realtimeSocket.send(JSON.stringify({
+    type: "state",
+    scene: currentScene,
+    x: player.x,
+    y: player.y,
+    direction: playerDirection,
+    moving
+  }));
+  lastPresenceSentAt = now;
+  lastPresenceSignature = signature;
+}
+
+function disconnectRealtime({ reconnect = false } = {}) {
+  window.clearTimeout(realtimeReconnectTimer);
+  realtimeReconnectTimer = null;
+  const socket = realtimeSocket;
+  realtimeSocket = null;
+  if (socket && socket.readyState < WebSocket.CLOSING) socket.close(1000, "Leaving Donut Town");
+  clearRemotePlayers();
+  if (reconnect && currentUser?.id && !document.hidden) scheduleRealtimeReconnect();
+}
+
+function scheduleRealtimeReconnect() {
+  if (realtimeReconnectTimer || document.hidden || !currentUser?.id) return;
+  realtimeReconnectTimer = window.setTimeout(() => {
+    realtimeReconnectTimer = null;
+    connectRealtime();
+  }, realtimeReconnectDelay);
+  realtimeReconnectDelay = Math.min(realtimeReconnectDelay * 2, 10000);
+}
+
+function connectRealtime() {
+  if (!currentUser?.id || document.hidden || realtimeSocket?.readyState < WebSocket.CLOSING) return;
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const socket = new WebSocket(`${protocol}//${window.location.host}/realtime`);
+  realtimeSocket = socket;
+  socket.addEventListener("open", () => {
+    realtimeReconnectDelay = 1000;
+  });
+  socket.addEventListener("message", event => {
+    let message;
+    try {
+      message = JSON.parse(event.data);
+    } catch {
+      return;
+    }
+    if (message.type === "ready") {
+      publishPresence(true, false);
+      return;
+    }
+    if (message.type === "snapshot" && message.scene === currentScene) {
+      replaceRemotePlayers(message.players);
+      return;
+    }
+    if (message.type === "state") {
+      upsertRemotePlayer(message);
+      return;
+    }
+    if (message.type === "leave" && remotePlayers.has(message.userId)) {
+      removeRemotePlayer(message.userId);
+      renderResidents();
+    }
+  });
+  socket.addEventListener("close", () => {
+    if (realtimeSocket !== socket) return;
+    realtimeSocket = null;
+    clearRemotePlayers();
+    scheduleRealtimeReconnect();
+  });
+  socket.addEventListener("error", () => socket.close());
 }
 
 function renderChemPodTeamWall() {
@@ -403,6 +582,7 @@ function setScene(nextScene) {
   document.querySelector("#sceneTitle").textContent = currentScene === "chemPod" ? "Chem Pod" : "Town";
   if (currentScene === "chemPod") renderChemPod();
   else renderResidents();
+  publishPresence(true, false);
 }
 
 function transitionToScene(nextScene) {
@@ -478,6 +658,8 @@ function gameLoop(timestamp) {
   }
 
   updatePlayerElement(isMoving);
+  publishPresence(false, isMoving);
+  renderLivePlayers(deltaSeconds);
   window.requestAnimationFrame(gameLoop);
 }
 
@@ -580,7 +762,9 @@ async function syncSlackResidents() {
     renderResidents();
     if (currentScene === "chemPod") renderChemPod();
     renderInvitationDock();
+    connectRealtime();
   } catch {
+    disconnectRealtime();
     currentUser = null;
     residents = [];
     outgoingInvitations = [];
@@ -817,7 +1001,11 @@ if (window.location.protocol === "file:") {
   syncSlackResidents().then(syncInvitationStates);
   window.setInterval(syncInvitationStates, 5000);
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) syncInvitationStates();
+    if (document.hidden) disconnectRealtime();
+    else {
+      syncInvitationStates();
+      connectRealtime();
+    }
   });
 }
 if (window.matchMedia("(max-width: 760px)").matches) {

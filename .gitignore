@@ -4,6 +4,7 @@ assets/player-walk-atlas.png
 
 # Local Slack credentials. Never commit this file.
 .env.local
+node_modules/
 
 # macOS metadata.
 .DS_Store

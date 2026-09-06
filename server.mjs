@@ -3,6 +3,8 @@ import { timingSafeEqual } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { WebSocketServer } from "ws";
+import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
 import { activeInvitations, activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
 import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "./slack/ledger.mjs";
@@ -55,6 +57,8 @@ let profileCacheExpiresAt = 0;
 let hydratedInvitationRoundId = null;
 let invitationHydrationPromise = null;
 const ledgerMessageTsByInviter = new Map();
+const realtimeServer = new WebSocketServer({ noServer: true, maxPayload: 512 });
+const presenceHub = new PresenceHub();
 
 const server = createServer(async (request, response) => {
   try {
@@ -93,6 +97,7 @@ const server = createServer(async (request, response) => {
         interactivityConfigured: Boolean(config.signingSecret),
         oneClickConfigured: isSlackLoginConfigured(),
         currentUserConfigured: Boolean(session?.sub),
+        realtimeConfigured: true,
         persistentStore: invitationStore.configured ? "upstash" : config.ledgerChannelId ? "slack" : "memory",
         ledgerConfigured: Boolean(config.ledgerChannelId),
         upstashConfigured: invitationStore.configured,
@@ -231,6 +236,56 @@ const server = createServer(async (request, response) => {
     return sendJson(response, error.name === "SyntaxError" ? 400 : 500, { error: error.message });
   }
 });
+
+server.on("upgrade", (request, socket, head) => {
+  let url;
+  let origin;
+  try {
+    url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
+    origin = new URL(request.headers.origin || "invalid:");
+  } catch {
+    socket.destroy();
+    return;
+  }
+  if (url.pathname !== "/realtime") {
+    socket.destroy();
+    return;
+  }
+  if (origin.host !== request.headers.host) {
+    socket.write("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
+    socket.destroy();
+    return;
+  }
+  const session = getSlackSession(request);
+  if (!session?.sub) {
+    socket.write("HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n");
+    socket.destroy();
+    return;
+  }
+  realtimeServer.handleUpgrade(request, socket, head, webSocket => {
+    realtimeServer.emit("connection", webSocket, request, session);
+  });
+});
+
+realtimeServer.on("connection", (webSocket, request, session) => {
+  webSocket.isAlive = true;
+  webSocket.on("pong", () => {
+    webSocket.isAlive = true;
+  });
+  presenceHub.connect(webSocket, session.sub);
+});
+
+const realtimeHeartbeat = setInterval(() => {
+  for (const webSocket of realtimeServer.clients) {
+    if (!webSocket.isAlive) {
+      webSocket.terminate();
+      continue;
+    }
+    webSocket.isAlive = false;
+    webSocket.ping();
+  }
+}, 15000);
+realtimeHeartbeat.unref();
 
 function enterTown(url, response) {
   const launch = verifyTownToken(url.searchParams.get("token"), {
