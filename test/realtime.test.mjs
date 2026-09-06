@@ -33,7 +33,7 @@ test("presence coordinates and enums are normalized", () => {
   assert.equal(normalizePresenceState({ type: "state", scene: "secret", x: 1, y: 2 }), null);
 });
 
-test("presence updates are shared only inside the active scene", () => {
+test("presence updates retain online members across town scenes", () => {
   let now = 1000;
   const hub = new PresenceHub({ now: () => now, minUpdateIntervalMs: 0 });
   const a = new FakeSocket();
@@ -48,23 +48,23 @@ test("presence updates are shared only inside the active scene", () => {
   c.state({ scene: "chemPod", x: 50, y: 60, direction: "up", moving: true });
 
   assert.ok(a.sent.some(message => message.type === "state" && message.userId === "UBBB222"));
-  assert.ok(!a.sent.some(message => message.type === "state" && message.userId === "UCCC333"));
-  assert.ok(c.sent.some(message => message.type === "snapshot" && message.players.length === 0));
+  assert.ok(a.sent.some(message => message.type === "state" && message.userId === "UCCC333" && message.scene === "chemPod"));
+  assert.ok(c.sent.some(message => message.type === "snapshot" && message.players.some(player => player.userId === "UAAA111" && player.scene === "town")));
 
   now += 100;
   b.state({ scene: "chemPod", x: 44, y: 55, direction: "up", moving: true });
-  assert.ok(a.sent.some(message => message.type === "leave" && message.userId === "UBBB222"));
-  assert.ok(c.sent.some(message => message.type === "state" && message.userId === "UBBB222"));
+  assert.ok(a.sent.some(message => message.type === "state" && message.userId === "UBBB222" && message.scene === "chemPod"));
+  assert.ok(c.sent.some(message => message.type === "state" && message.userId === "UBBB222" && message.scene === "chemPod"));
 });
 
-test("disconnect removes a player from peers in the same scene", () => {
+test("disconnect removes a player from peers in every scene", () => {
   const hub = new PresenceHub({ minUpdateIntervalMs: 0 });
   const a = new FakeSocket();
   const b = new FakeSocket();
   hub.connect(a, "UAAA111");
   hub.connect(b, "UBBB222");
   a.state({ scene: "town", x: 10, y: 20 });
-  b.state({ scene: "town", x: 30, y: 40 });
+  b.state({ scene: "chemPod", x: 30, y: 40 });
   b.close();
   assert.ok(a.sent.some(message => message.type === "leave" && message.userId === "UBBB222"));
 });

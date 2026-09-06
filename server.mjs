@@ -44,7 +44,7 @@ if (process.env.RENDER && (!config.botToken || !config.signingSecret || !config.
 }
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
 const profileStore = new SheetProfileStore({ url: config.profileApiUrl, secret: config.profileApiSecret });
-const invitationStore = new UpstashInvitationStore({ url: config.upstashUrl, token: config.upstashToken });
+const invitationStore = new UpstashInvitationStore({ url: config.upstashUrl, token: config.upstashToken, namespace: config.channelId });
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
@@ -65,7 +65,7 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
 
     if (request.method === "GET" && url.pathname === "/api/health") {
-      return sendJson(response, 200, { ok: true, realtime: true });
+      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true });
     }
 
     if (request.method === "GET" && url.pathname === "/enter") {

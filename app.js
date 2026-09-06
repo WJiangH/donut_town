@@ -10,45 +10,65 @@ let residents = [
   { id: 9, name: "Amina Yusuf", team: "Packaging", status: "open", donuts: 10, topics: ["community", "science", "local food"], group: "other", x: 67, y: 59, skin: "#70462f", hair: "#292021", shirt: "#bc5d49", note: "New face from another team." },
   { id: 10, name: "Evan Brooks", team: "Analytics", status: "booked", donuts: 3, topics: ["data", "baseball", "podcasts"], group: "other", x: 50, y: 13, skin: "#e2b08d", hair: "#704f35", shirt: "#4b7888", note: "Already booked for this week." }
 ];
-const residentSlots = [
-  { x: 48, y: 25, activity: "path" },
-  { x: 39, y: 38, activity: "bench" },
-  { x: 59, y: 38, activity: "bench" },
-  { x: 29, y: 47, activity: "path" },
-  { x: 71, y: 47, activity: "path" },
-  { x: 37, y: 62, activity: "bench" },
-  { x: 62, y: 62, activity: "bench" },
-  { x: 49, y: 74, activity: "path" },
-  { x: 29, y: 33, activity: "cafe" },
-  { x: 51, y: 13, activity: "path" }
+const townPopulationRoutes = [
+  { from: [46, 26], to: [46, 69], count: 8, activity: "path" },
+  { from: [56, 26], to: [56, 69], count: 8, activity: "path" },
+  { from: [43, 35], to: [23, 20], count: 6, activity: "cafe" },
+  { from: [59, 34], to: [88, 20], count: 7, activity: "path" },
+  { from: [42, 45], to: [12, 52], count: 7, activity: "path" },
+  { from: [61, 44], to: [90, 53], count: 7, activity: "path" },
+  { from: [44, 59], to: [10, 82], count: 8, activity: "path" },
+  { from: [59, 59], to: [90, 86], count: 8, activity: "path" }
+];
+const residentSlots = townPopulationRoutes.flatMap(route => Array.from({ length: route.count }, (_, index) => {
+  const progress = (index + 1) / (route.count + 1);
+  return {
+    x: route.from[0] + (route.to[0] - route.from[0]) * progress,
+    y: route.from[1] + (route.to[1] - route.from[1]) * progress,
+    activity: route.activity
+  };
+}));
+const chemPodResidentSlots = [
+  { x: 29, y: 36 }, { x: 40, y: 36 }, { x: 52, y: 36 }, { x: 65, y: 36 }, { x: 76, y: 36 },
+  { x: 28, y: 75 }, { x: 35, y: 84 }, { x: 49, y: 78 }, { x: 51, y: 86 },
+  { x: 63, y: 78 }, { x: 71, y: 84 }, { x: 87, y: 82 }
 ];
 
 const donutStations = [
-  { x: 29, y: 29.7, left: { x: 25.7, y: 32.4 }, right: { x: 32.3, y: 32.4 } },
-  { x: 39, y: 43.8, left: { x: 35.7, y: 46.5 }, right: { x: 42.3, y: 46.5 } },
-  { x: 61, y: 43.8, left: { x: 57.7, y: 46.5 }, right: { x: 64.3, y: 46.5 } },
-  { x: 50, y: 66.7, left: { x: 46.7, y: 69.4 }, right: { x: 53.3, y: 69.4 } }
+  { x: 31, y: 31, left: { x: 28.4, y: 33 }, right: { x: 33.6, y: 33 } },
+  { x: 42, y: 40, left: { x: 39.4, y: 42 }, right: { x: 44.6, y: 42 } },
+  { x: 61, y: 40, left: { x: 58.4, y: 42 }, right: { x: 63.6, y: 42 } },
+  { x: 42, y: 53, left: { x: 39.4, y: 55 }, right: { x: 44.6, y: 55 } },
+  { x: 61, y: 53, left: { x: 58.4, y: 55 }, right: { x: 63.6, y: 55 } },
+  { x: 50, y: 67, left: { x: 47.4, y: 69 }, right: { x: 52.6, y: 69 } },
+  { x: 24, y: 51, left: { x: 21.4, y: 53 }, right: { x: 26.6, y: 53 } },
+  { x: 78, y: 51, left: { x: 75.4, y: 53 }, right: { x: 80.6, y: 53 } },
+  { x: 29, y: 69, left: { x: 26.4, y: 71 }, right: { x: 31.6, y: 71 } },
+  { x: 73, y: 70, left: { x: 70.4, y: 72 }, right: { x: 75.6, y: 72 } }
 ];
 
 const walkCorridors = [
-  { from: [49.5, 0], to: [49.5, 33], width: 5.5 },
-  { from: [49.5, 62], to: [49.5, 100], width: 5.4 },
-  { from: [9, 39], to: [36, 47], width: 5.2 },
-  { from: [12, 61], to: [37, 56], width: 4.8 },
-  { from: [63, 46], to: [91, 34], width: 4.8 },
-  { from: [62, 55], to: [92, 63], width: 4.8 },
-  { from: [79, 42], to: [82, 25], width: 3.4 },
-  { from: [22, 61], to: [18, 51], width: 3.5 }
+  { from: [50, 8], to: [50, 76], width: 4.4 },
+  { from: [43, 35], to: [23, 20], width: 4.2 },
+  { from: [59, 34], to: [91, 18], width: 4.2 },
+  { from: [43, 44], to: [9, 52], width: 4.2 },
+  { from: [60, 44], to: [93, 53], width: 4.2 },
+  { from: [45, 58], to: [8, 84], width: 4.1 },
+  { from: [58, 58], to: [92, 88], width: 4.1 },
+  { from: [27, 67], to: [9, 77], width: 3.4 },
+  { from: [75, 67], to: [91, 77], width: 3.4 }
 ];
 
+const townPlazas = [
+  { x: 51, y: 44, rx: 16, ry: 13 },
+  { x: 50, y: 68, rx: 9, ry: 7 },
+  { x: 50, y: 13, rx: 7, ry: 6 },
+  { x: 24, y: 22, rx: 10, ry: 8 },
+  { x: 82, y: 83, rx: 12, ry: 9 }
+];
 const mapObstacles = [
-  { x: 50, y: 47, rx: 12.6, ry: 15.4 },
-  { x: 38.5, y: 36.5, rx: 3.1, ry: 4.1 },
-  { x: 60.3, y: 36.5, rx: 3.1, ry: 4.1 },
-  { x: 32.4, y: 48.5, rx: 2.5, ry: 5.1 },
-  { x: 67.5, y: 49, rx: 2.5, ry: 5.1 },
-  { x: 39.8, y: 63.5, rx: 3.6, ry: 3.4 },
-  { x: 59.8, y: 63.5, rx: 3.6, ry: 3.4 }
+  { x: 51, y: 43, rx: 5.4, ry: 6.6 },
+  { x: 50, y: 13, rx: 3.2, ry: 3.7 }
 ];
 
 const chemPodObstacles = [
@@ -65,7 +85,7 @@ let outgoingInvitations = [];
 let selectedResident = null;
 let currentFilter = "all";
 let invitesOpen = true;
-const player = { id: 11, name: "You", x: 50, y: 80 };
+const player = { id: 11, name: "You", x: 50, y: 59 };
 const scenePlayerPositions = {
   town: { x: player.x, y: player.y },
   chemPod: { x: 50, y: 86 }
@@ -89,6 +109,8 @@ let realtimeReconnectTimer = null;
 let realtimeReconnectDelay = 1000;
 let lastPresenceSentAt = 0;
 let lastPresenceSignature = "";
+const townCamera = { x: 0, y: 0, ready: false };
+let townCameraMetrics = null;
 
 const layer = document.querySelector("#residentsLayer");
 const drawer = document.querySelector("#residentDrawer");
@@ -170,7 +192,7 @@ function residentIsVisible(person) {
 
 function renderResidents() {
   const residentsMarkup = residents.map(person => {
-    const visible = residentIsVisible(person) && !remotePlayers.has(person.slackId);
+    const visible = (person.scene || "town") === "town" && residentIsVisible(person) && !remotePlayers.has(person.slackId);
     return `<button class="resident-pin ${person.status} ${person.status === "booked" ? "making-donut" : ""} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
@@ -194,11 +216,20 @@ function renderResidents() {
 
 function renderChemPod() {
   const roomLayer = document.querySelector("#chemPodResidentsLayer");
-  roomLayer.innerHTML = `<div class="player-pin ${currentUser?.status || "open"}" id="chemPodPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+  const residentsMarkup = residents.filter(person => person.scene === "chemPod" && !remotePlayers.has(person.slackId)).map(person => `<button class="resident-pin ${person.status} ${person.activity || "path"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
+    ${personMarkup(person)}
+  </button>`).join("");
+  roomLayer.innerHTML = `${residentsMarkup}<div class="player-pin ${currentUser?.status || "open"}" id="chemPodPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
     ${playerMarkup()}
   </div>`;
+  roomLayer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
   renderChemPodTeamWall();
   renderLivePlayers(0);
+}
+
+function renderCurrentScene() {
+  if (currentScene === "chemPod") renderChemPod();
+  else renderResidents();
 }
 
 function liveLayerFor(scene) {
@@ -215,24 +246,24 @@ function clearRemotePlayers() {
   remotePlayers.clear();
   remotePlayerElements.forEach(element => element.remove());
   remotePlayerElements.clear();
-  renderResidents();
+  renderCurrentScene();
 }
 
 function replaceRemotePlayers(players) {
   const nextIds = new Set();
   for (const state of Array.isArray(players) ? players : []) {
-    if (!state?.userId || state.userId === currentUser?.id || state.scene !== currentScene) continue;
+    if (!state?.userId || state.userId === currentUser?.id) continue;
     nextIds.add(state.userId);
     upsertRemotePlayer(state, false);
   }
   for (const userId of remotePlayers.keys()) {
     if (!nextIds.has(userId)) removeRemotePlayer(userId);
   }
-  renderResidents();
+  renderCurrentScene();
 }
 
 function upsertRemotePlayer(state, refreshResidents = true) {
-  if (!state?.userId || state.userId === currentUser?.id || state.scene !== currentScene) return;
+  if (!state?.userId || state.userId === currentUser?.id) return;
   const x = Number(state.x);
   const y = Number(state.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) return;
@@ -247,7 +278,7 @@ function upsertRemotePlayer(state, refreshResidents = true) {
     direction: ["up", "down", "left", "right"].includes(state.direction) ? state.direction : "down",
     moving: state.moving === true
   });
-  if (refreshResidents && !previous) renderResidents();
+  if (refreshResidents && !previous) renderCurrentScene();
 }
 
 function renderLivePlayers(deltaSeconds) {
@@ -345,7 +376,7 @@ function connectRealtime() {
       publishPresence(true, false);
       return;
     }
-    if (message.type === "snapshot" && message.scene === currentScene) {
+    if (message.type === "snapshot") {
       replaceRemotePlayers(message.players);
       return;
     }
@@ -355,7 +386,7 @@ function connectRealtime() {
     }
     if (message.type === "leave" && remotePlayers.has(message.userId)) {
       removeRemotePlayer(message.userId);
-      renderResidents();
+      renderCurrentScene();
     }
   });
   socket.addEventListener("close", () => {
@@ -370,7 +401,11 @@ function connectRealtime() {
 function renderChemPodTeamWall() {
   const wall = document.querySelector("#chemPodTeamFaces");
   if (!wall) return;
-  const people = [...(currentUser ? [currentUser] : []), ...residents].slice(0, 12);
+  const people = [
+    ...(currentUser ? [currentUser] : []),
+    ...residents.filter(person => person.homeScene === "chemPod"),
+    ...residents.filter(person => person.homeScene !== "chemPod")
+  ].slice(0, 12);
   wall.innerHTML = people.map(person => {
     const name = person.displayName || person.name || "Slack member";
     return person.avatarUrl
@@ -397,6 +432,7 @@ function layoutBookedPairs() {
     person.x = person.baseX;
     person.y = person.baseY;
     person.activity = person.baseActivity;
+    person.scene = person.homeScene || "town";
     person.pairFacing = null;
   });
 
@@ -426,6 +462,7 @@ function layoutBookedPairs() {
         resident.x = spot.x;
         resident.y = spot.y;
         resident.activity = "donut-station";
+        resident.scene = "town";
         resident.pairFacing = personIndex === 0 ? "right" : "left";
       }
     });
@@ -464,7 +501,7 @@ function distanceToSegment(x, y, segment) {
 }
 
 function isTownWalkable(x, y) {
-  const plaza = isInsideEllipse(x, y, { x: 50, y: 48.5, rx: 23.5, ry: 20.5 });
+  const plaza = townPlazas.some(item => isInsideEllipse(x, y, item));
   const corridor = walkCorridors.some(segment => distanceToSegment(x, y, segment) <= segment.width);
   const obstacle = mapObstacles.some(item => isInsideEllipse(x, y, item));
   return (plaza || corridor) && !obstacle;
@@ -483,7 +520,31 @@ function isWalkable(x, y) {
 function activeSceneBounds() {
   return currentScene === "chemPod"
     ? { minX: 10, maxX: 90, minY: 34, maxY: 89 }
-    : { minX: 11, maxX: 89, minY: 5, maxY: 96 };
+    : { minX: 5, maxX: 95, minY: 5, maxY: 94 };
+}
+
+function refreshTownCameraMetrics() {
+  const viewport = document.querySelector("#mapWrap");
+  const world = document.querySelector("#mapWorld");
+  townCameraMetrics = {
+    viewportWidth: viewport.clientWidth,
+    viewportHeight: viewport.clientHeight,
+    worldWidth: world.offsetWidth,
+    worldHeight: world.offsetHeight
+  };
+}
+
+function updateTownCamera(deltaSeconds = 0, immediate = false) {
+  if (currentScene !== "town") return;
+  if (!townCameraMetrics) refreshTownCameraMetrics();
+  const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
+  const targetX = Math.min(0, Math.max(viewportWidth - worldWidth, viewportWidth / 2 - worldWidth * player.x / 100));
+  const targetY = Math.min(0, Math.max(viewportHeight - worldHeight, viewportHeight / 2 - worldHeight * player.y / 100));
+  const blend = immediate || !townCamera.ready ? 1 : 1 - Math.exp(-8 * deltaSeconds);
+  townCamera.x += (targetX - townCamera.x) * blend;
+  townCamera.y += (targetY - townCamera.y) * blend;
+  townCamera.ready = true;
+  document.querySelector("#mapWorld").style.transform = `translate3d(${townCamera.x}px, ${townCamera.y}px, 0)`;
 }
 
 function nearestWalkable(x, y) {
@@ -581,7 +642,12 @@ function setScene(nextScene) {
   document.querySelector("#chemPodView").hidden = currentScene !== "chemPod";
   document.querySelector("#sceneTitle").textContent = currentScene === "chemPod" ? "Chem Pod" : "Town";
   if (currentScene === "chemPod") renderChemPod();
-  else renderResidents();
+  else {
+    renderResidents();
+    townCameraMetrics = null;
+    townCamera.ready = false;
+    window.requestAnimationFrame(() => updateTownCamera(0, true));
+  }
   publishPresence(true, false);
 }
 
@@ -634,7 +700,7 @@ function gameLoop(timestamp) {
     dx /= length;
     dy /= length;
     setPlayerDirection(dx, dy);
-    const speed = 10;
+    const speed = currentScene === "town" ? 5 : 10;
     const nextX = player.x + dx * speed * deltaSeconds;
     const nextY = player.y + dy * speed * deltaSeconds;
     if (isWalkable(nextX, nextY)) {
@@ -658,6 +724,7 @@ function gameLoop(timestamp) {
   }
 
   updatePlayerElement(isMoving);
+  updateTownCamera(deltaSeconds);
   publishPresence(false, isMoving);
   renderLivePlayers(deltaSeconds);
   window.requestAnimationFrame(gameLoop);
@@ -701,6 +768,38 @@ function openResident(id) {
   drawerScrim.hidden = false;
 }
 
+function stableMemberScore(member) {
+  let hash = 2166136261;
+  for (const character of String(member.id || member.displayName || "member")) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function assignedChemPodIds(neighbors) {
+  if (neighbors.length <= 20) return new Set();
+  const count = Math.min(chemPodResidentSlots.length, Math.max(1, Math.round(neighbors.length * 0.2)));
+  return new Set([...neighbors].sort((left, right) => {
+    const leftMatch = /chem|material|lab|science|process/i.test(left.title || "") ? 0 : 1;
+    const rightMatch = /chem|material|lab|science|process/i.test(right.title || "") ? 0 : 1;
+    return leftMatch - rightMatch || stableMemberScore(left) - stableMemberScore(right);
+  }).slice(0, count).map(member => member.id));
+}
+
+function populationSlot(slots, index) {
+  const base = slots[index % slots.length];
+  const lap = Math.floor(index / slots.length);
+  if (!lap) return base;
+  const angle = index * 2.399963;
+  const offset = Math.min(2.4, lap * 0.8);
+  return {
+    ...base,
+    x: base.x + Math.cos(angle) * offset,
+    y: base.y + Math.sin(angle) * offset
+  };
+}
+
 async function syncSlackResidents() {
   try {
     const response = await fetch("/api/slack/members", { headers: { accept: "application/json" } });
@@ -709,13 +808,19 @@ async function syncSlackResidents() {
     const summary = document.querySelector("#neighborSummary");
     outgoingInvitations = Array.isArray(data.outgoingInvitations) ? data.outgoingInvitations : [];
     currentUser = data.members.find(member => member.isCurrentUser) || null;
-    const neighbors = data.members.filter(member => !member.isCurrentUser);
+    const neighbors = data.members
+      .filter(member => !member.isCurrentUser)
+      .sort((left, right) => (left.displayName || "").localeCompare(right.displayName || "") || left.id.localeCompare(right.id));
     renderCurrentProfile();
-    if (neighbors.length > residentSlots.length) {
-      summary.textContent = `${data.total} Slack neighbors synced · map layout pending`;
-      return;
-    }
-    residents = neighbors.map((member, index) => ({
+    const chemPodIds = assignedChemPodIds(neighbors);
+    let townIndex = 0;
+    let chemPodIndex = 0;
+    residents = neighbors.map((member, index) => {
+      const homeScene = chemPodIds.has(member.id) ? "chemPod" : "town";
+      const slot = homeScene === "chemPod"
+        ? populationSlot(chemPodResidentSlots, chemPodIndex++)
+        : populationSlot(residentSlots, townIndex++);
+      return {
       id: index + 1,
       slackId: member.id,
       spriteIndex: member.appearanceIndex,
@@ -733,18 +838,21 @@ async function syncSlackResidents() {
       pairId: member.pairId || null,
       donuts: member.donutCount,
       group: "unknown",
-      x: residentSlots[index].x,
-      y: residentSlots[index].y,
-      activity: residentSlots[index].activity,
-      baseX: residentSlots[index].x,
-      baseY: residentSlots[index].y,
-      baseActivity: residentSlots[index].activity,
+      scene: homeScene,
+      homeScene,
+      x: slot.x,
+      y: slot.y,
+      activity: slot.activity || "path",
+      baseX: slot.x,
+      baseY: slot.y,
+      baseActivity: slot.activity || "path",
       note: member.donutCount === null
         ? "Synced from Slack. Donut history is not connected yet."
         : member.donutCount > 0
           ? `${member.donutCount} completed Donut chats are recorded.`
           : "No completed Donut chats are recorded yet."
-    }));
+      };
+    });
     selectedResident = null;
     currentFilter = "all";
     const filtersAvailable = residents.some(person => person.group !== "unknown" || person.donuts !== null);
@@ -754,7 +862,7 @@ async function syncSlackResidents() {
       if (button.disabled) button.title = "Team and participation data are not connected yet";
     });
     summary.textContent = currentUser
-      ? `${data.total} Slack members · ${neighbors.length} neighbors + you`
+      ? `${data.total} Slack members · ${townIndex} around town · ${chemPodIndex} in Chem Pod`
       : `${data.total} Slack residents + local player (identity not linked)`;
     applyPairPreview();
     layoutBookedPairs();
@@ -987,6 +1095,11 @@ document.addEventListener("keydown", event => {
 
 document.addEventListener("keyup", event => pressedKeys.delete(event.key.toLowerCase()));
 window.addEventListener("blur", () => pressedKeys.clear());
+window.addEventListener("resize", () => {
+  townCameraMetrics = null;
+  townCamera.ready = false;
+  updateTownCamera(0, true);
+});
 
 if (window.location.protocol === "file:") {
   residents = [];

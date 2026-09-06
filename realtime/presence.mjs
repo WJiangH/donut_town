@@ -56,29 +56,26 @@ export class PresenceHub {
     const nextState = normalizePresenceState(message, now);
     if (!nextState) return;
 
-    const previousScene = client.state?.scene || null;
+    const isInitialState = !client.state;
     client.state = nextState;
     client.lastAcceptedAt = now;
 
-    if (previousScene && previousScene !== nextState.scene) {
-      this.broadcast(previousScene, { type: "leave", userId: client.userId }, client.socket);
-    }
-    if (previousScene !== nextState.scene) this.sendSnapshot(client);
-    this.broadcast(nextState.scene, { type: "state", userId: client.userId, ...nextState }, client.socket);
+    if (isInitialState) this.sendSnapshot(client);
+    this.broadcast({ type: "state", userId: client.userId, ...nextState }, client.socket);
   }
 
   sendSnapshot(client) {
     const players = [];
     for (const peer of this.clients.values()) {
-      if (peer === client || peer.state?.scene !== client.state.scene) continue;
+      if (peer === client || !peer.state) continue;
       players.push({ userId: peer.userId, ...peer.state });
     }
-    send(client.socket, { type: "snapshot", scene: client.state.scene, players });
+    send(client.socket, { type: "snapshot", players });
   }
 
-  broadcast(scene, message, exceptSocket = null) {
+  broadcast(message, exceptSocket = null) {
     for (const peer of this.clients.values()) {
-      if (peer.socket === exceptSocket || peer.state?.scene !== scene) continue;
+      if (peer.socket === exceptSocket || !peer.state) continue;
       send(peer.socket, message);
     }
   }
@@ -87,7 +84,7 @@ export class PresenceHub {
     if (!this.clients.has(client.socket)) return;
     this.clients.delete(client.socket);
     if (this.clientsByUser.get(client.userId) === client.socket) this.clientsByUser.delete(client.userId);
-    if (client.state) this.broadcast(client.state.scene, { type: "leave", userId: client.userId }, client.socket);
+    if (client.state) this.broadcast({ type: "leave", userId: client.userId }, client.socket);
   }
 }
 

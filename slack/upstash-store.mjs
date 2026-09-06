@@ -1,9 +1,10 @@
 const STORE_VERSION = 1;
 
 export class UpstashInvitationStore {
-  constructor({ url = "", token = "", fetchImpl = globalThis.fetch } = {}) {
+  constructor({ url = "", token = "", namespace = "", fetchImpl = globalThis.fetch } = {}) {
     this.url = url.replace(/\/$/, "");
     this.token = token;
+    this.namespace = namespace;
     this.fetchImpl = fetchImpl;
   }
 
@@ -13,7 +14,7 @@ export class UpstashInvitationStore {
 
   async load(roundId) {
     if (!this.configured) return [];
-    const stored = await this.#command(["GET", keyForRound(roundId)]);
+    const stored = await this.#command(["GET", keyForRound(roundId, this.namespace)]);
     if (stored === null) return null;
     let payload;
     try {
@@ -35,7 +36,7 @@ export class UpstashInvitationStore {
       savedAt: new Date().toISOString(),
       snapshots
     });
-    await this.#command(["SET", keyForRound(roundId), payload]);
+    await this.#command(["SET", keyForRound(roundId, this.namespace), payload]);
   }
 
   async #command(command) {
@@ -55,7 +56,10 @@ export class UpstashInvitationStore {
   }
 }
 
-export function keyForRound(roundId) {
+export function keyForRound(roundId, namespace = "") {
   if (!/^week:\d{4}-\d{2}-\d{2}$/.test(roundId || "")) throw new Error("Invalid invitation round ID");
-  return `donut-town:invitations:${roundId}`;
+  if (namespace && !/^C[A-Z0-9]+$/.test(namespace)) throw new Error("Invalid invitation namespace");
+  return namespace
+    ? `donut-town:invitations:${namespace}:${roundId}`
+    : `donut-town:invitations:${roundId}`;
 }

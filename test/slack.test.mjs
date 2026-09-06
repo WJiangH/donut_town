@@ -122,6 +122,7 @@ test("Upstash stores and restores one weekly invitation snapshot", async () => {
   const store = new UpstashInvitationStore({
     url: "https://example.upstash.io/",
     token: "test-token",
+    namespace: "C123ABC",
     fetchImpl: async (url, options) => {
       const command = JSON.parse(options.body);
       calls.push({ url, command, authorization: options.headers.authorization });
@@ -136,10 +137,11 @@ test("Upstash stores and restores one weekly invitation snapshot", async () => {
   assert.equal(calls[0].url, "https://example.upstash.io");
   assert.equal(calls[0].authorization, "Bearer test-token");
   assert.deepEqual(calls.map(call => call.command.slice(0, 2)), [
-    ["SET", "donut-town:invitations:week:2026-08-31"],
-    ["GET", "donut-town:invitations:week:2026-08-31"]
+    ["SET", "donut-town:invitations:C123ABC:week:2026-08-31"],
+    ["GET", "donut-town:invitations:C123ABC:week:2026-08-31"]
   ]);
-  assert.equal(keyForRound(roundId), "donut-town:invitations:week:2026-08-31");
+  assert.equal(keyForRound(roundId, "C123ABC"), "donut-town:invitations:C123ABC:week:2026-08-31");
+  assert.equal(keyForRound(roundId, "COTHER"), "donut-town:invitations:COTHER:week:2026-08-31");
 });
 
 test("Upstash distinguishes a missing week from an intentionally empty week", async () => {
