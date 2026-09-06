@@ -1,15 +1,4 @@
-let residents = [
-  { id: 1, name: "Maya Chen", team: "Materials", status: "open", donuts: 12, topics: ["coffee", "new projects", "hiking"], group: "other", x: 27, y: 31, skin: "#d9a47f", hair: "#352a27", shirt: "#c15362", note: "You have not had a Donut chat yet." },
-  { id: 2, name: "Luis Ortega", team: "Process", status: "open", donuts: 4, topics: ["music", "process tools", "food"], group: "other", x: 47, y: 22, skin: "#b97953", hair: "#252927", shirt: "#497f74", note: "New face from another team." },
-  { id: 3, name: "Priya Nair", team: "Device", status: "booked", donuts: 9, topics: ["books", "mentoring", "travel"], group: "other", x: 63, y: 34, skin: "#9a5c3c", hair: "#242020", shirt: "#b56577", note: "Already booked for this week." },
-  { id: 4, name: "Noah Williams", team: "Your group", status: "open", donuts: 2, topics: ["simulation", "running", "movies"], group: "same", x: 77, y: 62, skin: "#7d4c36", hair: "#171a18", shirt: "#5576a1", note: "You last matched 11 weeks ago." },
-  { id: 5, name: "Emi Takahashi", team: "Integration", status: "open", donuts: 7, topics: ["design", "gardening", "new tools"], group: "other", x: 61, y: 59, skin: "#ecc3a0", hair: "#2a2528", shirt: "#9e6cad", note: "New face from another team." },
-  { id: 6, name: "Omar Haddad", team: "Your group", status: "pending", donuts: 15, topics: ["AI", "soccer", "career paths"], group: "same", x: 36, y: 59, skin: "#bc805d", hair: "#29211f", shirt: "#d18d45", note: "Someone has already invited Omar this week." },
-  { id: 7, name: "Sofia Rossi", team: "Reliability", status: "open", donuts: 1, topics: ["photography", "first projects", "baking"], group: "other", x: 23, y: 61, skin: "#e1ae88", hair: "#8a533a", shirt: "#467a57", note: "Sofia joined the channel recently." },
-  { id: 8, name: "Jon Bell", team: "Your group", status: "open", donuts: 6, topics: ["hardware", "cycling", "team culture"], group: "same", x: 48, y: 73, skin: "#d4a27f", hair: "#d6c0a5", shirt: "#735b91", note: "You last matched 20 weeks ago." },
-  { id: 9, name: "Amina Yusuf", team: "Packaging", status: "open", donuts: 10, topics: ["community", "science", "local food"], group: "other", x: 67, y: 59, skin: "#70462f", hair: "#292021", shirt: "#bc5d49", note: "New face from another team." },
-  { id: 10, name: "Evan Brooks", team: "Analytics", status: "booked", donuts: 3, topics: ["data", "baseball", "podcasts"], group: "other", x: 50, y: 13, skin: "#e2b08d", hair: "#704f35", shirt: "#4b7888", note: "Already booked for this week." }
-];
+let residents = [];
 // Feet positions on paved gathering places, spread across town before filling gaps.
 const residentSlots = [
   { x: 40, y: 38, activity: "plaza" },
@@ -182,12 +171,16 @@ async function loadCharacterArt(character) {
   if (!characterImages.has(character.url)) {
     characterImages.set(character.url, new Promise(resolve => {
       const image = new Image();
-      image.onload = () => resolve(image.naturalWidth === character.imageWidth && image.naturalHeight === character.imageHeight);
-      image.onerror = () => resolve(false);
+      const finish = ok => { clearTimeout(timeout); image.onload = image.onerror = null; resolve(ok); };
+      const timeout = setTimeout(() => finish(false), 20000);
+      image.onload = () => finish(image.naturalWidth === character.imageWidth && image.naturalHeight === character.imageHeight);
+      image.onerror = () => finish(false);
       image.src = character.url;
     }));
   }
-  return await characterImages.get(character.url) ? character : null;
+  const loaded = await characterImages.get(character.url);
+  if (!loaded) characterImages.delete(character.url);
+  return loaded ? character : null;
 }
 
 function personalCharacterMarkup(character, className) {
@@ -840,7 +833,7 @@ function openResident(id) {
     ? "Donut history not connected yet"
     : `<strong id="residentDonuts">${escapeHtml(selectedResident.donuts)}</strong> successful pairings`;
   document.querySelector("#connectionNote").textContent = "Profile details are synced from Slack.";
-  setCharacterPortrait(document.querySelector("#drawerPortrait"), selectedResident);
+  setSlackAvatar(document.querySelector("#drawerPortrait"), selectedResident);
   const statusLabel = selectedResident.status === "open" ? "Open to invitations" : selectedResident.status === "pending" ? "Invitation pending" : "Booked this week";
   document.querySelector("#drawerStatus").textContent = statusLabel;
 
@@ -927,9 +920,11 @@ residents.forEach((person, index) => Object.assign(person, populationSlot(reside
 
 async function syncSlackResidents() {
   try {
-    const response = await fetch("/api/slack/members", { headers: { accept: "application/json" } });
+    const response = await fetch("/api/slack/members", { headers: { accept: "application/json" }, signal: AbortSignal.timeout(45000) });
     if (!response.ok) throw new Error("Slack sync unavailable");
     const data = await response.json();
+    if (!Array.isArray(data.members)) throw new Error("Invalid member response");
+    document.querySelector("#loadingMessage").textContent = "Preparing resident characters…";
     await Promise.all(data.members.map(async member => { member.character = await loadCharacterArt(member.character); }));
     const summary = document.querySelector("#neighborSummary");
     outgoingInvitations = Array.isArray(data.outgoingInvitations) ? data.outgoingInvitations : [];
@@ -998,6 +993,7 @@ async function syncSlackResidents() {
     if (currentScene === "chemPod") renderChemPod();
     renderInvitationDock();
     connectRealtime();
+    return true;
   } catch {
     disconnectRealtime();
     currentUser = null;
@@ -1007,6 +1003,7 @@ async function syncSlackResidents() {
     renderInvitationDock();
     document.querySelector("#neighborSummary").textContent = "Slack sync temporarily unavailable · no demo residents shown";
     renderCurrentProfile();
+    return false;
   }
 }
 
@@ -1048,7 +1045,8 @@ function renderCurrentProfile() {
   const profileButton = document.querySelector("#profileButton");
   setSlackAvatar(profileButton, currentUser || { displayName: name });
   profileButton.setAttribute("aria-label", currentUser ? `Open ${name}'s Slack profile` : "Open your profile");
-  setCharacterPortrait(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
+  setSlackAvatar(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
+  document.querySelector("#wardrobeLink").hidden = currentUser?.character?.url !== "/assets/residents/r-7f3a2c/walk-v1.png";
   document.querySelector("#profileName").textContent = name;
   const ownFacts = [
     ["Role", currentUser?.title],
@@ -1283,17 +1281,36 @@ window.addEventListener("resize", () => {
   updateTownCamera(0, true);
 });
 
+async function startTown() {
+  const loading = document.querySelector("#loadingScreen");
+  const message = document.querySelector("#loadingMessage");
+  const retry = document.querySelector("#retryTown");
+  retry.hidden = true;
+  message.textContent = "Loading Slack residents…";
+  const slow = setTimeout(() => { message.textContent = "Still connecting. The server may be waking up…"; }, 6000);
+  const ready = await syncSlackResidents();
+  clearTimeout(slow);
+  if (ready) {
+    loading.classList.add("done");
+    document.querySelector(".app-shell").inert = false;
+    syncInvitationStates();
+  } else {
+    message.textContent = "Could not load the town. Please try again.";
+    retry.hidden = false;
+  }
+}
+document.querySelector("#retryTown").addEventListener("click", startTown);
+
 if (window.location.protocol === "file:") {
   residents = [];
   renderResidents();
   renderInvitationDock();
   document.querySelector("#neighborSummary").innerHTML = `Slack is unavailable in file mode · <a href="http://127.0.0.1:4173/">Open connected town</a>`;
-  showToast("This file view cannot connect to Slack. Open the connected town link.");
+  document.querySelector("#loadingMessage").textContent = "Open this town through its web server to connect to Slack.";
 } else {
-  renderResidents();
   renderInvitationDock();
   loadRoomContent();
-  syncSlackResidents().then(syncInvitationStates);
+  startTown();
   window.setInterval(syncInvitationStates, 5000);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) disconnectRealtime();
@@ -1307,5 +1324,4 @@ if (window.matchMedia("(max-width: 760px)").matches) {
   document.querySelector(".dock-body").hidden = true;
   document.querySelector("#dockHandle").setAttribute("aria-expanded", "false");
 }
-window.setTimeout(() => document.querySelector("#loadingScreen").classList.add("done"), 650);
 window.requestAnimationFrame(gameLoop);

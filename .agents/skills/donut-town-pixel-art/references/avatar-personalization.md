@@ -62,7 +62,7 @@ Current implementation entry points:
 - `assets/residents/<character-id>/`: versioned production PNG. Keep the photo and discarded intermediates out of public assets.
 - Server `/api/slack/members` attaches `character` to each assigned member. Never select an identity by roster index or display name.
 - `loadCharacterArt`, `paintPersonalCharacter`, `personMarkup`, `playerMarkup`, `updatePlayerElement`, and `renderLivePlayers` in `app.js`: loading, fallback, static and animated rendering.
-- `setCharacterPortrait`: same neutral down identity in the member/profile drawer. The Slack account button continues to show the Slack avatar.
+- Keep the account button and both Slack profile drawers on `setSlackAvatar`. Generated characters belong in the town and wardrobe; never replace a Slack profile photo with game artwork.
 
 The renderer uses source rectangles without editing the PNG. Keep source rectangles inside image bounds, common display scale, feet at the bottom and the torso centered across frames. Walking sequence is A / neutral / B / neutral; idle is neutral. Mirror only the art, never labels. Reduced motion uses neutral frames. Confirm asset failure keeps shared defaults visible.
 

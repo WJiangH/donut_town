@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=22" />
+    <link rel="stylesheet" href="styles.css?v=23" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
       <div class="loading-donut" aria-hidden="true"></div>
-      <p>Opening the town gates...</p>
+      <p id="loadingMessage">Loading Slack residents…</p>
+      <button id="retryTown" class="loading-retry" hidden>Try again</button>
     </div>
 
-    <main class="app-shell">
+    <main class="app-shell" inert>
       <header class="topbar">
         <a class="brand" href="#" aria-label="Donut Town home">
           <span class="brand-mark" aria-hidden="true">D</span>
@@ -28,6 +29,7 @@
         </div>
 
         <div class="profile-control">
+          <a id="wardrobeLink" class="wardrobe-link" href="/wardrobe.html" title="Try outfits · preview saved on this device" hidden>Wardrobe</a>
           <button class="availability" id="availabilityButton" aria-pressed="true">
             <span class="status-light" aria-hidden="true"></span>
             <span id="availabilityText">Open to invites</span>
@@ -40,7 +42,7 @@
         <div class="map-toolbar">
           <div class="week-card">
             <span>This week</span>
-            <strong id="neighborSummary">10 demo residents + local player</strong>
+            <strong id="neighborSummary">Loading residents…</strong>
           </div>
           <div class="filter-group" aria-label="Filter residents">
             <button class="filter-button active" data-filter="all">Everyone</button>
@@ -172,6 +174,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
-    <script src="app.js?v=26"></script>
+    <script src="app.js?v=27"></script>
   </body>
 </html>
