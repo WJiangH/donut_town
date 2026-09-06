@@ -1,0 +1,20 @@
+{
+  "url": "/assets/residents/r-654fff/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 304,
+  "frames": [
+    [77, 35, 196, 303],
+    [446, 34, 133, 304],
+    [756, 35, 195, 302],
+    [105, 375, 156, 278],
+    [446, 375, 117, 279],
+    [775, 375, 176, 276],
+    [83, 698, 208, 292],
+    [445, 698, 133, 292],
+    [741, 698, 188, 292]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-distinct-stride"
+}

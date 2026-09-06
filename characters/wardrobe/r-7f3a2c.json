@@ -98,5 +98,52 @@
     "shoes",
     "eyewear"
   ],
-  "compatibility": "This rig only; same-silhouette apparel variants. Required garment slots cover legacy cutouts."
+  "compatibility": "This rig only; same-silhouette apparel variants. Required garment slots cover legacy cutouts.",
+  "ui": {
+    "eyewear": {
+      "label": "Eyewear",
+      "items": {
+        "none": {
+          "label": "Glasses"
+        },
+        "smoke": {
+          "label": "Shades"
+        }
+      }
+    },
+    "jacket": {
+      "label": "Jacket",
+      "items": {
+        "original": {
+          "label": "Charcoal jacket",
+          "swatch": "#333438"
+        },
+        "navy": {
+          "label": "Navy jacket",
+          "swatch": "#2a496c"
+        },
+        "olive": {
+          "label": "Olive jacket",
+          "swatch": "#505b36"
+        }
+      }
+    },
+    "shoes": {
+      "label": "Shoes",
+      "items": {
+        "original": {
+          "label": "Brown shoes",
+          "swatch": "#352920"
+        },
+        "cream": {
+          "label": "Cream shoes",
+          "swatch": "#d3cab0"
+        },
+        "burgundy": {
+          "label": "Burgundy shoes",
+          "swatch": "#752f35"
+        }
+      }
+    }
+  }
 }

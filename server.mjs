@@ -172,10 +172,10 @@ const server = createServer(async (request, response) => {
       try {
         const body = JSON.parse(await readBody(request));
         if (Object.keys(body).length !== 1 || !body.outfit) throw new Error("invalid_outfit");
-        outfit = validateOutfit(body.outfit);
+        outfit = validateOutfit(body.outfit, character);
       } catch { return sendJson(response, 400, { error: "invalid_outfit" }); }
       try {
-        await outfitStore.save(memberCharacterKey(session.sub, config.signingSecret), outfit);
+        await outfitStore.save(memberCharacterKey(session.sub, config.signingSecret), outfit, character);
       } catch { return sendJson(response, 503, { error: "outfit_save_failed" }); }
       return sendJson(response, 200, { outfit, character: equippedCharacter(character, outfit) });
     }

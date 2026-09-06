@@ -4,9 +4,10 @@ Use when a user requests reversible accessories, shoes, clothing variants, or a 
 
 ## Working implementation
 
-- `characters/wardrobe/r-7f3a2c.regions.json`: reviewed regions for a legacy atlas, including shoe polygons, jacket material bounds/exclusions and sunglass lenses. These coordinates belong to this character only.
-- `scripts/wardrobe/build.py`: deterministic local pixel split and same-silhouette palette variants. Requires Pillow. Use local pixel editing only when authorized by the user and permitted by the active image tool rules; that was the explicitly accepted workflow for this prototype. Never infer permission to use arbitrary image editing tools from this reference alone.
-- `characters/wardrobe/r-7f3a2c.json`: rig version, common frame rectangles, base, required slots, optional slots, default items and layer order.
+- Wardrobe is multi-character. `characters/wardrobe/store.mjs` loads every `r-*.json` rig. The profile UI renders labels/swatches from each manifest's `ui` block.
+- `characters/wardrobe/r-7f3a2c.regions.json`: reviewed polygons for the suit atlas. These coordinates belong to that character only.
+- `characters/wardrobe/r-654fff.regions.json`: color-band split for a casual shirt/sneaker silhouette. `python3 scripts/wardrobe/build.py <id>` selects the split from the regions file.
+- `scripts/wardrobe/build.py`: deterministic local pixel split and same-silhouette palette variants. Requires Pillow. Baked JPEG backdrops are removed with `extract-checkerboard-alpha.py` before this step.
 - `characters/wardrobe/renderer.mjs`: shared compositing renderer. It selects one image per required slot, preserves crop/scale across all layers, and mirrors the entire composite for left.
 - `#profileWardrobe` in `index.html`, mounted by `profile-wardrobe.mjs`: compact English wardrobe inside the member’s own Slack profile, below My donuts. Includes eyewear, jacket/shoe swatches, four directions, walking and reset. Keep the Slack photo above it. There is no separate navigation entry; `/wardrobe.html` redirects to `/?profile=1` for old links. Selection is saved by authenticated POST `/api/wardrobe` to the existing Upstash hash, keyed by the server-derived member HMAC. The server validates known slot/item IDs and derives identity from the Slack session. Map characters use the returned layer URLs; other clients poll GET `/api/wardrobe` alongside invitation refresh. Show Equipped only after save and map asset loading succeed; failed saves retain the last confirmed outfit.
 

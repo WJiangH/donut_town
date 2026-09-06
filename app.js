@@ -188,6 +188,11 @@ async function loadCharacterArt(character) {
   return loaded.every(Boolean) ? character : null;
 }
 
+function wardrobeManifestUrl(character) {
+  const id = character?.url?.match(/^\/assets\/residents\/(r-[a-z0-9-]+)\//)?.[1];
+  return id ? `/characters/wardrobe/${id}.json` : null;
+}
+
 function personalCharacterMarkup(character, className) {
   return `<div class="${className} personal-character" aria-hidden="true"><span class="personal-art"></span></div>`;
 }
@@ -1078,7 +1083,7 @@ function renderCurrentProfile() {
   setSlackAvatar(profileButton, currentUser || { displayName: name });
   profileButton.setAttribute("aria-label", currentUser ? `Open ${name}'s Slack profile` : "Open your profile");
   setSlackAvatar(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
-  document.querySelector("#profileWardrobe").hidden = currentUser?.character?.url !== "/assets/residents/r-7f3a2c/walk-v1.png";
+  document.querySelector("#profileWardrobe").hidden = !currentUser?.character?.layers;
   document.querySelector("#profileName").textContent = name;
   const ownFacts = [
     ["Role", currentUser?.title],
@@ -1102,7 +1107,7 @@ function openProfile() {
   document.querySelector("#profileButton").setAttribute("aria-expanded", "true");
   const wardrobe = document.querySelector("#profileWardrobe");
   if (!wardrobe.hidden && !wardrobeMount) {
-    wardrobeMount = import("./profile-wardrobe.mjs").then(module => module.mountWardrobe(wardrobe, { initialOutfit: currentUser?.character?.outfit, onSaved: async character => {
+    wardrobeMount = import("./profile-wardrobe.mjs").then(module => module.mountWardrobe(wardrobe, { manifestUrl: wardrobeManifestUrl(currentUser.character), initialOutfit: currentUser?.character?.outfit, onSaved: async character => {
       const loaded = await loadCharacterArt(character);
       if (!loaded) throw new Error("Character image unavailable");
       wardrobeRevision++;

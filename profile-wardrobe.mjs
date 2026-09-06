@@ -1,12 +1,32 @@
 import { outfitFor, loadWardrobe, drawWardrobe } from './characters/wardrobe/renderer.mjs';
 
-export async function mountWardrobe(root, {initialOutfit = {}, onSaved = async () => {}} = {}) {
+function renderOptions(root, manifest) {
+  const host = root.querySelector('.wardrobe-options');
+  const ui = manifest.ui || {};
+  host.innerHTML = (manifest.layerOrder || Object.keys(manifest.slots)).map(slot => {
+    const spec = manifest.slots[slot];
+    const slotUi = ui[slot] || {};
+    const buttons = Object.keys(spec.items).map(item => {
+      const itemUi = slotUi.items?.[item] || {};
+      const label = itemUi.label || item;
+      return itemUi.swatch
+        ? `<button data-item="${item}" aria-label="${label}" title="${label}" style="--swatch:${itemUi.swatch}" class="outfit-swatch" aria-pressed="false"></button>`
+        : `<button data-item="${item}" aria-pressed="false">${label}</button>`;
+    }).join('');
+    return `<fieldset data-slot="${slot}"><legend>${slotUi.label || slot}</legend>${buttons}</fieldset>`;
+  }).join('');
+}
+
+export async function mountWardrobe(root, {manifestUrl, initialOutfit = {}, onSaved = async () => {}} = {}) {
   const status = root.querySelector('[role="status"]');
+  if (!manifestUrl) throw new Error('Wardrobe unavailable');
+  const response = await fetch(manifestUrl, {signal: AbortSignal.timeout(15000)});
+  if (!response.ok) throw new Error('Wardrobe unavailable');
+  const manifest = await response.json();
+  renderOptions(root, manifest);
+  const images = await loadWardrobe(manifest);
   const controls = [...root.querySelectorAll('button')];
   controls.forEach(button => { button.disabled = true; });
-  const response = await fetch('/characters/wardrobe/r-7f3a2c.json', {signal: AbortSignal.timeout(15000)});
-  if (!response.ok) throw new Error('Wardrobe unavailable');
-  const manifest = await response.json(), images = await loadWardrobe(manifest);
   let outfit = outfitFor(manifest, initialOutfit), confirmed = {...outfit};
   let direction = 'down', phase = 1, timer, saving = false;
   const walk = root.querySelector('[data-action="walk"]');

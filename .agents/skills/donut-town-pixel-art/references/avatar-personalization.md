@@ -50,7 +50,7 @@ Actual failure cases from the first production run:
 
 Run `node .agents/skills/donut-town-pixel-art/scripts/validate-png-atlas.mjs <atlas.png> 3 3`. Inspect alpha around silhouettes and limb gaps, not just corners. Compare A/B/neutral and all directions at native size and at the actual in-town scale.
 
-If transparency fails, request background extraction with the approved atlas as edit target and no redraw. Follow the two-failed-retry limit in prompting.md. Preserve the last valid artifact. If switching to code-based image editing requires explicit user consent under the available image tool's instructions, ask once and continue independent integration work while awaiting the reply. Do not silently use code or ship the checkerboard.
+If transparency fails, do **not** spend image-tool retries on it. The image tools return JPEG with a baked checkerboard or near-white backdrop. Run `python3 .agents/skills/donut-town-pixel-art/scripts/extract-checkerboard-alpha.py <atlas> --out <rgba.png> --grid 3 3` and inspect the result. That local extraction is the authorized production path.
 
 ## 4. Integrate a stable identity
 

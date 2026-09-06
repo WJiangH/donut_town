@@ -15,7 +15,9 @@ The preferred production contract is three frames for each of three source direc
 
 ## Slack avatar personalization
 
-For turning a custom Slack avatar into a persistent resident identity, read [references/avatar-personalization.md](references/avatar-personalization.md). Start with a member name; no uploaded PNG is required. The reference describes the authenticated Render avatar-fetch helper, default-avatar eligibility, generation, runtime contracts, member binding, deployment verification, fallback, and member edits.
+For one named channel member who should become an editable Town resident, read only [references/member-pipeline.md](references/member-pipeline.md). That is the token-cheap path: two image calls, local background extraction, color-band wardrobe, bind, deploy. Do not load the other reference files unless a gate fails.
+
+For unusual cases (preview-only, walk-cycle repair, or a non-casual silhouette) read [references/avatar-personalization.md](references/avatar-personalization.md). Start with a member name; no uploaded PNG is required.
 
 ## Production animation
 
@@ -23,7 +25,7 @@ When asked to continue a preview into walking or production animation, follow [r
 
 ## Layered characters and equipment
 
-For local accessories, clothing/shoe changes, or a new resident intended for a wardrobe, read [references/layered-wardrobe.md](references/layered-wardrobe.md) before constructing the character. Preserve accepted identity pixels, use compatible equipment layers and verify reversible composition. A single flattened PNG is insufficient for reusable clothing. The current prototype supports one character rig with sunglasses and same-silhouette palette variants; do not claim universal equipment compatibility.
+New casual residents use the color-band wardrobe in the member pipeline. Keep slot IDs `jacket` / `shoes` / `eyewear` and change only the `ui` labels. For suit-style polygon splits or a new slot shape, read [references/layered-wardrobe.md](references/layered-wardrobe.md). Each rig is independent; do not claim one garment fits every member.
 
 ## Bind and verify a Town character
 

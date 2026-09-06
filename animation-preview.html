@@ -18,28 +18,27 @@
   @media (max-width: 600px) { .map { min-height: 55vh; } .toolbar { gap: 5px; } #actor { width: 66px; height: 66px; } }
 </style>
 <main>
-  <h1>Yulia animation QA</h1>
+  <h1>Resident animation QA</h1>
   <div class="toolbar">
     <button data-dir="down">Down</button><button data-dir="right">Right</button><button data-dir="left">Left (mirror)</button><button data-dir="up">Up</button>
     <button id="play">Play</button><button id="pause">Pause</button><button id="step">Step</button>
     <label>ms <input id="speed" type="range" min="110" max="160" value="130"></label>
     <label>View <select id="viewScale"><option value="1">Follow · 1×</option><option value="0.65">Overview · 0.65×</option><option value="2">Inspect · 2×</option></select></label><output id="state">down · neutral</output>
   </div>
-  <section class="map"><canvas id="actor" width="88" height="88" aria-label="Yulia animation frame"></canvas></section>
-  <div class="note">Animation draft: the latest PNG is RGBA, but a corner retains alpha 1/255. Frames below use measured silhouette bounds and a shared feet baseline. Side-view A/B poses remain too similar to certify the gait. This is not an approved production asset.</div>
+  <section class="map"><canvas id="actor" width="88" height="88" aria-label="Resident animation frame"></canvas></section>
+  <div class="note">Open with <code>?id=r-654fff</code> (default) or another resident id. Uses the measured production atlas and shared feet baseline. Left is a mirror of right.</div>
   <section class="refs">
-    <figure><img src="/assets/previews/r-93c8e1/walk-draft.png"><figcaption>3×3 atlas under QA</figcaption></figure>
+    <figure><img id="atlasThumb" alt="3×3 atlas under QA"><figcaption>3×3 atlas under QA</figcaption></figure>
   </section>
 </main>
 <script>
-const atlas='/assets/previews/r-93c8e1/walk-draft.png';
+const id=new URLSearchParams(location.search).get('id') || 'r-654fff';
 const actor=document.querySelector('#actor'), ctx=actor.getContext('2d'), state=document.querySelector('#state');
-const source=new Image(); source.src=atlas;
-let row=0,col=1,phaseIndex=1,playing=false,timer,current='down';
+const source=new Image();
+let row=0,col=1,phaseIndex=1,playing=false,timer,current='down',manifest;
 const dirs={down:0,right:1,left:1,up:2};
-const manifest={"url": "/assets/previews/r-93c8e1/walk-draft.png", "imageWidth": 1254, "imageHeight": 1254, "frameHeight": 391, "frames": [[190, 34, 151, 387], [567, 30, 133, 391], [913, 35, 169, 383], [179, 447, 172, 361], [567, 446, 115, 362], [913, 445, 180, 363], [165, 830, 167, 368], [569, 830, 124, 368], [922, 828, 163, 370]], "productionReady": false, "transparencyCornersPassed": false, "status": "draft-geometry-only"};
 function draw(){
- if(!source.complete || !source.naturalWidth) return;
+ if(!manifest || !source.complete || !source.naturalWidth) return;
  ctx.clearRect(0,0,88,88);ctx.save();
  if(current==='left'){ctx.translate(88,0);ctx.scale(-1,1);}
  ctx.imageSmoothingEnabled=false;
@@ -51,6 +50,12 @@ function draw(){
  state.value=`${current} · ${['step A','neutral','step B'][col]}`;
 }
 document.querySelector('#viewScale').onchange=draw;
+fetch(`/characters/${id}.json`).then(response => response.json()).then(data => {
+  manifest=data;
+  source.src=manifest.url;
+  document.querySelector('#atlasThumb').src=manifest.url;
+  document.title=`${id} animation QA`;
+});
 source.onload=draw;
 document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{current=b.dataset.dir;row=dirs[current];draw();});
 document.querySelector('#step').onclick=()=>{phaseIndex=(phaseIndex+1)%4;col=[0,1,2,1][phaseIndex];draw();};
