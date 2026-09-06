@@ -55,7 +55,9 @@ Inspect the final PNG at original size and confirm:
 
 - the doorway is visible and unobstructed;
 - the floor forms one connected region;
+- foreground and background have enough human-scale furniture to anchor the resident sprite without leaving a large showroom-like void;
 - furniture reads as separate collision islands;
+- any bulletin board or gallery intended for live content has a blank rectangular inset rather than baked text or people;
 - no people, text, watermark, or baked UI are present;
 - perspective, scale, palette, lighting, and pixel density match the town;
 - the player sprite remains readable against both light and dark floor areas.
@@ -65,6 +67,7 @@ Inspect the final PNG at original size and confirm:
 - Background: one `<img>` or canvas layer that owns no live state.
 - Interaction layer: accessible entrance, exit, and station controls above the image.
 - Character layer: player and verified occupants above the background.
+- Content layer: announcements, team portraits, and event copy loaded separately from the PNG so they can change without regenerating the room.
 - Geometry: normalized 0–100 coordinates so collision survives responsive scaling.
 - Navigation: direct entry on the Enter control. Walking toward a doorway may be decorative, but a pathfinding failure must not suppress the scene change.
 - Scene state: store one player position per scene and restore it when returning.

@@ -52,10 +52,13 @@ const mapObstacles = [
 ];
 
 const chemPodObstacles = [
-  { left: 8, right: 22, top: 40, bottom: 70 },
-  { left: 31, right: 66, top: 40, bottom: 67 },
-  { left: 78, right: 92, top: 40, bottom: 70 },
-  { left: 16, right: 82, top: 15, bottom: 37 }
+  { left: 7, right: 27, top: 40, bottom: 69 },
+  { left: 31, right: 66, top: 40, bottom: 68 },
+  { left: 67, right: 94, top: 40, bottom: 70 },
+  { left: 16, right: 82, top: 15, bottom: 37 },
+  { left: 24, right: 46, top: 69, bottom: 88 },
+  { left: 54, right: 62, top: 69, bottom: 89 },
+  { left: 64, right: 85, top: 68, bottom: 90 }
 ];
 
 let outgoingInvitations = [];
@@ -182,6 +185,32 @@ function renderChemPod() {
   roomLayer.innerHTML = `<div class="player-pin ${currentUser?.status || "open"}" id="chemPodPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
     ${playerMarkup()}
   </div>`;
+  renderChemPodTeamWall();
+}
+
+function renderChemPodTeamWall() {
+  const wall = document.querySelector("#chemPodTeamFaces");
+  if (!wall) return;
+  const people = [...(currentUser ? [currentUser] : []), ...residents].slice(0, 12);
+  wall.innerHTML = people.map(person => {
+    const name = person.displayName || person.name || "Slack member";
+    return person.avatarUrl
+      ? `<img src="${escapeHtml(person.avatarUrl)}" alt="" title="${escapeHtml(name)}" />`
+      : `<span title="${escapeHtml(name)}">${escapeHtml(initialsFor(name))}</span>`;
+  }).join("");
+}
+
+async function loadRoomContent() {
+  try {
+    const response = await fetch("/content/rooms.json", { cache: "no-store" });
+    if (!response.ok) return;
+    const announcement = (await response.json())?.chemPod?.announcement;
+    if (!announcement) return;
+    document.querySelector("#chemPodNoticeKicker").textContent = announcement.kicker || "This week";
+    document.querySelector("#chemPodNoticeTitle").textContent = announcement.title || "Chem Pod news";
+  } catch {
+    // Keep the built-in room copy when optional content is unavailable.
+  }
 }
 
 function layoutBookedPairs() {
@@ -784,6 +813,7 @@ if (window.location.protocol === "file:") {
 } else {
   renderResidents();
   renderInvitationDock();
+  loadRoomContent();
   syncSlackResidents().then(syncInvitationStates);
   window.setInterval(syncInvitationStates, 5000);
   document.addEventListener("visibilitychange", () => {

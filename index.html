@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=13" />
+    <link rel="stylesheet" href="styles.css?v=14" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -87,7 +87,14 @@
 
         <div class="map-wrap">
           <div class="map-world interior-world" id="chemPodWorld">
-            <img class="town-map interior-map" src="assets/chem-pod-interior.png" alt="A warm pixel-art chemistry room with workbenches, glassware, plants and open floor paths." />
+            <img class="town-map interior-map" src="assets/chem-pod-interior-v2.png" alt="A warm pixel-art chemistry clubhouse with workbenches, an announcement board, a team wall, a collaboration table and open floor paths." />
+            <aside class="chem-pod-notice" aria-label="Chem Pod announcement">
+              <span id="chemPodNoticeKicker">This week</span>
+              <strong id="chemPodNoticeTitle">Congrats Yulia!</strong>
+            </aside>
+            <section class="chem-pod-team-wall" aria-label="Chem Pod team wall">
+              <div id="chemPodTeamFaces"></div>
+            </section>
             <div class="residents-layer" id="chemPodResidentsLayer" aria-live="polite"></div>
             <button class="room-exit" id="chemPodExit" aria-label="Walk to the door and leave Chem Pod">
               <span>Exit</span>
@@ -159,6 +166,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
   </body>
 </html>

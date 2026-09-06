@@ -128,6 +128,34 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 
 .interior-world { width: max(100%, calc((100dvh - 72px) * 1.5)); }
 .interior-map { filter: saturate(.88) brightness(.98); }
+.chem-pod-notice, .chem-pod-team-wall { position: absolute; z-index: 3; pointer-events: none; }
+.chem-pod-notice {
+  left: 13.7%;
+  top: 47.2%;
+  width: 10.2%;
+  height: 15.2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1%;
+  color: #4a321e;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 248, 218, .8);
+}
+.chem-pod-notice span { margin-bottom: 5px; font-size: clamp(6px, .45vw, 9px); text-transform: uppercase; letter-spacing: .08em; }
+.chem-pod-notice strong { max-width: 100%; font-size: clamp(8px, .72vw, 14px); line-height: 1.25; }
+.chem-pod-team-wall { left: 68.5%; top: 45.2%; width: 10.8%; height: 17.8%; padding: .55%; }
+.chem-pod-team-wall > div { display: grid; grid-template-columns: repeat(4, 1fr); align-content: center; gap: 4%; width: 100%; height: 100%; }
+.chem-pod-team-wall img, .chem-pod-team-wall span {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(247, 226, 180, .84);
+  background: #d7a34f;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+.chem-pod-team-wall span { display: grid; place-items: center; color: #173126; font-size: clamp(5px, .38vw, 8px); font-weight: 900; }
 .room-toolbar { position: absolute; z-index: 8; left: 20px; top: 18px; display: flex; align-items: center; gap: 13px; padding: 8px; }
 .room-toolbar div { padding-right: 7px; }
 .room-toolbar span, .room-toolbar strong { display: block; }
