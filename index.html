@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=19" />
+    <link rel="stylesheet" href="styles.css?v=21" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -47,13 +47,13 @@
             <button class="filter-button" data-filter="new">New faces</button>
             <button class="filter-button" data-filter="other">Other teams</button>
           </div>
-          <button class="camera-toggle" id="cameraToggle" type="button" aria-pressed="true">
-            <span class="camera-icon" aria-hidden="true"></span>
-            <span id="cameraToggleLabel">Follow me</span>
-          </button>
+          <div class="camera-controls" role="group" aria-label="Camera view">
+            <button class="camera-toggle" data-camera-mode="overview" type="button" aria-pressed="true">Town overview</button>
+            <button class="camera-toggle" data-camera-mode="follow" type="button" aria-pressed="false">Follow me</button>
+          </div>
         </div>
 
-        <div class="map-wrap" id="mapWrap">
+        <div class="map-wrap" id="mapWrap" data-camera-mode="overview">
           <div class="map-world" id="mapWorld">
             <img class="town-map" src="assets/donut-town-map-v2.png" alt="A large pixel-art village with a donut cafe, fountain, science pods, farms, rivers, bridges and forest paths." />
             <div class="residents-layer" id="residentsLayer" aria-live="polite"></div>
@@ -71,7 +71,7 @@
 
         <div class="movement-help">
           <strong>Walk around</strong>
-          <span>Click a path or use WASD / arrow keys</span>
+          <span id="townMovementHelp">Drag to explore · Click to walk · Shift + arrows to pan</span>
         </div>
 
         <aside class="legend" aria-label="Availability legend">
@@ -115,11 +115,11 @@
       </section>
 
       <aside class="invite-dock" id="inviteDock" aria-label="Your pending Donut invitations">
-        <button class="dock-handle" id="dockHandle" aria-expanded="true">
+        <button class="dock-handle" id="dockHandle" aria-expanded="false">
           <span>My invitations</span>
           <strong><span id="availableInviteCount">3</span>/3 available</strong>
         </button>
-        <div class="dock-body">
+        <div class="dock-body" hidden>
           <p class="dock-help" id="inviteDockHelp">People waiting to answer your invitation appear here.</p>
           <ol class="pending-invite-list" id="pendingInviteList"></ol>
           <div class="pending-invite-empty" id="pendingInviteEmpty">You have three invitations available. Choose a neighbor to begin.</div>
@@ -172,6 +172,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=25"></script>
   </body>
 </html>

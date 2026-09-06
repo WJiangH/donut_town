@@ -1,6 +1,6 @@
 ---
 name: donut-town-pixel-art
-description: Generate, validate, and integrate Donut Town pixel residents, directional walk cycles, and cosmetic Donut rewards from approved character or town artwork. Use for new resident sprites, animation atlases, art consistency fixes, or the related asset workflow; do not use for Slack messaging logic or general frontend changes without pixel-art work.
+description: Generate, validate, and integrate Donut Town pixel residents, directional walk cycles, and cosmetic Donut rewards from approved character or town artwork. Use for Slack-avatar personalization, new resident sprites, animation atlases, art consistency fixes, or the related asset workflow; do not use for Slack messaging logic or general frontend changes without pixel-art work.
 ---
 
 # Donut Town Pixel Art
@@ -12,6 +12,10 @@ Produce game-ready pixel characters that remain visually consistent with the app
 A single character image provides identity and visual style, but it does not contain hidden views or motion. Generated side and back views are inferred and must be reviewed. Treat one-shot output as a draft until direction, identity, loop continuity, transparency, and in-map scale are verified.
 
 The preferred production contract is three frames for each of three source directions: down, side, and up. Mirror the side row in code for the opposite direction. Use a four-row atlas only when distinct left and right artwork is important and both directions pass visual review.
+
+## Slack avatar personalization
+
+For turning a custom Slack avatar into a persistent resident identity, read [references/avatar-personalization.md](references/avatar-personalization.md). It covers default-avatar eligibility, generation, current renderer contracts, fallback, and member edits.
 
 ## Workflow
 

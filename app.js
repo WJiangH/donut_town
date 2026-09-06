@@ -10,26 +10,19 @@ let residents = [
   { id: 9, name: "Amina Yusuf", team: "Packaging", status: "open", donuts: 10, topics: ["community", "science", "local food"], group: "other", x: 67, y: 59, skin: "#70462f", hair: "#292021", shirt: "#bc5d49", note: "New face from another team." },
   { id: 10, name: "Evan Brooks", team: "Analytics", status: "booked", donuts: 3, topics: ["data", "baseball", "podcasts"], group: "other", x: 50, y: 13, skin: "#e2b08d", hair: "#704f35", shirt: "#4b7888", note: "Already booked for this week." }
 ];
-const townPopulationRoutes = [
-  { from: [47, 20], to: [47, 34], count: 5, activity: "path" },
-  { from: [55, 20], to: [55, 34], count: 5, activity: "path" },
-  { from: [42, 35], to: [42, 53], count: 6, activity: "path" },
-  { from: [60, 35], to: [60, 53], count: 6, activity: "path" },
-  { from: [49, 55], to: [49, 69], count: 5, activity: "path" },
-  { from: [43, 35], to: [29, 27], count: 6, activity: "cafe" },
-  { from: [60, 34], to: [87, 29], count: 7, activity: "path" },
-  { from: [41, 45], to: [15, 54], count: 7, activity: "path" },
-  { from: [61, 45], to: [91, 52], count: 7, activity: "path" },
-  { from: [57, 58], to: [90, 86], count: 8, activity: "path" }
+// Feet positions on paved gathering places, spread across town before filling gaps.
+const residentSlots = [
+  { x: 40, y: 38, activity: "plaza" },
+  { x: 57, y: 49, activity: "plaza" },
+  { x: 35, y: 30, activity: "cafe" },
+  { x: 51, y: 25, activity: "path" },
+  { x: 64, y: 34, activity: "path" },
+  { x: 24, y: 48, activity: "path" },
+  { x: 49, y: 63, activity: "plaza" },
+  { x: 65, y: 66, activity: "path" },
+  { x: 17, y: 87, activity: "path" },
+  { x: 85, y: 80, activity: "plaza" }
 ];
-const residentSlots = townPopulationRoutes.flatMap(route => Array.from({ length: route.count }, (_, index) => {
-  const progress = (index + 1) / (route.count + 1);
-  return {
-    x: route.from[0] + (route.to[0] - route.from[0]) * progress,
-    y: route.from[1] + (route.to[1] - route.from[1]) * progress,
-    activity: route.activity
-  };
-}));
 const chemPodResidentSlots = [
   { x: 29, y: 36 }, { x: 40, y: 36 }, { x: 52, y: 36 }, { x: 65, y: 36 }, { x: 76, y: 36 },
   { x: 28, y: 75 }, { x: 35, y: 84 }, { x: 49, y: 78 }, { x: 51, y: 86 },
@@ -117,6 +110,14 @@ let lastPresenceSignature = "";
 const townCamera = { x: 0, y: 0, scale: 1, ready: false };
 let townCameraMetrics = null;
 let cameraMode = "overview";
+// World pixels, independent of the viewport and total map extent.
+const overviewCenter = { x: 1536, y: 1004 };
+let mapDrag = null;
+let suppressMapClick = false;
+
+function clampCameraOffset(offset, viewportSize, worldSize) {
+  return Math.max(viewportSize - worldSize, Math.min(0, offset));
+}
 
 const layer = document.querySelector("#residentsLayer");
 const drawer = document.querySelector("#residentDrawer");
@@ -544,37 +545,37 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
   if (currentScene !== "town") return;
   if (!townCameraMetrics) refreshTownCameraMetrics();
   const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
-  const targetScale = cameraMode === "overview" ? Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight) : 1;
-  const overviewX = Math.min(0, Math.max(
-    viewportWidth - worldWidth * targetScale,
-    (viewportWidth - worldWidth * targetScale) / 2
-  ));
-  const overviewY = Math.min(0, Math.max(
-    viewportHeight - worldHeight * targetScale,
-    viewportHeight / 2 - worldHeight * targetScale * 0.49
-  ));
-  const targetX = cameraMode === "overview"
-    ? overviewX
-    : Math.min(0, Math.max(viewportWidth - worldWidth, viewportWidth / 2 - worldWidth * player.x / 100));
-  const targetY = cameraMode === "overview"
-    ? overviewY
-    : Math.min(0, Math.max(viewportHeight - worldHeight, viewportHeight / 2 - worldHeight * player.y / 100));
+  const coverScale = Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight);
+  const targetScale = Math.max(cameraMode === "overview" ? 0.65 : 1, coverScale);
+  const centerX = cameraMode === "overview" ? overviewCenter.x : worldWidth * player.x / 100;
+  const centerY = cameraMode === "overview" ? overviewCenter.y : worldHeight * player.y / 100;
+  const targetX = clampCameraOffset(viewportWidth / 2 - centerX * targetScale, viewportWidth, worldWidth * targetScale);
+  const targetY = clampCameraOffset(viewportHeight / 2 - centerY * targetScale, viewportHeight, worldHeight * targetScale);
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const blend = immediate || reducedMotion || !townCamera.ready ? 1 : 1 - Math.exp(-8 * deltaSeconds);
   townCamera.x += (targetX - townCamera.x) * blend;
   townCamera.y += (targetY - townCamera.y) * blend;
   townCamera.scale += (targetScale - townCamera.scale) * blend;
+  // Clamp even during zoom transitions and viewport changes: never reveal empty space.
+  townCamera.scale = Math.max(townCamera.scale, coverScale);
+  townCamera.x = clampCameraOffset(townCamera.x, viewportWidth, worldWidth * townCamera.scale);
+  townCamera.y = clampCameraOffset(townCamera.y, viewportHeight, worldHeight * townCamera.scale);
   townCamera.ready = true;
   document.querySelector("#mapWorld").style.transform = `translate3d(${townCamera.x}px, ${townCamera.y}px, 0) scale(${townCamera.scale})`;
 }
 
 function setCameraMode(nextMode, announce = false) {
   if (!['overview', 'follow'].includes(nextMode)) return;
+  finishMapDrag();
   cameraMode = nextMode;
-  const button = document.querySelector("#cameraToggle");
-  button.setAttribute("aria-pressed", String(cameraMode === "overview"));
-  document.querySelector("#cameraToggleLabel").textContent = cameraMode === "overview" ? "Follow me" : "Town overview";
-  if (announce) showToast(cameraMode === "overview" ? "Showing the whole town." : "The camera is following you.");
+  document.querySelector("#mapWrap").dataset.cameraMode = cameraMode;
+  document.querySelector("#townMovementHelp").textContent = cameraMode === "overview"
+    ? "Drag to explore · Click to walk · Shift + arrows to pan"
+    : "Click a path or use WASD / arrow keys";
+  document.querySelectorAll("[data-camera-mode]").forEach(button => {
+    button.setAttribute("aria-pressed", String(button.dataset.cameraMode === cameraMode));
+  });
+  if (announce) showToast(cameraMode === "overview" ? "Drag to explore. Your view stays where you leave it." : "The camera is following you.");
 }
 
 function nearestWalkable(x, y) {
@@ -823,12 +824,38 @@ function populationSlot(slots, index) {
   if (!lap) return base;
   const angle = index * 2.399963;
   const offset = Math.min(2.4, lap * 0.8);
-  return {
-    ...base,
-    x: base.x + Math.cos(angle) * offset,
-    y: base.y + Math.sin(angle) * offset
-  };
+  const candidate = { ...base, x: base.x + Math.cos(angle) * offset, y: base.y + Math.sin(angle) * offset };
+  const valid = slots === residentSlots ? isTownWalkable(candidate.x, candidate.y) : isChemPodWalkable(candidate.x, candidate.y);
+  return valid ? candidate : base;
 }
+
+// Additional residents use the centers of visible paved paths, not a field grid.
+const gatheringPaths = [
+  { from: [49, 20], to: [49, 35] },
+  { from: [52, 20], to: [52, 35] },
+  { from: [40, 38], to: [40, 49] },
+  { from: [59, 38], to: [59, 49] },
+  { from: [49, 54], to: [49, 66] },
+  { from: [52, 54], to: [52, 66] },
+  { from: [35, 30], to: [39, 35] },
+  { from: [61, 34], to: [70, 29] },
+  { from: [24, 48], to: [38, 48] },
+  { from: [62, 48], to: [70, 48] },
+  { from: [55, 66], to: [72, 64] },
+  { from: [46, 77], to: [46, 84] },
+  { from: [10, 86], to: [27, 86] }
+];
+for (let step = 0; step <= 5; step++) {
+  for (const path of gatheringPaths) {
+    const x = path.from[0] + (path.to[0] - path.from[0]) * step / 5;
+    const y = path.from[1] + (path.to[1] - path.from[1]) * step / 5;
+    if (!isTownWalkable(x, y)) continue;
+    if (residentSlots.some(spot => Math.hypot(spot.x - x, spot.y - y) < 3)) continue;
+    if (donutStations.some(station => Math.hypot(station.x - x, station.y + 2 - y) < 4)) continue;
+    residentSlots.push({ x, y, activity: "path" });
+  }
+}
+residents.forEach((person, index) => Object.assign(person, populationSlot(residentSlots, index)));
 
 async function syncSlackResidents() {
   try {
@@ -840,7 +867,7 @@ async function syncSlackResidents() {
     currentUser = data.members.find(member => member.isCurrentUser) || null;
     const neighbors = data.members
       .filter(member => !member.isCurrentUser)
-      .sort((left, right) => (left.displayName || "").localeCompare(right.displayName || "") || left.id.localeCompare(right.id));
+      .sort((left, right) => stableMemberScore(left) - stableMemberScore(right) || left.id.localeCompare(right.id));
     renderCurrentProfile();
     const chemPodIds = assignedChemPodIds(neighbors);
     let townIndex = 0;
@@ -1041,12 +1068,57 @@ document.querySelector("#dockHandle").addEventListener("click", () => {
   document.querySelector("#dockHandle").setAttribute("aria-expanded", String(!body.hidden));
 });
 
+function finishMapDrag() {
+  const viewport = document.querySelector("#mapWrap");
+  if (mapDrag && viewport.hasPointerCapture(mapDrag.id)) viewport.releasePointerCapture(mapDrag.id);
+  mapDrag = null;
+  viewport.classList.remove("is-dragging");
+}
+
+const mapViewport = document.querySelector("#mapWrap");
+mapViewport.addEventListener("pointerdown", event => {
+  if (cameraMode !== "overview" || event.button !== 0 || !event.isPrimary || event.target.closest("button")) return;
+  finishMapDrag();
+  suppressMapClick = false;
+  mapDrag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, x: event.clientX, y: event.clientY, active: false };
+});
+mapViewport.addEventListener("pointermove", event => {
+  if (!mapDrag || mapDrag.id !== event.pointerId) return;
+  if (!event.buttons) { finishMapDrag(); return; }
+  if (!mapDrag.active && Math.hypot(event.clientX - mapDrag.startX, event.clientY - mapDrag.startY) < 6) return;
+  if (!mapDrag.active) {
+    mapDrag.active = true;
+    mapViewport.setPointerCapture(event.pointerId);
+    mapViewport.classList.add("is-dragging");
+  }
+  suppressMapClick = true;
+  const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
+  const x = clampCameraOffset(townCamera.x + event.clientX - mapDrag.x, viewportWidth, worldWidth * townCamera.scale);
+  const y = clampCameraOffset(townCamera.y + event.clientY - mapDrag.y, viewportHeight, worldHeight * townCamera.scale);
+  overviewCenter.x = (viewportWidth / 2 - x) / townCamera.scale;
+  overviewCenter.y = (viewportHeight / 2 - y) / townCamera.scale;
+  mapDrag.x = event.clientX;
+  mapDrag.y = event.clientY;
+  updateTownCamera(0, true);
+});
+for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
+  mapViewport.addEventListener(type, event => {
+    if (mapDrag?.id === event.pointerId) finishMapDrag();
+  });
+}
+// A drag ends with a browser click; consume it before it can start a walk.
+mapViewport.addEventListener("click", event => {
+  if (!suppressMapClick) return;
+  suppressMapClick = false;
+  event.preventDefault();
+  event.stopPropagation();
+}, true);
+
 function movePlayerFromMapClick(event) {
   if (event.target.closest("button")) return;
   const bounds = event.currentTarget.getBoundingClientRect();
   const x = ((event.clientX - bounds.left) / bounds.width) * 100;
   const y = ((event.clientY - bounds.top) / bounds.height) * 100;
-  if (currentScene === "town") setCameraMode("follow");
   const destination = nearestWalkable(x, y);
   clickPath = findWalkPath(player, destination);
 }
@@ -1056,7 +1128,7 @@ document.querySelector("#chemPodWorld").addEventListener("click", movePlayerFrom
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));
 document.querySelector("#chemPodExit").addEventListener("click", () => transitionToScene("town"));
 document.querySelector("#leaveChemPod").addEventListener("click", () => transitionToScene("town"));
-document.querySelector("#cameraToggle").addEventListener("click", () => setCameraMode(cameraMode === "overview" ? "follow" : "overview", true));
+document.querySelectorAll("[data-camera-mode]").forEach(button => button.addEventListener("click", () => setCameraMode(button.dataset.cameraMode, true)));
 
 async function sendSelectedInvitation() {
   const person = selectedResident;
@@ -1119,16 +1191,23 @@ document.addEventListener("keydown", event => {
   }
   if (drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open")) return;
   const key = event.key.toLowerCase();
+  if (currentScene === "town" && cameraMode === "overview" && event.shiftKey && key.startsWith("arrow")) {
+    event.preventDefault();
+    const { viewportWidth, viewportHeight } = townCameraMetrics;
+    overviewCenter.x = (viewportWidth / 2 - townCamera.x) / townCamera.scale + (key === "arrowright" ? 80 : key === "arrowleft" ? -80 : 0);
+    overviewCenter.y = (viewportHeight / 2 - townCamera.y) / townCamera.scale + (key === "arrowdown" ? 80 : key === "arrowup" ? -80 : 0);
+    return;
+  }
   if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
     event.preventDefault();
-    if (currentScene === "town") setCameraMode("follow");
     pressedKeys.add(key);
   }
 });
 
 document.addEventListener("keyup", event => pressedKeys.delete(event.key.toLowerCase()));
-window.addEventListener("blur", () => pressedKeys.clear());
+window.addEventListener("blur", () => { pressedKeys.clear(); finishMapDrag(); });
 window.addEventListener("resize", () => {
+  finishMapDrag();
   townCameraMetrics = null;
   townCamera.ready = false;
   updateTownCamera(0, true);

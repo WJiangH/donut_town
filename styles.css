@@ -65,7 +65,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .slack-avatar-image { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 .town-stage, .interior-stage { position: relative; height: calc(100dvh - 72px); overflow: hidden; }
-.town-stage { background: #8ec76d; }
+.town-stage { background: #233e30; }
+#mapWrap { touch-action: none; user-select: none; }
+#mapWrap[data-camera-mode="overview"] { cursor: grab; }
+#mapWrap.is-dragging { cursor: grabbing; }
+#mapWorld .town-map { pointer-events: none; }
 .interior-stage { background: #171d18; }
 .map-wrap { position: absolute; inset: 0; overflow: hidden; }
 .map-world {
@@ -77,7 +81,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   transform: translate(-50%, -50%);
 }
 #mapWorld {
-  width: max(150vw, calc((100dvh - 72px) * 3));
+  width: 3072px;
   left: 0;
   top: 0;
   transform: translate3d(0, 0, 0);
@@ -97,6 +101,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .filter-group { padding: 5px; }
 .filter-button { padding: 9px 11px; border-radius: 8px; color: var(--muted); font-size: 10px; }
 .filter-button:hover, .filter-button.active { color: var(--ink); background: #e3efda; }
+.camera-controls { display: flex; gap: 6px; }
+.camera-toggle[aria-pressed="true"] { background: #e3efda; box-shadow: inset 0 0 0 2px #688557; }
 .camera-toggle { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 3px solid var(--ink); border-radius: 10px; background: var(--surface-solid); box-shadow: 3px 3px 0 rgba(23, 49, 38, .82); color: var(--ink); font-size: 10px; font-weight: 900; cursor: pointer; }
 .camera-toggle:hover, .camera-toggle:focus-visible { background: #e3efda; }
 .camera-icon { position: relative; width: 14px; height: 14px; border: 2px solid currentColor; border-radius: 50%; }
@@ -492,7 +498,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   .map-toolbar { left: 10px; right: 10px; top: 10px; display: block; }
   .week-card { width: fit-content; min-width: 0; }
   .filter-group { margin-top: 8px; width: fit-content; }
-  .camera-toggle { margin-top: 8px; }
+  .camera-controls { margin-top: 8px; }
+  #townView .movement-help { bottom: 146px; }
   .resident-pin { transform: translate(-50%, -100%) scale(.9); }
   .legend { display: none; }
   .movement-help { left: 10px; bottom: 72px; }
@@ -500,4 +507,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   .resident-drawer, .profile-drawer { top: 76px; bottom: 58px; right: 10px; width: calc(100vw - 20px); }
   .room-toolbar { left: 10px; top: 10px; }
   .scene-curtain { inset: 66px 0 0; }
+}
+
+@media (max-height: 520px) {
+  #townView .map-toolbar { display: flex; align-items: center; top: 8px; gap: 6px; }
+  #townView .week-card { display: none; }
+  #townView .filter-group, #townView .camera-controls { margin-top: 0; }
+  #townView .movement-help { bottom: 12px; }
+  #townView .legend { display: none; }
+  .invite-dock { bottom: 12px; }
 }
