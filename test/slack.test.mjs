@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { createHmac, generateKeyPairSync, sign as rsaSign } from "node:crypto";
 import test from "node:test";
 import { SlackClient } from "../slack/client.mjs";
-import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationStateFor, pendingInvitationsFor, resolveInvitationActors } from "../slack/invitations.mjs";
+import { activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "../slack/invitations.mjs";
+import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "../slack/ledger.mjs";
 import { buildSlackAuthorizeUrl, verifySlackIdToken } from "../slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "../slack/session.mjs";
 import { verifySlackRequest } from "../slack/signature.mjs";
@@ -90,6 +91,28 @@ test("acceptance books both people and closes their other pending invitations", 
 
   discardInvitation(first.id);
   discardInvitation(second.id);
+});
+
+test("weekly invitation snapshots restore pending and accepted pair state", () => {
+  const invitation = createInvitation({ inviterId: "U40", inviteeId: "U50", inviterName: "Maya" });
+  const pendingSnapshot = invitationSnapshotFor("U40");
+  discardInvitation(invitation.id);
+  restoreInvitationSnapshots([pendingSnapshot]);
+  assert.equal(invitationStateFor("U50").status, "pending");
+
+  answerInvitation(invitation.id, "accepted", "U50");
+  const acceptedSnapshot = invitationSnapshotFor("U40");
+  discardInvitation(invitation.id);
+  restoreInvitationSnapshots([acceptedSnapshot]);
+  assert.deepEqual(invitationStateFor("U40"), { status: "booked", partnerId: "U50", pairId: invitation.id });
+  discardInvitation(invitation.id);
+});
+
+test("Slack ledger records are versioned and weekly", () => {
+  assert.equal(activeRoundId(new Date("2026-09-05T12:00:00Z")), "week:2026-08-31");
+  const snapshot = { version: 1, roundId: "week:2026-08-31", inviterId: "U1", invitations: [] };
+  assert.deepEqual(decodeLedgerSnapshot(encodeLedgerSnapshot(snapshot)), snapshot);
+  assert.equal(decodeLedgerSnapshot("ordinary Slack message"), null);
 });
 
 test("invitation identity comes from the Slack session and channel roster", () => {

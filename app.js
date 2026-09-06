@@ -60,6 +60,7 @@ const player = { id: 11, name: "You", x: 50, y: 80 };
 let currentUser = null;
 let currentPairId = null;
 let pairActivities = [];
+const previewPairUserId = new URLSearchParams(window.location.search).get("previewPair");
 const pressedKeys = new Set();
 let clickPath = [];
 let playerDirection = "down";
@@ -201,6 +202,16 @@ function layoutBookedPairs() {
     });
   });
   currentPairId = currentUser?.pairId || null;
+}
+
+function applyPairPreview() {
+  if (!previewPairUserId || !currentUser) return false;
+  const partner = residents.find(person => person.slackId === previewPairUserId);
+  if (!partner) return false;
+  const pairId = `preview:${[currentUser.id, partner.slackId].sort().join(":")}`;
+  Object.assign(currentUser, { status: "booked", partnerId: partner.slackId, pairId });
+  Object.assign(partner, { status: "booked", partnerId: currentUser.id, pairId });
+  return true;
 }
 
 function isInsideEllipse(x, y, ellipse) {
@@ -440,6 +451,7 @@ async function syncSlackResidents() {
     summary.textContent = currentUser
       ? `${data.total} Slack members · ${neighbors.length} neighbors + you`
       : `${data.total} Slack residents + local player (identity not linked)`;
+    applyPairPreview();
     layoutBookedPairs();
     updateAvailabilityControl();
     renderResidents();
@@ -463,6 +475,7 @@ async function syncInvitationStates() {
     const { states } = await response.json();
     residents.forEach(person => Object.assign(person, states[person.slackId] || { status: "open", partnerId: null, pairId: null }));
     if (currentUser) Object.assign(currentUser, states[currentUser.id] || { status: "open", partnerId: null, pairId: null });
+    applyPairPreview();
     queue = queue.filter(person => person.status === "open");
     layoutBookedPairs();
     updateAvailabilityControl();

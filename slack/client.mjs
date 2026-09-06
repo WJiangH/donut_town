@@ -90,6 +90,15 @@ export class SlackClient {
   async postMessage(channel, message) {
     return this.call("chat.postMessage", { channel, ...message });
   }
+
+  async updateMessage(channel, ts, message) {
+    return this.call("chat.update", { channel, ts, ...message });
+  }
+
+  async listRecentMessages(channel, limit = 200) {
+    const result = await this.call("conversations.history", { channel, limit });
+    return result.messages || [];
+  }
 }
 
 async function mapWithConcurrency(items, concurrency, mapper) {

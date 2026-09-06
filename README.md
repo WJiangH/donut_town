@@ -56,15 +56,16 @@ The separate **Send test to myself** control sends the same interactive DM to
 the signed-in member without adding a formal self-invitation to their queue or
 future Donut history. It remains a test-only UI affordance.
 
-This is an integration spike, not yet production-ready:
+This is still a testing build:
 
-- Invitation state is held in memory and is lost when the server restarts.
+- Invitation state uses the optional private Slack ledger when
+  `SLACK_LEDGER_CHANNEL_ID` is configured. Without it, state remains in memory
+  and is lost when the server restarts.
 - Slack-launched sessions expire after eight hours. Direct staging-password
   access remains deliberately unlinked to a Slack member.
 - Used five-minute launch links are remembered only in process memory; a server
   restart can make an unexpired link usable again.
-- Accepted invitations are not yet persisted to the historical sheet or a
-  database.
+- Accepted invitations are not yet copied into the historical Google Sheet.
 - The current map is intentionally not auto-filled with 60+ live members yet;
   that needs a neighborhood or visibility rule to avoid overlapping sprites.
 
@@ -82,7 +83,24 @@ This is an integration spike, not yet production-ready:
 - A user can rank up to three invitations.
 - Booked and pending residents have visible status without revealing partners.
 
-Durable invitation persistence remains out of scope for this integration spike.
+### Free invitation history
+
+Donut Town can use a private Slack channel as a small, no-cost invitation
+ledger. Create a private channel containing only the administrator and Donut
+Bot, invite the app, then add its channel ID to Render as
+`SLACK_LEDGER_CHANNEL_ID`. No additional OAuth scopes are required beyond the
+existing `groups:history` and `chat:write` scopes.
+
+The Bot keeps one versioned state message per inviter per week and updates that
+message when an invitation is accepted, declined, or cancelled. Render loads
+only the current week's messages into memory. Older weekly messages remain in
+the private channel as history, so memory use does not grow with the lifetime
+of the town. This is suitable for the current internal scale, but it depends on
+the workspace's Slack message-retention policy.
+
+For a browser-only visual check, append `?previewPair=SLACK_USER_ID` to the town
+URL. It pairs the signed-in member with that channel member only in the current
+browser; it does not send a Slack message or alter the ledger.
 
 ## Deploy the protected testing build to Render
 

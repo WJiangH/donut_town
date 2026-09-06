@@ -1,6 +1,22 @@
 import { createHash, randomUUID } from "node:crypto";
 
 const invitations = new Map();
+let loadedRoundId = activeRoundId();
+
+export function activeRoundId(now = new Date()) {
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const daysSinceMonday = (monday.getUTCDay() + 6) % 7;
+  monday.setUTCDate(monday.getUTCDate() - daysSinceMonday);
+  return `week:${monday.toISOString().slice(0, 10)}`;
+}
+
+function ensureActiveRound() {
+  const current = activeRoundId();
+  if (loadedRoundId === current) return current;
+  invitations.clear();
+  loadedRoundId = current;
+  return current;
+}
 
 export function appearanceIndexFor(slackUserId) {
   const digest = createHash("sha256").update(slackUserId).digest();
@@ -8,6 +24,7 @@ export function appearanceIndexFor(slackUserId) {
 }
 
 export function createInvitation({ inviterId, inviteeId, inviterName, priority = 1, selfTest = false }) {
+  const roundId = ensureActiveRound();
   const invitation = {
     id: randomUUID(),
     inviterId,
@@ -15,6 +32,7 @@ export function createInvitation({ inviterId, inviteeId, inviterName, priority =
     inviterName,
     priority,
     selfTest,
+    roundId,
     status: "pending",
     createdAt: new Date().toISOString()
   };
@@ -23,20 +41,24 @@ export function createInvitation({ inviterId, inviteeId, inviterName, priority =
 }
 
 export function getInvitation(id) {
+  ensureActiveRound();
   return invitations.get(id);
 }
 
 export function discardInvitation(id) {
+  ensureActiveRound();
   return invitations.delete(id);
 }
 
 export function pendingInvitationsFor(inviterId) {
-  return [...invitations.values()].filter(invitation => !invitation.selfTest && invitation.inviterId === inviterId && invitation.status === "pending");
+  const roundId = ensureActiveRound();
+  return [...invitations.values()].filter(invitation => !invitation.selfTest && invitation.roundId === roundId && invitation.inviterId === inviterId && invitation.status === "pending");
 }
 
 export function invitationStateFor(userId) {
+  const roundId = ensureActiveRound();
   const related = [...invitations.values()].filter(invitation =>
-    !invitation.selfTest && (invitation.inviterId === userId || invitation.inviteeId === userId)
+    !invitation.selfTest && invitation.roundId === roundId && (invitation.inviterId === userId || invitation.inviteeId === userId)
   );
   const accepted = related.find(invitation => invitation.status === "accepted");
   if (accepted) {
@@ -50,6 +72,54 @@ export function invitationStateFor(userId) {
   return pending
     ? { status: "pending", partnerId: pending.inviterId, pairId: null }
     : { status: "open", partnerId: null, pairId: null };
+}
+
+export function activeInvitations() {
+  const roundId = ensureActiveRound();
+  return [...invitations.values()].filter(invitation => !invitation.selfTest && invitation.roundId === roundId);
+}
+
+export function invitationSnapshotFor(inviterId) {
+  const roundId = ensureActiveRound();
+  return {
+    version: 1,
+    roundId,
+    inviterId,
+    invitations: activeInvitations()
+      .filter(invitation => invitation.inviterId === inviterId)
+      .map(invitation => ({
+        id: invitation.id,
+        inviterId: invitation.inviterId,
+        inviteeId: invitation.inviteeId,
+        inviterName: invitation.inviterName,
+        priority: invitation.priority,
+        status: invitation.status,
+        createdAt: invitation.createdAt,
+        answeredAt: invitation.answeredAt || null
+      }))
+  };
+}
+
+export function restoreInvitationSnapshots(snapshots) {
+  const roundId = ensureActiveRound();
+  invitations.clear();
+  for (const snapshot of snapshots) {
+    if (snapshot?.version !== 1 || snapshot.roundId !== roundId || !/^[UW][A-Z0-9]+$/.test(snapshot.inviterId || "")) continue;
+    for (const invitation of snapshot.invitations || []) {
+      if (!isRestorableInvitation(invitation, snapshot.inviterId)) continue;
+      invitations.set(invitation.id, { ...invitation, roundId, selfTest: false });
+    }
+  }
+}
+
+function isRestorableInvitation(invitation, inviterId) {
+  return typeof invitation?.id === "string"
+    && invitation.inviterId === inviterId
+    && /^[UW][A-Z0-9]+$/.test(invitation.inviteeId || "")
+    && ["pending", "accepted", "declined", "cancelled"].includes(invitation.status)
+    && Number.isInteger(invitation.priority)
+    && invitation.priority >= 1
+    && invitation.priority <= 3;
 }
 
 export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1, members, allowSelfInvite = false }) {
@@ -73,6 +143,7 @@ export function resolveInvitationActors({ sessionUserId, inviteeId, priority = 1
 }
 
 export function answerInvitation(id, status, responderId) {
+  ensureActiveRound();
   const invitation = invitations.get(id);
   if (!["accepted", "declined"].includes(status)) return null;
   if (!invitation || invitation.inviteeId !== responderId || invitation.status !== "pending") return null;

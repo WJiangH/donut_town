@@ -4,7 +4,8 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SlackClient } from "./slack/client.mjs";
-import { answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationStateFor, pendingInvitationsFor, resolveInvitationActors } from "./slack/invitations.mjs";
+import { activeInvitations, activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
+import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "./slack/ledger.mjs";
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
@@ -17,6 +18,7 @@ const config = {
   botToken: process.env.SLACK_BOT_TOKEN || "",
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   channelId: process.env.SLACK_CHANNEL_ID || "",
+  ledgerChannelId: process.env.SLACK_LEDGER_CHANNEL_ID || "",
   clientId: process.env.SLACK_CLIENT_ID || "",
   clientSecret: process.env.SLACK_CLIENT_SECRET || "",
   stagingPassword: process.env.STAGING_PASSWORD || "",
@@ -43,6 +45,9 @@ let slackJwksCache = null;
 let expectedSlackTeamId = null;
 let profileCache = null;
 let profileCacheExpiresAt = 0;
+let hydratedLedgerRoundId = null;
+let ledgerHydrationPromise = null;
+const ledgerMessageTsByInviter = new Map();
 
 const server = createServer(async (request, response) => {
   try {
@@ -81,12 +86,14 @@ const server = createServer(async (request, response) => {
         interactivityConfigured: Boolean(config.signingSecret),
         oneClickConfigured: isSlackLoginConfigured(),
         currentUserConfigured: Boolean(session?.sub),
+        ledgerConfigured: Boolean(config.ledgerChannelId),
         sendEnabled: config.allowSend
       });
     }
 
     if (request.method === "GET" && url.pathname === "/api/slack/members") {
       if (!slack || !config.channelId) return missingConfiguration(response);
+      await ensureInvitationLedgerHydrated();
       const members = await getCachedChannelMembers();
       const session = getSlackSession(request);
       const currentUserId = session?.sub;
@@ -109,6 +116,7 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/api/slack/invitation-states") {
       if (!slack || !config.channelId) return missingConfiguration(response);
+      await ensureInvitationLedgerHydrated();
       const members = await getCachedChannelMembers();
       response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
@@ -134,6 +142,7 @@ const server = createServer(async (request, response) => {
     if (request.method === "POST" && url.pathname === "/api/slack/invitations") {
       const session = getSlackSession(request);
       if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
+      await ensureInvitationLedgerHydrated();
       const body = JSON.parse(await readBody(request));
       const members = await getCachedChannelMembers();
       const selfTest = body.selfTest === true;
@@ -163,11 +172,15 @@ const server = createServer(async (request, response) => {
       }
       if (!slack) return missingConfiguration(response);
       try {
+        if (!invitation.selfTest) await persistInvitationSnapshots([invitation.inviterId]);
         const channel = await slack.openDm(invitation.inviteeId);
         await slack.postMessage(channel, message);
         return sendJson(response, 201, { ok: true, dryRun: false, invitation });
       } catch (error) {
         discardInvitation(invitation.id);
+        if (!invitation.selfTest) {
+          await persistInvitationSnapshots([invitation.inviterId]).catch(ledgerError => console.error("Slack ledger rollback failed", ledgerError));
+        }
         throw error;
       }
     }
@@ -244,6 +257,43 @@ async function getCachedChannelMembers() {
   return memberSyncPromise;
 }
 
+async function ensureInvitationLedgerHydrated() {
+  if (!config.ledgerChannelId) return;
+  const roundId = activeRoundId();
+  if (hydratedLedgerRoundId === roundId) return;
+  if (ledgerHydrationPromise) return ledgerHydrationPromise;
+  ledgerHydrationPromise = slack.listRecentMessages(config.ledgerChannelId, 200)
+    .then(messages => {
+      const snapshots = new Map();
+      ledgerMessageTsByInviter.clear();
+      for (const message of messages) {
+        const snapshot = decodeLedgerSnapshot(message.text);
+        if (!snapshot || snapshot.roundId !== roundId || snapshots.has(snapshot.inviterId)) continue;
+        snapshots.set(snapshot.inviterId, snapshot);
+        ledgerMessageTsByInviter.set(snapshot.inviterId, message.ts);
+      }
+      restoreInvitationSnapshots([...snapshots.values()]);
+      hydratedLedgerRoundId = roundId;
+    })
+    .finally(() => {
+      ledgerHydrationPromise = null;
+    });
+  return ledgerHydrationPromise;
+}
+
+async function persistInvitationSnapshots(inviterIds) {
+  if (!config.ledgerChannelId) return;
+  await ensureInvitationLedgerHydrated();
+  for (const inviterId of new Set(inviterIds)) {
+    const message = { text: encodeLedgerSnapshot(invitationSnapshotFor(inviterId)) };
+    const existingTs = ledgerMessageTsByInviter.get(inviterId);
+    const result = existingTs
+      ? await slack.updateMessage(config.ledgerChannelId, existingTs, message)
+      : await slack.postMessage(config.ledgerChannelId, message);
+    ledgerMessageTsByInviter.set(inviterId, result.ts || existingTs);
+  }
+}
+
 async function getCachedProfiles() {
   if (!profileStore.configured) return { connected: false, profiles: {} };
   if (profileCache && Date.now() < profileCacheExpiresAt) {
@@ -304,11 +354,19 @@ async function handleSlackAction(payload, publicBaseUrl) {
     return;
   }
   if (!["donut_accept", "donut_decline"].includes(action.action_id)) return;
+  await ensureInvitationLedgerHydrated();
   const status = action.action_id === "donut_accept" ? "accepted" : "declined";
+  const previousStatuses = new Map(activeInvitations().map(invitation => [invitation.id, invitation.status]));
   const invitation = answerInvitation(action.value, status, payload.user.id);
   if (!invitation) {
     await slack.postMessage(payload.channel.id, { text: "This Donut invitation is no longer active." });
     return;
+  }
+  if (!invitation.selfTest) {
+    const changedInviters = activeInvitations()
+      .filter(item => previousStatuses.get(item.id) !== item.status)
+      .map(item => item.inviterId);
+    await persistInvitationSnapshots(changedInviters);
   }
   const responderMessage = status === "accepted"
     ? invitation.selfTest
