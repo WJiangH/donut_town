@@ -11,14 +11,16 @@ let residents = [
   { id: 10, name: "Evan Brooks", team: "Analytics", status: "booked", donuts: 3, topics: ["data", "baseball", "podcasts"], group: "other", x: 50, y: 13, skin: "#e2b08d", hair: "#704f35", shirt: "#4b7888", note: "Already booked for this week." }
 ];
 const townPopulationRoutes = [
-  { from: [46, 26], to: [46, 69], count: 8, activity: "path" },
-  { from: [56, 26], to: [56, 69], count: 8, activity: "path" },
-  { from: [43, 35], to: [23, 20], count: 6, activity: "cafe" },
-  { from: [59, 34], to: [88, 20], count: 7, activity: "path" },
-  { from: [42, 45], to: [12, 52], count: 7, activity: "path" },
-  { from: [61, 44], to: [90, 53], count: 7, activity: "path" },
-  { from: [44, 59], to: [10, 82], count: 8, activity: "path" },
-  { from: [59, 59], to: [90, 86], count: 8, activity: "path" }
+  { from: [47, 20], to: [47, 34], count: 5, activity: "path" },
+  { from: [55, 20], to: [55, 34], count: 5, activity: "path" },
+  { from: [42, 35], to: [42, 53], count: 6, activity: "path" },
+  { from: [60, 35], to: [60, 53], count: 6, activity: "path" },
+  { from: [49, 55], to: [49, 69], count: 5, activity: "path" },
+  { from: [43, 35], to: [29, 27], count: 6, activity: "cafe" },
+  { from: [60, 34], to: [87, 29], count: 7, activity: "path" },
+  { from: [41, 45], to: [15, 54], count: 7, activity: "path" },
+  { from: [61, 45], to: [91, 52], count: 7, activity: "path" },
+  { from: [57, 58], to: [90, 86], count: 8, activity: "path" }
 ];
 const residentSlots = townPopulationRoutes.flatMap(route => Array.from({ length: route.count }, (_, index) => {
   const progress = (index + 1) / (route.count + 1);
@@ -48,15 +50,18 @@ const donutStations = [
 ];
 
 const walkCorridors = [
-  { from: [50, 8], to: [50, 76], width: 4.4 },
-  { from: [43, 35], to: [23, 20], width: 4.2 },
-  { from: [59, 34], to: [91, 18], width: 4.2 },
-  { from: [43, 44], to: [9, 52], width: 4.2 },
-  { from: [60, 44], to: [93, 53], width: 4.2 },
-  { from: [45, 58], to: [8, 84], width: 4.1 },
-  { from: [58, 58], to: [92, 88], width: 4.1 },
-  { from: [27, 67], to: [9, 77], width: 3.4 },
-  { from: [75, 67], to: [91, 77], width: 3.4 }
+  { from: [50, 8], to: [50, 70], width: 5.2 },
+  { from: [43, 35], to: [27, 25], width: 5 },
+  { from: [59, 34], to: [91, 28], width: 5 },
+  { from: [43, 44], to: [10, 55], width: 5 },
+  { from: [60, 44], to: [94, 52], width: 5 },
+  { from: [50, 68], to: [46, 82], width: 5.2 },
+  { from: [46, 82], to: [43, 94], width: 5.2 },
+  { from: [46, 82], to: [28, 89], width: 4.8 },
+  { from: [28, 89], to: [8, 87], width: 4.8 },
+  { from: [54, 67], to: [75, 70], width: 5 },
+  { from: [75, 70], to: [92, 88], width: 5 },
+  { from: [75, 70], to: [92, 76], width: 4.5 }
 ];
 
 const townPlazas = [
@@ -109,8 +114,9 @@ let realtimeReconnectTimer = null;
 let realtimeReconnectDelay = 1000;
 let lastPresenceSentAt = 0;
 let lastPresenceSignature = "";
-const townCamera = { x: 0, y: 0, ready: false };
+const townCamera = { x: 0, y: 0, scale: 1, ready: false };
 let townCameraMetrics = null;
+let cameraMode = "overview";
 
 const layer = document.querySelector("#residentsLayer");
 const drawer = document.querySelector("#residentDrawer");
@@ -538,13 +544,29 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
   if (currentScene !== "town") return;
   if (!townCameraMetrics) refreshTownCameraMetrics();
   const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
-  const targetX = Math.min(0, Math.max(viewportWidth - worldWidth, viewportWidth / 2 - worldWidth * player.x / 100));
-  const targetY = Math.min(0, Math.max(viewportHeight - worldHeight, viewportHeight / 2 - worldHeight * player.y / 100));
-  const blend = immediate || !townCamera.ready ? 1 : 1 - Math.exp(-8 * deltaSeconds);
+  const targetScale = cameraMode === "overview" ? Math.min(viewportWidth / worldWidth, viewportHeight / worldHeight) : 1;
+  const targetX = cameraMode === "overview"
+    ? (viewportWidth - worldWidth * targetScale) / 2
+    : Math.min(0, Math.max(viewportWidth - worldWidth, viewportWidth / 2 - worldWidth * player.x / 100));
+  const targetY = cameraMode === "overview"
+    ? (viewportHeight - worldHeight * targetScale) / 2
+    : Math.min(0, Math.max(viewportHeight - worldHeight, viewportHeight / 2 - worldHeight * player.y / 100));
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const blend = immediate || reducedMotion || !townCamera.ready ? 1 : 1 - Math.exp(-8 * deltaSeconds);
   townCamera.x += (targetX - townCamera.x) * blend;
   townCamera.y += (targetY - townCamera.y) * blend;
+  townCamera.scale += (targetScale - townCamera.scale) * blend;
   townCamera.ready = true;
-  document.querySelector("#mapWorld").style.transform = `translate3d(${townCamera.x}px, ${townCamera.y}px, 0)`;
+  document.querySelector("#mapWorld").style.transform = `translate3d(${townCamera.x}px, ${townCamera.y}px, 0) scale(${townCamera.scale})`;
+}
+
+function setCameraMode(nextMode, announce = false) {
+  if (!['overview', 'follow'].includes(nextMode)) return;
+  cameraMode = nextMode;
+  const button = document.querySelector("#cameraToggle");
+  button.setAttribute("aria-pressed", String(cameraMode === "overview"));
+  document.querySelector("#cameraToggleLabel").textContent = cameraMode === "overview" ? "Follow me" : "Town overview";
+  if (announce) showToast(cameraMode === "overview" ? "Showing the whole town." : "The camera is following you.");
 }
 
 function nearestWalkable(x, y) {
@@ -1016,6 +1038,7 @@ function movePlayerFromMapClick(event) {
   const bounds = event.currentTarget.getBoundingClientRect();
   const x = ((event.clientX - bounds.left) / bounds.width) * 100;
   const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+  if (currentScene === "town") setCameraMode("follow");
   const destination = nearestWalkable(x, y);
   clickPath = findWalkPath(player, destination);
 }
@@ -1025,6 +1048,7 @@ document.querySelector("#chemPodWorld").addEventListener("click", movePlayerFrom
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));
 document.querySelector("#chemPodExit").addEventListener("click", () => transitionToScene("town"));
 document.querySelector("#leaveChemPod").addEventListener("click", () => transitionToScene("town"));
+document.querySelector("#cameraToggle").addEventListener("click", () => setCameraMode(cameraMode === "overview" ? "follow" : "overview", true));
 
 async function sendSelectedInvitation() {
   const person = selectedResident;
@@ -1089,6 +1113,7 @@ document.addEventListener("keydown", event => {
   const key = event.key.toLowerCase();
   if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
     event.preventDefault();
+    if (currentScene === "town") setCameraMode("follow");
     pressedKeys.add(key);
   }
 });

@@ -65,7 +65,7 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
 
     if (request.method === "GET" && url.pathname === "/api/health") {
-      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true });
+      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true, navigationV2: true });
     }
 
     if (request.method === "GET" && url.pathname === "/enter") {

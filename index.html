@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=17" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -47,6 +47,10 @@
             <button class="filter-button" data-filter="new">New faces</button>
             <button class="filter-button" data-filter="other">Other teams</button>
           </div>
+          <button class="camera-toggle" id="cameraToggle" type="button" aria-pressed="true">
+            <span class="camera-icon" aria-hidden="true"></span>
+            <span id="cameraToggleLabel">Follow me</span>
+          </button>
         </div>
 
         <div class="map-wrap" id="mapWrap">
@@ -168,6 +172,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
-    <script src="app.js?v=21"></script>
+    <script src="app.js?v=22"></script>
   </body>
 </html>
