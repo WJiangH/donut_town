@@ -1,0 +1,61 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Donut Town resident animation QA</title>
+<style>
+  :root { color-scheme: dark; font: 14px system-ui, sans-serif; }
+  body { margin: 0; background: #14231e; color: #f9f0d3; }
+  main { max-width: 1100px; margin: auto; padding: 12px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 12px; }
+  button, select, input { font: inherit; }
+  button { padding: 6px 10px; border: 1px solid #b99b61; border-radius: 6px; background: #293f34; color: inherit; }
+  .map { position: relative; min-height: min(70vh, 680px); overflow: hidden; border: 2px solid #b99b61; border-radius: 10px; background: center/cover url('/assets/donut-town-map-v2.png'); }
+  #actor { position: absolute; left: 50%; top: 52%; width: 88px; height: 88px; transform: translate(-50%,-100%); image-rendering: pixelated; background: transparent; }
+  .note { background: #2b211bde; padding: 8px; border-radius: 6px; margin-top: 10px; }
+  .refs { display: flex; gap: 12px; align-items: start; flex-wrap: wrap; }
+  .refs figure { margin: 0; background: #fff; color: #222; padding: 6px; border-radius: 6px; }
+  .refs img { width: min(180px, 42vw); height: 180px; object-fit: contain; image-rendering: pixelated; }
+  @media (max-width: 600px) { .map { min-height: 55vh; } .toolbar { gap: 5px; } #actor { width: 66px; height: 66px; } }
+</style>
+<main>
+  <h1>Yulia animation QA</h1>
+  <div class="toolbar">
+    <button data-dir="down">Down</button><button data-dir="right">Right</button><button data-dir="left">Left (mirror)</button><button data-dir="up">Up</button>
+    <button id="play">Play</button><button id="pause">Pause</button><button id="step">Step</button>
+    <label>ms <input id="speed" type="range" min="110" max="160" value="130"></label>
+    <label>View <select id="viewScale"><option value="1">Follow · 1×</option><option value="0.65">Overview · 0.65×</option><option value="2">Inspect · 2×</option></select></label><output id="state">down · neutral</output>
+  </div>
+  <section class="map"><canvas id="actor" width="88" height="88" aria-label="Yulia animation frame"></canvas></section>
+  <div class="note">Animation draft: the latest PNG is RGBA, but a corner retains alpha 1/255. Frames below use measured silhouette bounds and a shared feet baseline. Side-view A/B poses remain too similar to certify the gait. This is not an approved production asset.</div>
+  <section class="refs">
+    <figure><img src="/assets/previews/r-93c8e1/walk-draft.png"><figcaption>3×3 atlas under QA</figcaption></figure>
+  </section>
+</main>
+<script>
+const atlas='/assets/previews/r-93c8e1/walk-draft.png';
+const actor=document.querySelector('#actor'), ctx=actor.getContext('2d'), state=document.querySelector('#state');
+const source=new Image(); source.src=atlas;
+let row=0,col=1,phaseIndex=1,playing=false,timer,current='down';
+const dirs={down:0,right:1,left:1,up:2};
+const manifest={"url": "/assets/previews/r-93c8e1/walk-draft.png", "imageWidth": 1254, "imageHeight": 1254, "frameHeight": 391, "frames": [[190, 34, 151, 387], [567, 30, 133, 391], [913, 35, 169, 383], [179, 447, 172, 361], [567, 446, 115, 362], [913, 445, 180, 363], [165, 830, 167, 368], [569, 830, 124, 368], [922, 828, 163, 370]], "productionReady": false, "transparencyCornersPassed": false, "status": "draft-geometry-only"};
+function draw(){
+ if(!source.complete || !source.naturalWidth) return;
+ ctx.clearRect(0,0,88,88);ctx.save();
+ if(current==='left'){ctx.translate(88,0);ctx.scale(-1,1);}
+ ctx.imageSmoothingEnabled=false;
+ const [x,y,w,h]=manifest.frames[row*3+col], scale=88/manifest.frameHeight;
+ ctx.drawImage(source,x,y,w,h,(88-w*scale)/2,88-h*scale,w*scale,h*scale);
+ ctx.restore();
+ const viewScale=Number(document.querySelector('#viewScale').value);
+ actor.style.width=actor.style.height=`${88*viewScale}px`;
+ state.value=`${current} · ${['step A','neutral','step B'][col]}`;
+}
+document.querySelector('#viewScale').onchange=draw;
+source.onload=draw;
+document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{current=b.dataset.dir;row=dirs[current];draw();});
+document.querySelector('#step').onclick=()=>{phaseIndex=(phaseIndex+1)%4;col=[0,1,2,1][phaseIndex];draw();};
+document.querySelector('#play').onclick=()=>{playing=true; clearInterval(timer); timer=setInterval(()=>{phaseIndex=(phaseIndex+1)%4;col=[0,1,2,1][phaseIndex];draw();},+document.querySelector('#speed').value);};
+document.querySelector('#pause').onclick=()=>{playing=false;clearInterval(timer);};
+document.querySelector('#speed').oninput=()=>{if(playing){document.querySelector('#play').click();}};
+draw();
+</script>
