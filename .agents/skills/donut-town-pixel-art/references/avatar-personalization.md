@@ -66,7 +66,29 @@ The renderer uses source rectangles without editing the PNG. Keep source rectang
 
 Test with mocked identities: assigned user as local player; assigned user as remote player observed by another member; unassigned fallback; failed asset load; all four directions, idle and walking; town/interior; Overview/Follow; desktop/mobile; reload. Check console errors and ensure art loads before enabling the custom renderer. Use synthetic presence data for local animation tests and label it as such; it does not prove a live multi-client Slack session.
 
-For a requested Town replacement, create the manifest and generated asset first, then run `node scripts/bind-render-character.mjs "Member name" r-character-id`. This refuses ambiguous names, missing deployed keys, and conflicting existing assignments. Deploy the assignment together with the asset and manifest, then run the same command with `--verify` to check the live member binding, complete manifest, and exact sprite bytes. A standalone preview page is not a Town assignment. Report draft artwork quality separately from a passing deployment check.
+### Required binding sequence for a Town replacement
+
+Run these commands from the project root. The helper uses the ignored `.env.local` authentication; do not paste credentials or raw member IDs into commands, reports, or Git.
+
+1. Save the generated sprite under `assets/residents/<opaque-id>/` and its measured manifest at `characters/<opaque-id>.json`. Keep animation readiness explicit; binding does not certify artwork quality.
+2. Resolve the requested member and save the deployed HMAC assignment:
+
+   ```bash
+   node scripts/bind-render-character.mjs "Member name" r-character-id
+   ```
+
+   The helper requires an unambiguous member match and Render’s `characterKey`. It rejects missing keys and conflicting assignments. Do not substitute a locally computed hash, roster position, or display-name runtime binding. For a conflict, inspect the existing assignment and requested replacement before changing it; do not automatically delete another binding.
+3. Review the generated PNG, manifest and hashed assignment together. Publish them together when deployment is authorized in the session. Source avatars, private receipts, raw Slack IDs and secrets stay outside Git. If publication is outside the request, report the binding as local and not yet deployed.
+4. After Render finishes deployment, run the read-only check:
+
+   ```bash
+   node scripts/bind-render-character.mjs "Member name" r-character-id --verify
+   ```
+
+   Require a pass for the live member assignment, complete manifest and exact image bytes. Check existing personalized members after a shared binding change. A successful image request alone is insufficient.
+5. Verify the actual Town renderer with the assigned character as both the local player and another resident; label simulated identity tests as simulated. Report binding, rendering and animation readiness separately. Do not call a standalone preview page a completed Town replacement.
+
+If the member still shows a default, distinguish a missing assignment, changed deployment key, failed image load, and an unlinked login session. Use API and browser evidence before blaming the hash algorithm. A secret rotation requires refreshing affected bindings and re-running live verification.
 
 ## 5. Persistence and delivery
 

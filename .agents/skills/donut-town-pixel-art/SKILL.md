@@ -15,11 +15,15 @@ The preferred production contract is three frames for each of three source direc
 
 ## Slack avatar personalization
 
-For turning a custom Slack avatar into a persistent resident identity, read [references/avatar-personalization.md](references/avatar-personalization.md). Start with a member name; no uploaded PNG is required. The reference describes the authenticated Render avatar-fetch helper, default-avatar eligibility, generation, runtime contracts, fallback, and member edits.
+For turning a custom Slack avatar into a persistent resident identity, read [references/avatar-personalization.md](references/avatar-personalization.md). Start with a member name; no uploaded PNG is required. The reference describes the authenticated Render avatar-fetch helper, default-avatar eligibility, generation, runtime contracts, member binding, deployment verification, fallback, and member edits.
 
 ## Production animation
 
 When asked to continue a preview into walking or production animation, follow [references/production-animation.md](references/production-animation.md). Complete the transparent atlas, measured frame manifest and interactive animation QA; an existing static preview is the input, not the deliverable.
+
+## Bind and verify a Town character
+
+For a requested character replacement in Town, complete the binding and deployment steps in [avatar-personalization.md, section 4](references/avatar-personalization.md#4-integrate-a-stable-identity). Use `scripts/bind-render-character.mjs` from the project root to bind with Render’s `characterKey`, then run its `--verify` mode after an authorized deployment. A generated PNG or standalone preview does not complete a Town replacement. Report artwork readiness and live binding status separately. Preview-only requests remain preview-only.
 
 ## Workflow
 
