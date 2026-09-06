@@ -66,6 +66,8 @@ The renderer uses source rectangles without editing the PNG. Keep source rectang
 
 Test with mocked identities: assigned user as local player; assigned user as remote player observed by another member; unassigned fallback; failed asset load; all four directions, idle and walking; town/interior; Overview/Follow; desktop/mobile; reload. Check console errors and ensure art loads before enabling the custom renderer. Use synthetic presence data for local animation tests and label it as such; it does not prove a live multi-client Slack session.
 
+For a requested Town replacement, create the manifest and generated asset first, then run `node scripts/bind-render-character.mjs "Member name" r-character-id`. This refuses ambiguous names, missing deployed keys, and conflicting existing assignments. Deploy the assignment together with the asset and manifest, then run the same command with `--verify` to check the live member binding, complete manifest, and exact sprite bytes. A standalone preview page is not a Town assignment. Report draft artwork quality separately from a passing deployment check.
+
 ## 5. Persistence and delivery
 
 Commit only the generated character PNG, manifest, hashed assignment and relevant code when deployment is requested. Never commit source-avatar PNGs, raw member IDs, names identifying an opaque asset, or source-photo fingerprints. Keep any source-reference receipts outside the public repository. These ship from Git into each Render deployment. Do not rely on files created only in the running Render instance. An avatar change must not silently overwrite an accepted identity; use a new version while preserving the old assignment until replacement is requested.
