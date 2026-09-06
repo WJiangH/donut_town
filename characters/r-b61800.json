@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-b61800/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 301,
+  "frames": [
+    [
+      111,
+      40,
+      158,
+      294
+    ],
+    [
+      441,
+      43,
+      149,
+      288
+    ],
+    [
+      769,
+      43,
+      157,
+      289
+    ],
+    [
+      126,
+      370,
+      141,
+      290
+    ],
+    [
+      448,
+      370,
+      126,
+      287
+    ],
+    [
+      784,
+      370,
+      142,
+      284
+    ],
+    [
+      111,
+      693,
+      149,
+      290
+    ],
+    [
+      449,
+      687,
+      127,
+      301
+    ],
+    [
+      765,
+      687,
+      172,
+      293
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-inconsistent-front-stride"
+}

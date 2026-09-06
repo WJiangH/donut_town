@@ -1,0 +1,35 @@
+{
+  "characterId": "r-da85dd",
+  "rig": "r-da85dd-walk-v1",
+  "source": "assets/residents/r-da85dd/walk-v1.png",
+  "split": "color-band",
+  "shoes": {
+    "mode": "frame-bottom",
+    "band": 24
+  },
+  "ui": {
+    "eyewear": {
+      "label": "Eyewear",
+      "items": {
+        "none": { "label": "Clear glasses" },
+        "smoke": { "label": "Smoke" }
+      }
+    },
+    "jacket": {
+      "label": "Shirt",
+      "items": {
+        "original": { "label": "Forest sweater", "swatch": "#37452d" },
+        "navy": { "label": "Navy shirt", "swatch": "#2a496c" },
+        "olive": { "label": "Olive shirt", "swatch": "#505b36" }
+      }
+    },
+    "shoes": {
+      "label": "Shoes",
+      "items": {
+        "original": { "label": "Brown sneakers", "swatch": "#60442c" },
+        "cream": { "label": "Cream sneakers", "swatch": "#d3cab0" },
+        "burgundy": { "label": "Burgundy sneakers", "swatch": "#752f35" }
+      }
+    }
+  }
+}

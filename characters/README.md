@@ -4,7 +4,7 @@
 
 A manifest supplies the image size, nine source rectangles (down/right/up; step/neutral/step), and a common `frameHeight` for consistent display scale. The renderer aligns rectangle bottoms with the feet position, mirrors right-facing art for left, and uses the neutral frame in portraits and when idle. Invalid manifests fail startup; a failed image load falls back to the existing shared character.
 
-`r-7f3a2c` and `r-654fff` are wardrobe-capable. Each has its own rig and `ui` labels; slot IDs stay `jacket` / `shoes` / `eyewear`. Yulia (`r-93c8e1`) is still a flattened draft.
+Most custom-photo members now have a wardrobe-capable rig. Slot IDs stay `jacket` / `shoes` / `eyewear`. Default Slack avatars, non-human custom images, and Yulia's flattened draft stay on the shared or existing atlas.
 
 Reusable workflow for the next member: `.agents/skills/donut-town-pixel-art/references/member-pipeline.md`.
 

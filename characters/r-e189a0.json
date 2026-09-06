@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-e189a0/walk-v1.png",
+  "imageWidth": 832,
+  "imageHeight": 1248,
+  "frameHeight": 340,
+  "frames": [
+    [
+      52,
+      46,
+      191,
+      340
+    ],
+    [
+      333,
+      46,
+      162,
+      340
+    ],
+    [
+      601,
+      46,
+      188,
+      340
+    ],
+    [
+      66,
+      462,
+      167,
+      331
+    ],
+    [
+      343,
+      462,
+      136,
+      331
+    ],
+    [
+      615,
+      462,
+      166,
+      331
+    ],
+    [
+      48,
+      873,
+      192,
+      328
+    ],
+    [
+      339,
+      873,
+      153,
+      328
+    ],
+    [
+      593,
+      873,
+      181,
+      328
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride"
+}

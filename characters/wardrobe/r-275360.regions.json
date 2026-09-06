@@ -1,0 +1,35 @@
+{
+  "characterId": "r-275360",
+  "rig": "r-275360-walk-v1",
+  "source": "assets/residents/r-275360/walk-v1.png",
+  "split": "color-band",
+  "shoes": {
+    "mode": "frame-bottom",
+    "band": 24
+  },
+  "ui": {
+    "eyewear": {
+      "label": "Eyewear",
+      "items": {
+        "none": { "label": "Glasses" },
+        "smoke": { "label": "Shades" }
+      }
+    },
+    "jacket": {
+      "label": "Jacket",
+      "items": {
+        "original": { "label": "Charcoal jacket", "swatch": "#3a3d45" },
+        "navy": { "label": "Navy jacket", "swatch": "#2a496c" },
+        "olive": { "label": "Olive jacket", "swatch": "#505b36" }
+      }
+    },
+    "shoes": {
+      "label": "Shoes",
+      "items": {
+        "original": { "label": "Brown shoes", "swatch": "#4a3428" },
+        "cream": { "label": "Cream shoes", "swatch": "#d3cab0" },
+        "burgundy": { "label": "Burgundy shoes", "swatch": "#752f35" }
+      }
+    }
+  }
+}

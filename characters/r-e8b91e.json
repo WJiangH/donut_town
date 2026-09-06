@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-e8b91e/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 303,
+  "frames": [
+    [
+      78,
+      21,
+      192,
+      302
+    ],
+    [
+      438,
+      21,
+      148,
+      302
+    ],
+    [
+      759,
+      21,
+      189,
+      302
+    ],
+    [
+      81,
+      363,
+      196,
+      300
+    ],
+    [
+      452,
+      363,
+      126,
+      302
+    ],
+    [
+      761,
+      363,
+      200,
+      300
+    ],
+    [
+      73,
+      704,
+      197,
+      303
+    ],
+    [
+      437,
+      704,
+      151,
+      303
+    ],
+    [
+      746,
+      704,
+      216,
+      303
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride"
+}

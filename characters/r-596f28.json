@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-596f28/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 298,
+  "frames": [
+    [
+      111,
+      45,
+      199,
+      295
+    ],
+    [
+      438,
+      44,
+      148,
+      298
+    ],
+    [
+      723,
+      45,
+      200,
+      294
+    ],
+    [
+      119,
+      372,
+      191,
+      284
+    ],
+    [
+      441,
+      372,
+      121,
+      285
+    ],
+    [
+      725,
+      372,
+      193,
+      284
+    ],
+    [
+      101,
+      689,
+      223,
+      286
+    ],
+    [
+      439,
+      689,
+      146,
+      287
+    ],
+    [
+      720,
+      689,
+      202,
+      286
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-side-walks-three-quarter"
+}

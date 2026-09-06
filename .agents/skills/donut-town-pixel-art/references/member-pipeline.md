@@ -2,13 +2,27 @@
 
 Use this for one named #donut-be-strangers member who should get an editable Town character. Do not read the other reference files unless a gate fails.
 
+A batch coordinator may assign a unique `r-` + 6 hex id and tell the agent not to bind, commit, or deploy. In that mode, write only that id's assets and stop. The coordinator binds every ready id, then deploys once.
+
+## Skip instead of inventing
+
+Keep the shared default Town atlas when any of these is true. Write no files and report `SKIP` with the reason:
+
+- the fetch helper says the member uses a default Slack avatar, or the URL is Gravatar / `ava_00` artwork;
+- the custom image is not a photograph or drawing of a human (pets, logos, landscapes, cartoons of animals, objects, text-only);
+- the face is too small, occluded, filtered, or otherwise too hard to extract a stable likeness after one identity attempt.
+
+Do not invent a human body from a cat, logo, or default silhouette. Already-bound members stay on their current character unless the user asked to replace that one person.
+
 ## 1. Fetch and inspect
+
+For a batch, the coordinator may first run `node .agents/skills/donut-town-pixel-art/scripts/list-roster.mjs` to drop default avatars and already-bound members.
 
 ```bash
 node .agents/skills/donut-town-pixel-art/scripts/fetch-render-avatar.mjs "Member name"
 ```
 
-View the returned `imagePath` plus `assets/donut-town-character-style-board.png`. Crop one approved front frame from `assets/residents/r-7f3a2c/walk-v1.png` if you need a style/proportion lock. Record visible hair, face, glasses/hat, clothing. Label unseen shoes/pants as an explicit proposal. Skip if the helper says the avatar is default.
+View the returned `imagePath` plus `assets/donut-town-character-style-board.png`. Crop one approved front frame from `assets/residents/r-7f3a2c/walk-v1.png` if you need a style/proportion lock. Record visible hair, face, glasses/hat, clothing. Label unseen shoes/pants as an explicit proposal. Apply the skip rules above before any image call.
 
 ## 2. Generate twice, then extract locally
 
@@ -44,19 +58,22 @@ npm test
 
 The builder must reconstruct the source PNG byte-for-byte. Color-band is for this casual silhouette only; do not claim one garment fits every member. Suit characters still use reviewed polygons.
 
-## 4. Ship
+## 4. Bind only when this run owns shipping
 
-Commit the atlas, wardrobe layers, both JSON manifests, hashed assignment, and any shared wardrobe-store/UI change. Never commit the Slack photo or raw member id. After Render deploys:
+If the coordinator said not to bind, stop after a passing `build.py` and `npm test` (or the wardrobe tests). Leave `characters/assignments.json` untouched.
+
+Otherwise bind, then deploy with every other ready character in the same commit:
 
 ```bash
+node scripts/bind-render-character.mjs "Member name" <id>
 node scripts/bind-render-character.mjs "Member name" <id> --verify
 ```
 
-Check the member as a local player and as another resident. Report artwork, wardrobe, and live binding separately. Open `/animation-preview.html?id=<id>` for gait QA.
+Never commit the Slack photo or raw member id. Report `READY` or `SKIP`, the id, and any animation limitation. Open `/animation-preview.html?id=<id>` for gait QA.
 
-## Token notes from the Wabie run
+## Token notes
 
-- Do not read prompting.md, production-animation.md, and workflows.md for a standard member.
-- Do not ask the image tool to extract backgrounds. Two failed JPEG retries taught nothing.
-- Do not flatten-then-hand-trace regions for a new casual outfit; color-band + per-foot bottoms is enough for same-silhouette shirt/shoe recolors.
-- Keep slot IDs `jacket` / `shoes` / `eyewear` with the same item keys so the outfit store stays shared. Change only the `ui` labels.
+- Do not read prompting.md, production-animation.md, or workflows.md for a standard member.
+- Do not ask the image tool to extract backgrounds.
+- Color-band shirt detection is sage-green only. Non-sage clothes still ship; navy/olive jacket variants may be empty. Do not restyle a navy coat into sage just to make recolors work unless the photo is only a headshot.
+- Keep slot IDs `jacket` / `shoes` / `eyewear`. Change only the `ui` labels.

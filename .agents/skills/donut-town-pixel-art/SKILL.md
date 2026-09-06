@@ -15,7 +15,9 @@ The preferred production contract is three frames for each of three source direc
 
 ## Slack avatar personalization
 
-For one named channel member who should become an editable Town resident, read only [references/member-pipeline.md](references/member-pipeline.md). That is the token-cheap path: two image calls, local background extraction, color-band wardrobe, bind, deploy. Do not load the other reference files unless a gate fails.
+For one named channel member, or a batch of members, read only [references/member-pipeline.md](references/member-pipeline.md). That is the token-cheap path: skip ineligible avatars, two image calls, local background extraction, color-band wardrobe. Do not load the other reference files unless a gate fails.
+
+Keep the shared default atlas for default Slack avatars, non-human custom images, and likenesses that fail after one identity attempt. For a batch, spawn one agent per remaining member, pre-assign unique `r-` ids, and have agents write assets only. The parent binds and deploys once.
 
 For unusual cases (preview-only, walk-cycle repair, or a non-casual silhouette) read [references/avatar-personalization.md](references/avatar-personalization.md). Start with a member name; no uploaded PNG is required.
 
@@ -58,3 +60,4 @@ For a requested character replacement in Town, complete the binding and deployme
 - Donut rewards are cosmetic. They must not imply social rank or change invitation priority.
 - Use stable character assignments for Slack members. Do not regenerate a person's appearance on every page load.
 - Do not infer sensitive personal attributes from a Slack photo. Auto-generated defaults should be editable by the member.
+- Default Slack avatars and non-human custom images stay on the shared Town atlas.

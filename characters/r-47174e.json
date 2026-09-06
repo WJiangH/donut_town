@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-47174e/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 283,
+  "frames": [
+    [
+      126,
+      53,
+      169,
+      282
+    ],
+    [
+      438,
+      53,
+      148,
+      283
+    ],
+    [
+      748,
+      53,
+      161,
+      282
+    ],
+    [
+      148,
+      376,
+      128,
+      274
+    ],
+    [
+      450,
+      376,
+      128,
+      275
+    ],
+    [
+      762,
+      376,
+      145,
+      274
+    ],
+    [
+      126,
+      692,
+      179,
+      280
+    ],
+    [
+      440,
+      692,
+      145,
+      279
+    ],
+    [
+      731,
+      692,
+      176,
+      280
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-side-step-B-same-side-limbs"
+}

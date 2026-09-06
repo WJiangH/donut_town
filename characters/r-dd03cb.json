@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-dd03cb/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 283,
+  "frames": [
+    [
+      79,
+      51,
+      193,
+      283
+    ],
+    [
+      449,
+      51,
+      126,
+      282
+    ],
+    [
+      759,
+      51,
+      191,
+      282
+    ],
+    [
+      111,
+      392,
+      149,
+      256
+    ],
+    [
+      481,
+      392,
+      80,
+      257
+    ],
+    [
+      777,
+      393,
+      173,
+      255
+    ],
+    [
+      84,
+      750,
+      206,
+      236
+    ],
+    [
+      447,
+      750,
+      130,
+      237
+    ],
+    [
+      742,
+      750,
+      187,
+      236
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride"
+}

@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-c2bbd5/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 296,
+  "frames": [
+    [
+      80,
+      38,
+      190,
+      296
+    ],
+    [
+      449,
+      38,
+      126,
+      296
+    ],
+    [
+      759,
+      39,
+      190,
+      295
+    ],
+    [
+      110,
+      379,
+      150,
+      270
+    ],
+    [
+      466,
+      379,
+      95,
+      272
+    ],
+    [
+      777,
+      379,
+      173,
+      270
+    ],
+    [
+      85,
+      700,
+      204,
+      287
+    ],
+    [
+      447,
+      700,
+      129,
+      288
+    ],
+    [
+      744,
+      700,
+      183,
+      287
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-similar-stride"
+}

@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-adf4ae/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 292,
+  "frames": [
+    [
+      118,
+      44,
+      160,
+      292
+    ],
+    [
+      460,
+      44,
+      111,
+      291
+    ],
+    [
+      764,
+      44,
+      154,
+      291
+    ],
+    [
+      133,
+      368,
+      143,
+      288
+    ],
+    [
+      468,
+      368,
+      93,
+      290
+    ],
+    [
+      771,
+      368,
+      143,
+      288
+    ],
+    [
+      117,
+      692,
+      163,
+      289
+    ],
+    [
+      456,
+      692,
+      120,
+      288
+    ],
+    [
+      757,
+      691,
+      163,
+      291
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride"
+}

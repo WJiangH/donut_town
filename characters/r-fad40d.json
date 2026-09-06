@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-fad40d/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 300,
+  "frames": [
+    [
+      79,
+      36,
+      192,
+      300
+    ],
+    [
+      449,
+      36,
+      126,
+      299
+    ],
+    [
+      758,
+      37,
+      192,
+      299
+    ],
+    [
+      109,
+      378,
+      151,
+      272
+    ],
+    [
+      465,
+      379,
+      97,
+      272
+    ],
+    [
+      777,
+      378,
+      173,
+      272
+    ],
+    [
+      84,
+      700,
+      206,
+      288
+    ],
+    [
+      447,
+      700,
+      130,
+      288
+    ],
+    [
+      743,
+      700,
+      185,
+      288
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride"
+}

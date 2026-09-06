@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-42218c/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 303,
+  "frames": [
+    [
+      74,
+      19,
+      194,
+      303
+    ],
+    [
+      448,
+      19,
+      128,
+      303
+    ],
+    [
+      754,
+      19,
+      198,
+      303
+    ],
+    [
+      94,
+      362,
+      168,
+      301
+    ],
+    [
+      453,
+      361,
+      124,
+      303
+    ],
+    [
+      792,
+      362,
+      147,
+      301
+    ],
+    [
+      74,
+      703,
+      194,
+      302
+    ],
+    [
+      446,
+      703,
+      132,
+      303
+    ],
+    [
+      780,
+      703,
+      176,
+      303
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-inconsistent-front-stride"
+}

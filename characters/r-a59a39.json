@@ -1,0 +1,20 @@
+{
+  "url": "/assets/residents/r-a59a39/walk-v1.png",
+  "imageWidth": 1024,
+  "imageHeight": 1024,
+  "frameHeight": 315,
+  "frames": [
+    [111, 37, 173, 314],
+    [443, 37, 138, 315],
+    [753, 37, 174, 314],
+    [129, 378, 153, 285],
+    [456, 378, 113, 284],
+    [749, 378, 153, 285],
+    [123, 689, 179, 299],
+    [443, 689, 138, 299],
+    [727, 689, 179, 299]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-side-step-B-faces-left"
+}
