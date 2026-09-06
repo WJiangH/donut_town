@@ -282,6 +282,11 @@ function residentIsVisible(person) {
   return currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts !== null && person.donuts <= 2);
 }
 
+// Cached pin markup: the sync loop calls the renderers on a timer whether or
+// not anything moved, and rebuilding identical DOM makes the town flicker.
+let lastTownMarkup = null;
+let lastChemPodMarkup = null;
+
 function renderResidents() {
   const residentsMarkup = residents.map(person => {
     const visible = (person.scene || "town") === "town" && residentIsVisible(person) && !remotePlayers.has(person.slackId);
@@ -298,11 +303,20 @@ function renderResidents() {
     <span class="workstation-dough" aria-hidden="true"></span>
     <span class="workstation-counter" aria-hidden="true"><i></i></span>
   </div>`).join("");
-  layer.innerHTML = `${activityMarkup}${residentsMarkup}<div class="player-pin ${currentUser?.status || "open"} ${currentUser?.status === "booked" ? "making-donut" : ""}" id="townPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
-    ${playerMarkup()}
+  const playerClass = `player-pin ${currentUser?.status || "open"} ${currentUser?.status === "booked" ? "making-donut" : ""}`;
+  const playerBody = playerMarkup();
+  // Replacing the pins with identical markup restarts every idle animation and
+  // reloads the layered sprite art, which reads as the town flickering on each
+  // five second sync, so only touch the DOM when something actually changed.
+  const signature = [activityMarkup, residentsMarkup, playerClass, playerBody].join("\u0000");
+  if (signature !== lastTownMarkup || !layer.querySelector("#townPlayerPin")) {
+    lastTownMarkup = signature;
+    layer.innerHTML = `${activityMarkup}${residentsMarkup}<div class="${playerClass}" id="townPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+    ${playerBody}
   </div>`;
+    layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
+  }
   document.querySelector("#mapEmpty").hidden = layer.querySelectorAll(".resident-pin:not(.hidden)").length > 0;
-  layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
   paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
   updatePlayerElement(false);
   renderLivePlayers(0);
@@ -313,10 +327,16 @@ function renderChemPod() {
   const residentsMarkup = residents.filter(person => person.scene === "chemPod" && !remotePlayers.has(person.slackId)).map(person => `<button class="resident-pin ${person.status} ${person.activity || "path"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
     ${personMarkup(person)}
   </button>`).join("");
-  roomLayer.innerHTML = `${residentsMarkup}<div class="player-pin ${currentUser?.status || "open"}" id="chemPodPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
-    ${playerMarkup()}
+  const playerClass = `player-pin ${currentUser?.status || "open"}`;
+  const playerBody = playerMarkup();
+  const signature = [residentsMarkup, playerClass, playerBody].join("\u0000");
+  if (signature !== lastChemPodMarkup || !roomLayer.querySelector("#chemPodPlayerPin")) {
+    lastChemPodMarkup = signature;
+    roomLayer.innerHTML = `${residentsMarkup}<div class="${playerClass}" id="chemPodPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+    ${playerBody}
   </div>`;
-  roomLayer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
+    roomLayer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
+  }
   renderChemPodTeamWall();
   paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
   updatePlayerElement(false);
