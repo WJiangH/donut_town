@@ -168,19 +168,24 @@ function factsMarkup(facts, emptyCopy = "No additional Slack profile details hav
 const characterImages = new Map();
 async function loadCharacterArt(character) {
   if (!character || !/^\/assets\/residents\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(character.url)) return null;
-  if (!characterImages.has(character.url)) {
-    characterImages.set(character.url, new Promise(resolve => {
-      const image = new Image();
-      const finish = ok => { clearTimeout(timeout); image.onload = image.onerror = null; resolve(ok); };
-      const timeout = setTimeout(() => finish(false), 20000);
-      image.onload = () => finish(image.naturalWidth === character.imageWidth && image.naturalHeight === character.imageHeight);
-      image.onerror = () => finish(false);
-      image.src = character.url;
-    }));
-  }
-  const loaded = await characterImages.get(character.url);
-  if (!loaded) characterImages.delete(character.url);
-  return loaded ? character : null;
+  const urls = [character.url, ...(character.layers || [])];
+  if (urls.some(url => !/^\/assets\/residents\/[a-z0-9-]+\/(?:wardrobe-v1\/)?[a-z0-9-]+\.png$/.test(url))) return null;
+  const loaded = await Promise.all(urls.map(async url => {
+    if (!characterImages.has(url)) {
+      characterImages.set(url, new Promise(resolve => {
+        const image = new Image();
+        const finish = ok => { clearTimeout(timeout); image.onload = image.onerror = null; resolve(ok); };
+        const timeout = setTimeout(() => finish(false), 20000);
+        image.onload = () => finish(image.naturalWidth === character.imageWidth && image.naturalHeight === character.imageHeight);
+        image.onerror = () => finish(false);
+        image.src = url;
+      }));
+    }
+    const ok = await characterImages.get(url);
+    if (!ok) characterImages.delete(url);
+    return ok;
+  }));
+  return loaded.every(Boolean) ? character : null;
 }
 
 function personalCharacterMarkup(character, className) {
@@ -191,7 +196,7 @@ function paintPersonalCharacter(element, character, direction = "down", frame = 
   if (!element || !character) return;
   const row = direction === "up" ? 2 : (direction === "left" || direction === "right") ? 1 : 0;
   const index = row * 3 + frame;
-  const signature = `${character.url}:${index}:${direction}`;
+  const signature = `${(character.layers || [character.url]).join("|")}:${index}:${direction}`;
   if (element.dataset.pose === signature) return;
   element.dataset.pose = signature;
   const [x, y, width, height] = character.frames[index];
@@ -199,7 +204,7 @@ function paintPersonalCharacter(element, character, direction = "down", frame = 
   const art = element.querySelector(".personal-art");
   art.style.width = `${width * scale}px`;
   art.style.height = `${height * scale}px`;
-  art.style.backgroundImage = `url("${character.url}")`;
+  art.style.backgroundImage = [...(character.layers || [character.url])].reverse().map(url => `url("${url}")`).join(",");
   art.style.backgroundSize = `${character.imageWidth * scale}px ${character.imageHeight * scale}px`;
   art.style.backgroundPosition = `${-x * scale}px ${-y * scale}px`;
   element.classList.toggle("facing-left", direction === "left");
@@ -944,6 +949,7 @@ async function syncSlackResidents() {
       return {
       id: index + 1,
       slackId: member.id,
+      characterKey: member.characterKey,
       spriteIndex: member.appearanceIndex,
       character: member.character,
       name: member.displayName,
@@ -1005,6 +1011,32 @@ async function syncSlackResidents() {
     renderCurrentProfile();
     return false;
   }
+}
+
+let wardrobeRevision = 0;
+let outfitSyncRunning = false;
+async function syncWardrobeOutfits() {
+  if (document.hidden || !currentUser || outfitSyncRunning) return;
+  outfitSyncRunning = true;
+  const revision = wardrobeRevision;
+  try {
+    const response = await fetch("/api/wardrobe", {signal: AbortSignal.timeout(10000)});
+    if (!response.ok) return;
+    const { characters } = await response.json();
+    let changed = false;
+    for (const person of [currentUser, ...residents]) {
+      if (person === currentUser && (revision !== wardrobeRevision || document.querySelector("#profileWardrobe").dataset.saving)) continue;
+      const next = characters?.[person.characterKey];
+      if (!next || JSON.stringify(next.outfit) === JSON.stringify(person.character?.outfit)) continue;
+      const loaded = await loadCharacterArt(next);
+      if (!loaded) continue;
+      if (person === currentUser && (revision !== wardrobeRevision || document.querySelector("#profileWardrobe").dataset.saving)) continue;
+      person.character = loaded; changed = true;
+      if (person === currentUser) document.querySelector("#profileWardrobe").dispatchEvent(new CustomEvent("wardrobe-outfit", {detail: next.outfit}));
+    }
+    if (changed) { renderResidents(); if (currentScene === "chemPod") renderChemPod(); }
+  } catch { /* Keep last confirmed outfit until the next sync. */ }
+  finally { outfitSyncRunning = false; }
 }
 
 async function syncInvitationStates() {
@@ -1070,7 +1102,14 @@ function openProfile() {
   document.querySelector("#profileButton").setAttribute("aria-expanded", "true");
   const wardrobe = document.querySelector("#profileWardrobe");
   if (!wardrobe.hidden && !wardrobeMount) {
-    wardrobeMount = import("./profile-wardrobe.mjs").then(module => module.mountWardrobe(wardrobe)).catch(() => {
+    wardrobeMount = import("./profile-wardrobe.mjs").then(module => module.mountWardrobe(wardrobe, { initialOutfit: currentUser?.character?.outfit, onSaved: async character => {
+      const loaded = await loadCharacterArt(character);
+      if (!loaded) throw new Error("Character image unavailable");
+      wardrobeRevision++;
+      currentUser.character = loaded;
+      renderResidents();
+      if (currentScene === "chemPod") renderChemPod();
+    } })).catch(() => {
       wardrobe.querySelector('[role="status"]').textContent = "Wardrobe unavailable. Reopen to retry.";
       wardrobeMount = null;
     });
@@ -1321,7 +1360,7 @@ if (window.location.protocol === "file:") {
   renderInvitationDock();
   loadRoomContent();
   startTown();
-  window.setInterval(syncInvitationStates, 5000);
+  window.setInterval(() => { syncInvitationStates(); syncWardrobeOutfits(); }, 5000);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) disconnectRealtime();
     else {

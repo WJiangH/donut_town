@@ -4,6 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
+import { OutfitStore, equippedCharacter, validateOutfit, wardrobeSupported, wardrobeCharacters } from "./characters/wardrobe/store.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
@@ -46,6 +47,7 @@ if (process.env.RENDER && (!config.botToken || !config.signingSecret || !config.
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
 const profileStore = new SheetProfileStore({ url: config.profileApiUrl, secret: config.profileApiSecret });
 const invitationStore = new UpstashInvitationStore({ url: config.upstashUrl, token: config.upstashToken, namespace: config.channelId });
+const outfitStore = new OutfitStore({ url: config.upstashUrl, token: config.upstashToken });
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
@@ -113,6 +115,7 @@ const server = createServer(async (request, response) => {
       const session = getSlackSession(request);
       const currentUserId = session?.sub;
       const currentUserFound = members.some(member => member.id === currentUserId);
+      const outfits = await outfitStore.list();
       response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
         total: members.length,
@@ -128,7 +131,7 @@ const server = createServer(async (request, response) => {
           ...member,
           donutCount: null,
           appearanceIndex: appearanceIndexFor(member.id),
-          character: characterForMember(member.id, config.signingSecret),
+          character: equippedCharacter(characterForMember(member.id, config.signingSecret), outfits[memberCharacterKey(member.id, config.signingSecret)]),
           characterKey: memberCharacterKey(member.id, config.signingSecret),
           isCurrentUser: member.id === currentUserId,
           ...invitationStateFor(member.id)
@@ -150,6 +153,31 @@ const server = createServer(async (request, response) => {
           createdAt: invitation.createdAt
         })) : []
       });
+    }
+
+    if (url.pathname === "/api/wardrobe") {
+      response.setHeader("cache-control", "private, no-store");
+      if (!outfitStore.configured) return sendJson(response, 503, { error: "outfit_store_unavailable" });
+      if (request.method === "GET") {
+        return sendJson(response, 200, { characters: wardrobeCharacters(await outfitStore.list()) });
+      }
+      if (request.method !== "POST") return sendJson(response, 405, { error: "method_not_allowed" });
+      const session = getSlackSession(request);
+      if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
+      const members = await getCachedChannelMembers();
+      if (!members.some(member => member.id === session.sub)) return sendJson(response, 403, { error: "member_not_found" });
+      const character = characterForMember(session.sub, config.signingSecret);
+      if (!wardrobeSupported(character)) return sendJson(response, 403, { error: "wardrobe_not_available" });
+      let outfit;
+      try {
+        const body = JSON.parse(await readBody(request));
+        if (Object.keys(body).length !== 1 || !body.outfit) throw new Error("invalid_outfit");
+        outfit = validateOutfit(body.outfit);
+      } catch { return sendJson(response, 400, { error: "invalid_outfit" }); }
+      try {
+        await outfitStore.save(memberCharacterKey(session.sub, config.signingSecret), outfit);
+      } catch { return sendJson(response, 503, { error: "outfit_save_failed" }); }
+      return sendJson(response, 200, { outfit, character: equippedCharacter(character, outfit) });
     }
 
     if (request.method === "POST" && url.pathname === "/api/profile") {

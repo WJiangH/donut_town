@@ -26,7 +26,7 @@ const path = new URL('../characters/assignments.json', import.meta.url);
 const bindings = JSON.parse(await readFile(path, 'utf8'));
 if (mode === '--verify') {
   if (bindings[member.characterKey] !== id || member.character?.url !== manifest.url
-    || JSON.stringify(member.character) !== JSON.stringify(manifest)) throw new Error('Live member binding or manifest does not match');
+    || JSON.stringify(Object.fromEntries(Object.keys(manifest).map(key => [key, member.character?.[key]]))) !== JSON.stringify(manifest)) throw new Error('Live member binding or manifest does not match');
   const remoteImage = Buffer.from(await (await get(manifest.url)).arrayBuffer());
   const hash = data => createHash('sha256').update(data).digest('hex');
   if (hash(localImage) !== hash(remoteImage)) throw new Error('Live sprite bytes differ');
