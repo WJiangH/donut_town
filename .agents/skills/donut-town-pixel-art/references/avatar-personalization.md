@@ -20,6 +20,8 @@ For "my character" without a supplied name, resolve the caller with the Slack re
 
 View the avatar, `assets/donut-town-character-style-board.png`, `assets/donut-town-resident-atlas-transparent.png`, and `assets/donut-town-map-v2.png`. Label inputs explicitly: the avatar provides identity; town artwork provides style only. Record visible hair, glasses, expression, clothing and proportions. Separate proposed unseen clothing from observed details. Do not infer sensitive traits or personality. For nonhuman custom avatars, use their visible motif rather than inventing a human likeness.
 
+If the requested character should support equipment, read [layered-wardrobe.md](layered-wardrobe.md) before generating the final atlas. Build the approved identity and garment layers under one versioned rig, then verify the original outfit reconstructs the approved appearance. Keep a flattened compatibility image for the existing Town renderer until layered equipment integration is requested.
+
 ## 2. Establish one approved appearance
 
 Read [prompting.md](prompting.md). Use built-in image generation. Start with ONE full-body front-facing neutral sprite, no props or scenery, with generous padding. Ask for actual transparency. Do not start with a walk atlas before identity is established.

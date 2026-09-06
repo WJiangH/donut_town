@@ -1,0 +1,102 @@
+{
+  "url": "/assets/residents/r-7f3a2c/walk-v1.png",
+  "imageWidth": 1274,
+  "imageHeight": 1234,
+  "frameHeight": 350,
+  "frames": [
+    [
+      208,
+      36,
+      148,
+      350
+    ],
+    [
+      563,
+      36,
+      151,
+      350
+    ],
+    [
+      917,
+      36,
+      146,
+      349
+    ],
+    [
+      207,
+      432,
+      156,
+      332
+    ],
+    [
+      577,
+      433,
+      116,
+      333
+    ],
+    [
+      913,
+      432,
+      156,
+      333
+    ],
+    [
+      203,
+      810,
+      147,
+      350
+    ],
+    [
+      562,
+      811,
+      146,
+      347
+    ],
+    [
+      917,
+      810,
+      147,
+      350
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride",
+  "schemaVersion": 1,
+  "rig": "r-7f3a2c-walk-v1",
+  "base": "/assets/residents/r-7f3a2c/wardrobe-v1/base.png",
+  "slots": {
+    "jacket": {
+      "required": true,
+      "default": "original",
+      "items": {
+        "original": "/assets/residents/r-7f3a2c/wardrobe-v1/jacket-original.png",
+        "navy": "/assets/residents/r-7f3a2c/wardrobe-v1/jacket-navy.png",
+        "olive": "/assets/residents/r-7f3a2c/wardrobe-v1/jacket-olive.png"
+      }
+    },
+    "shoes": {
+      "required": true,
+      "default": "original",
+      "items": {
+        "original": "/assets/residents/r-7f3a2c/wardrobe-v1/shoes-original.png",
+        "cream": "/assets/residents/r-7f3a2c/wardrobe-v1/shoes-cream.png",
+        "burgundy": "/assets/residents/r-7f3a2c/wardrobe-v1/shoes-burgundy.png"
+      }
+    },
+    "eyewear": {
+      "required": false,
+      "default": "none",
+      "items": {
+        "none": null,
+        "smoke": "/assets/residents/r-7f3a2c/wardrobe-v1/eyewear-smoke.png"
+      }
+    }
+  },
+  "layerOrder": [
+    "jacket",
+    "shoes",
+    "eyewear"
+  ],
+  "compatibility": "This rig only; same-silhouette apparel variants. Required garment slots cover legacy cutouts."
+}

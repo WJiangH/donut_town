@@ -21,6 +21,10 @@ For turning a custom Slack avatar into a persistent resident identity, read [ref
 
 When asked to continue a preview into walking or production animation, follow [references/production-animation.md](references/production-animation.md). Complete the transparent atlas, measured frame manifest and interactive animation QA; an existing static preview is the input, not the deliverable.
 
+## Layered characters and equipment
+
+For local accessories, clothing/shoe changes, or a new resident intended for a wardrobe, read [references/layered-wardrobe.md](references/layered-wardrobe.md) before constructing the character. Preserve accepted identity pixels, use compatible equipment layers and verify reversible composition. A single flattened PNG is insufficient for reusable clothing. The current prototype supports one character rig with sunglasses and same-silhouette palette variants; do not claim universal equipment compatibility.
+
 ## Bind and verify a Town character
 
 For a requested character replacement in Town, complete the binding and deployment steps in [avatar-personalization.md, section 4](references/avatar-personalization.md#4-integrate-a-stable-identity). Use `scripts/bind-render-character.mjs` from the project root to bind with Render’s `characterKey`, then run its `--verify` mode after an authorized deployment. A generated PNG or standalone preview does not complete a Town replacement. Report artwork readiness and live binding status separately. Preview-only requests remain preview-only.
