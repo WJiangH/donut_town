@@ -87,7 +87,21 @@ const pressedKeys = new Set();
 let clickPath = [];
 let playerDirection = "down";
 let playerFrame = 1;
+let playerAction = null;
+let pendingActionSpot = null;
 let lastFrameChange = 0;
+
+const actionSpots = [
+  { id: "coffee", scene: "town", x: 32, y: 26, facing: "down", label: "Coffee" },
+  { id: "sitChair", scene: "town", x: 50, y: 36, facing: "down", label: "Sit" },
+  { id: "sitGrass", scene: "town", x: 40, y: 52, facing: "down", label: "Lawn" },
+  { id: "garden", scene: "town", x: 81, y: 28, facing: "down", label: "Garden" },
+  { id: "lookout", scene: "town", x: 84, y: 51, facing: "right", label: "View" },
+  { id: "read", scene: "town", x: 22, y: 24, facing: "down", label: "Read" },
+  { id: "experiment", scene: "chemPod", x: 50, y: 71, facing: "up", label: "Lab" },
+  { id: "read", scene: "chemPod", x: 41, y: 75, facing: "down", label: "Read" },
+  { id: "coffee", scene: "chemPod", x: 70, y: 79, facing: "down", label: "Coffee" }
+];
 let lastGameTime = performance.now();
 const remotePlayers = new Map();
 const remotePlayerElements = new Map();
@@ -166,26 +180,38 @@ function factsMarkup(facts, emptyCopy = "No additional Slack profile details hav
 
 // Personal art is enabled only after its versioned PNG has loaded successfully.
 const characterImages = new Map();
-async function loadCharacterArt(character) {
-  if (!character || !/^\/assets\/residents\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(character.url)) return null;
-  const urls = [character.url, ...(character.layers || [])];
-  if (urls.some(url => !/^\/assets\/residents\/[a-z0-9-]+\/(?:wardrobe-v1\/)?[a-z0-9-]+\.png$/.test(url))) return null;
-  const loaded = await Promise.all(urls.map(async url => {
-    if (!characterImages.has(url)) {
-      characterImages.set(url, new Promise(resolve => {
-        const image = new Image();
-        const finish = ok => { clearTimeout(timeout); image.onload = image.onerror = null; resolve(ok); };
-        const timeout = setTimeout(() => finish(false), 20000);
-        image.onload = () => finish(image.naturalWidth === character.imageWidth && image.naturalHeight === character.imageHeight);
-        image.onerror = () => finish(false);
-        image.src = url;
-      }));
-    }
-    const ok = await characterImages.get(url);
-    if (!ok) characterImages.delete(url);
+function characterAssetUrlOk(url) {
+  return /^\/assets\/residents\/[a-z0-9-]+\/(?:wardrobe-v1\/)?[a-z0-9-]+\.png$/.test(url);
+}
+
+function loadCharacterImage(url, width, height) {
+  const key = `${url}@${width}x${height}`;
+  if (!characterImages.has(key)) {
+    characterImages.set(key, new Promise(resolve => {
+      const image = new Image();
+      const finish = ok => { clearTimeout(timeout); image.onload = image.onerror = null; resolve(ok); };
+      const timeout = setTimeout(() => finish(false), 20000);
+      image.onload = () => finish(image.naturalWidth === width && image.naturalHeight === height);
+      image.onerror = () => finish(false);
+      image.src = url;
+    }));
+  }
+  return characterImages.get(key).then(ok => {
+    if (!ok) characterImages.delete(key);
     return ok;
-  }));
-  return loaded.every(Boolean) ? character : null;
+  });
+}
+
+async function loadCharacterArt(character) {
+  if (!character || !characterAssetUrlOk(character.url)) return null;
+  const urls = [character.url, ...(character.layers || [])];
+  if (urls.some(url => !characterAssetUrlOk(url))) return null;
+  const walkOk = await Promise.all(urls.map(url => loadCharacterImage(url, character.imageWidth, character.imageHeight)));
+  if (!walkOk.every(Boolean)) return null;
+  for (const action of Object.values(character.actions || {})) {
+    if (!characterAssetUrlOk(action.url) || !await loadCharacterImage(action.url, action.imageWidth, action.imageHeight)) return null;
+  }
+  return character;
 }
 
 function wardrobeManifestUrl(character) {
@@ -197,22 +223,25 @@ function personalCharacterMarkup(character, className) {
   return `<div class="${className} personal-character" aria-hidden="true"><span class="personal-art"></span></div>`;
 }
 
-function paintPersonalCharacter(element, character, direction = "down", frame = 1) {
+function paintPersonalCharacter(element, character, direction = "down", frame = 1, actionId = null) {
   if (!element || !character) return;
-  const row = direction === "up" ? 2 : (direction === "left" || direction === "right") ? 1 : 0;
-  const index = row * 3 + frame;
-  const signature = `${(character.layers || [character.url]).join("|")}:${index}:${direction}`;
+  const action = actionId && character.actions?.[actionId];
+  const facing = action?.facing || direction;
+  const source = action || character;
+  const index = action ? frame % action.frames.length : (facing === "up" ? 2 : (facing === "left" || facing === "right") ? 1 : 0) * 3 + frame;
+  const urls = action ? [action.url] : (character.layers || [character.url]);
+  const signature = `${urls.join("|")}:${actionId || "walk"}:${index}:${facing}`;
   if (element.dataset.pose === signature) return;
   element.dataset.pose = signature;
-  const [x, y, width, height] = character.frames[index];
-  const scale = 88 / character.frameHeight;
+  const [x, y, width, height] = source.frames[index];
+  const scale = 88 / source.frameHeight;
   const art = element.querySelector(".personal-art");
   art.style.width = `${width * scale}px`;
   art.style.height = `${height * scale}px`;
-  art.style.backgroundImage = [...(character.layers || [character.url])].reverse().map(url => `url("${url}")`).join(",");
-  art.style.backgroundSize = `${character.imageWidth * scale}px ${character.imageHeight * scale}px`;
+  art.style.backgroundImage = [...urls].reverse().map(url => `url("${url}")`).join(",");
+  art.style.backgroundSize = `${source.imageWidth * scale}px ${source.imageHeight * scale}px`;
   art.style.backgroundPosition = `${-x * scale}px ${-y * scale}px`;
-  element.classList.toggle("facing-left", direction === "left");
+  element.classList.toggle("facing-left", facing === "left");
 }
 
 function paintResidentCharacters(container) {
@@ -343,7 +372,8 @@ function upsertRemotePlayer(state, refreshResidents = true) {
     targetX: x,
     targetY: y,
     direction: ["up", "down", "left", "right"].includes(state.direction) ? state.direction : "down",
-    moving: state.moving === true
+    moving: state.moving === true,
+    action: typeof state.action === "string" && state.action ? state.action : null
   });
   if (refreshResidents && !previous) renderCurrentScene();
 }
@@ -380,7 +410,7 @@ function renderLivePlayers(deltaSeconds) {
     if (person.character) {
       const movingFrame = remote.moving && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
-      paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, remote.direction, movingFrame);
+      paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, remote.direction, movingFrame, remote.moving ? null : remote.action);
     }
     pin.setAttribute("aria-label", `Open ${person.name}'s profile, online now`);
   }
@@ -395,7 +425,7 @@ function renderLivePlayers(deltaSeconds) {
 function publishPresence(force = false, moving = false) {
   if (!realtimeSocket || realtimeSocket.readyState !== WebSocket.OPEN || !currentUser?.id) return;
   const now = performance.now();
-  const signature = `${currentScene}|${playerDirection}|${moving}`;
+  const signature = `${currentScene}|${playerDirection}|${moving}|${playerAction || ""}`;
   const stateChanged = signature !== lastPresenceSignature;
   if (!force && !stateChanged && (!moving || now - lastPresenceSentAt < 125)) return;
   realtimeSocket.send(JSON.stringify({
@@ -404,7 +434,8 @@ function publishPresence(force = false, moving = false) {
     x: player.x,
     y: player.y,
     direction: playerDirection,
-    moving
+    moving,
+    action: moving ? null : playerAction
   }));
   lastPresenceSentAt = now;
   lastPresenceSignature = signature;
@@ -643,6 +674,39 @@ function setCameraMode(nextMode, announce = false) {
   if (announce) showToast(cameraMode === "overview" ? "Drag to explore. Your view stays where you leave it." : "The camera is following you.");
 }
 
+function nearestActionSpot(point, radius = 1.6) {
+  let best = null;
+  for (const spot of actionSpots) {
+    if (spot.scene !== currentScene) continue;
+    const distance = Math.hypot(spot.x - point.x, spot.y - point.y);
+    if (distance <= radius && (!best || distance < best.distance)) best = { ...spot, distance };
+  }
+  return best;
+}
+
+function walkToActionSpot(spot) {
+  pendingActionSpot = spot;
+  playerAction = null;
+  const destination = nearestWalkable(spot.x, spot.y);
+  clickPath = findWalkPath(player, destination);
+}
+
+function renderActionSpots() {
+  for (const [scene, rootId] of [["town", "townActionSpots"], ["chemPod", "chemPodActionSpots"]]) {
+    const root = document.querySelector(`#${rootId}`);
+    if (!root) continue;
+    root.innerHTML = actionSpots.filter(spot => spot.scene === scene && currentUser?.character?.actions?.[spot.id]).map(spot =>
+      `<button class="action-spot" type="button" style="left:${spot.x}%;top:${spot.y}%" data-index="${actionSpots.indexOf(spot)}" aria-label="${escapeHtml(spot.label)}">${escapeHtml(spot.label)}</button>`
+    ).join("");
+    root.querySelectorAll(".action-spot").forEach(button => button.addEventListener("click", event => {
+      event.stopPropagation();
+      const spot = actionSpots[Number(button.dataset.index)];
+      if (!spot || currentScene !== spot.scene) return;
+      walkToActionSpot(spot);
+    }));
+  }
+}
+
 function nearestWalkable(x, y) {
   const bounds = activeSceneBounds();
   x = Math.max(bounds.minX, Math.min(bounds.maxX, x));
@@ -717,7 +781,7 @@ function updatePlayerElement(isMoving) {
   if (currentUser?.character) {
     const frame = isMoving && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
-    paintPersonalCharacter(sprite, currentUser.character, playerDirection, frame);
+    paintPersonalCharacter(sprite, currentUser.character, playerDirection, frame, isMoving ? null : playerAction);
     return;
   }
   const rowByDirection = { down: 0, left: 33.333, right: 33.333, up: 100 };
@@ -739,6 +803,8 @@ function setScene(nextScene) {
   Object.assign(player, scenePlayerPositions[currentScene]);
   playerDirection = currentScene === "chemPod" ? "up" : "down";
   playerFrame = 1;
+  playerAction = null;
+  pendingActionSpot = null;
   clickPath = [];
   document.querySelector("#townView").hidden = currentScene !== "town";
   document.querySelector("#chemPodView").hidden = currentScene !== "chemPod";
@@ -797,6 +863,22 @@ function gameLoop(timestamp) {
   }
 
   const isMoving = Boolean(dx || dy);
+  if (isMoving) {
+    playerAction = null;
+    if (pendingActionSpot && pressedKeys.size) pendingActionSpot = null;
+  } else if (pendingActionSpot && pendingActionSpot.scene === currentScene && !clickPath.length) {
+    if (currentUser?.character?.actions?.[pendingActionSpot.id]) {
+      playerAction = pendingActionSpot.id;
+      playerDirection = pendingActionSpot.facing;
+    }
+    pendingActionSpot = null;
+  } else if (!pendingActionSpot) {
+    const spot = nearestActionSpot(player, 1.6);
+    if (spot && currentUser?.character?.actions?.[spot.id]) {
+      playerAction = spot.id;
+      playerDirection = spot.facing;
+    }
+  }
   if (isMoving) {
     const length = Math.hypot(dx, dy) || 1;
     dx /= length;
@@ -1344,6 +1426,7 @@ async function startTown() {
   const ready = await syncSlackResidents();
   clearTimeout(slow);
   if (ready) {
+    renderActionSpots();
     loading.classList.add("done");
     document.querySelector(".app-shell").inert = false;
     if (new URLSearchParams(location.search).get("profile") === "1") openProfile();
@@ -1357,6 +1440,7 @@ document.querySelector("#retryTown").addEventListener("click", startTown);
 
 if (window.location.protocol === "file:") {
   residents = [];
+  renderActionSpots();
   renderResidents();
   renderInvitationDock();
   document.querySelector("#neighborSummary").innerHTML = `Slack is unavailable in file mode · <a href="http://127.0.0.1:4173/">Open connected town</a>`;

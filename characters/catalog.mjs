@@ -12,6 +12,29 @@ export function memberCharacterKey(userId, secret) {
   return createHmac('sha256', secret).update('donut-town:character:v1\0' + userId).digest('hex');
 }
 
+function validFrames(frames, imageWidth, imageHeight, count = 1) {
+  return Array.isArray(frames) && frames.length >= count
+    && (count === 1 || frames.length === count)
+    && frames.every(frame => Array.isArray(frame) && frame.length === 4 && frame.every(Number.isFinite)
+      && frame[0] >= 0 && frame[1] >= 0 && frame[2] > 0 && frame[3] > 0
+      && frame[0] + frame[2] <= imageWidth && frame[1] + frame[3] <= imageHeight);
+}
+
+function validAtlas(art, frameCount) {
+  return art && /^\/assets\/residents\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(art.url)
+    && Number.isInteger(art.imageWidth) && art.imageWidth > 0
+    && Number.isInteger(art.imageHeight) && art.imageHeight > 0
+    && Number.isFinite(art.frameHeight) && art.frameHeight > 0
+    && validFrames(art.frames, art.imageWidth, art.imageHeight, frameCount);
+}
+
+function validActions(actions) {
+  if (!actions || typeof actions !== 'object' || Array.isArray(actions)) return false;
+  return Object.entries(actions).every(([id, action]) => /^[a-zA-Z]+$/.test(id)
+    && validAtlas(action, 1)
+    && (!action.facing || ['down', 'right', 'left', 'up'].includes(action.facing)));
+}
+
 export function createCharacterResolver(bindings, characters) {
   return (userId, secret) => {
     const key = memberCharacterKey(userId, secret);
@@ -21,14 +44,7 @@ export function createCharacterResolver(bindings, characters) {
 
 const catalog = new Map([...new Set(assignments.values())].map(id => {
   const character = JSON.parse(readFileSync(new URL(`./${id}.json`, import.meta.url), 'utf8'));
-  if (!/^\/assets\/residents\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(character.url)
-    || !Number.isInteger(character.imageWidth) || character.imageWidth <= 0
-    || !Number.isInteger(character.imageHeight) || character.imageHeight <= 0
-    || !Number.isFinite(character.frameHeight) || character.frameHeight <= 0
-    || character.frames?.length !== 9
-    || !character.frames.every(frame => Array.isArray(frame) && frame.length === 4 && frame.every(Number.isFinite)
-      && frame[0] >= 0 && frame[1] >= 0 && frame[2] > 0 && frame[3] > 0
-      && frame[0] + frame[2] <= character.imageWidth && frame[1] + frame[3] <= character.imageHeight)) {
+  if (!validAtlas(character, 9) || (character.actions && !validActions(character.actions))) {
     throw new Error(`Invalid character manifest: ${id}`);
   }
   return [id, Object.freeze(character)];

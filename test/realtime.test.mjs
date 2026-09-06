@@ -28,6 +28,7 @@ test("presence coordinates and enums are normalized", () => {
     y: 100,
     direction: "down",
     moving: true,
+    action: null,
     updatedAt: 123
   });
   assert.equal(normalizePresenceState({ type: "state", scene: "secret", x: 1, y: 2 }), null);

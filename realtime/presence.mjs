@@ -1,5 +1,6 @@
 const ALLOWED_SCENES = new Set(["town", "chemPod"]);
 const ALLOWED_DIRECTIONS = new Set(["up", "down", "left", "right"]);
+const ALLOWED_ACTIONS = new Set(["sitChair", "sitGrass", "garden", "lookout", "read", "coffee", "experiment"]);
 
 export function normalizePresenceState(input, now = Date.now()) {
   if (!input || input.type !== "state" || !ALLOWED_SCENES.has(input.scene)) return null;
@@ -12,6 +13,7 @@ export function normalizePresenceState(input, now = Date.now()) {
     y: roundCoordinate(Math.max(0, Math.min(100, y))),
     direction: ALLOWED_DIRECTIONS.has(input.direction) ? input.direction : "down",
     moving: input.moving === true,
+    action: ALLOWED_ACTIONS.has(input.action) ? input.action : null,
     updatedAt: now
   };
 }

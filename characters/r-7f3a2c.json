@@ -61,5 +61,63 @@
   ],
   "version": 1,
   "designApproved": true,
-  "animationStatus": "preview-repeated-stride"
+  "animationStatus": "preview-repeated-stride",
+  "actions": {
+    "sitChair": {
+      "url": "/assets/residents/r-7f3a2c/actions-v1.png",
+      "imageWidth": 1120,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [[53, 6, 174, 348]],
+      "facing": "down"
+    },
+    "sitGrass": {
+      "url": "/assets/residents/r-7f3a2c/actions-v1.png",
+      "imageWidth": 1120,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [[326, 6, 188, 348]],
+      "facing": "down"
+    },
+    "garden": {
+      "url": "/assets/residents/r-7f3a2c/actions-v1.png",
+      "imageWidth": 1120,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [[613, 6, 174, 348]],
+      "facing": "down"
+    },
+    "lookout": {
+      "url": "/assets/residents/r-7f3a2c/actions-v1.png",
+      "imageWidth": 1120,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [[905, 6, 149, 348]],
+      "facing": "right"
+    },
+    "read": {
+      "url": "/assets/residents/r-7f3a2c/actions-v1.png",
+      "imageWidth": 1120,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [[54, 366, 171, 348]],
+      "facing": "down"
+    },
+    "coffee": {
+      "url": "/assets/residents/r-7f3a2c/actions-v1.png",
+      "imageWidth": 1120,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [[339, 366, 162, 348]],
+      "facing": "down"
+    },
+    "experiment": {
+      "url": "/assets/residents/r-7f3a2c/actions-v1.png",
+      "imageWidth": 1120,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [[612, 366, 176, 348]],
+      "facing": "up"
+    }
+  }
 }

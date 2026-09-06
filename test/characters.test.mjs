@@ -35,5 +35,15 @@ test('public bindings contain only digests and existing transparent character as
     assert.equal(art.frames.length, 9);
     assert.ok(art.frames.every(([x,y,w,h]) => x>=0 && y>=0 && w>0 && h>0 && x+w<=art.imageWidth && y+h<=art.imageHeight));
     assert.equal(art.sourceDesignSha256, undefined);
+    if (art.actions) {
+      for (const action of Object.values(art.actions)) {
+        const bytes = readFileSync(new URL(`..${action.url}`, import.meta.url));
+        assert.equal(bytes.subarray(1, 4).toString(), 'PNG');
+        assert.equal(bytes.readUInt32BE(16), action.imageWidth);
+        assert.equal(bytes.readUInt32BE(20), action.imageHeight);
+        assert.equal(bytes[25], 6);
+        assert.ok(action.frames.length >= 1);
+      }
+    }
   }
 });
