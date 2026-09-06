@@ -544,12 +544,20 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
   if (currentScene !== "town") return;
   if (!townCameraMetrics) refreshTownCameraMetrics();
   const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
-  const targetScale = cameraMode === "overview" ? Math.min(viewportWidth / worldWidth, viewportHeight / worldHeight) : 1;
+  const targetScale = cameraMode === "overview" ? Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight) : 1;
+  const overviewX = Math.min(0, Math.max(
+    viewportWidth - worldWidth * targetScale,
+    (viewportWidth - worldWidth * targetScale) / 2
+  ));
+  const overviewY = Math.min(0, Math.max(
+    viewportHeight - worldHeight * targetScale,
+    viewportHeight / 2 - worldHeight * targetScale * 0.49
+  ));
   const targetX = cameraMode === "overview"
-    ? (viewportWidth - worldWidth * targetScale) / 2
+    ? overviewX
     : Math.min(0, Math.max(viewportWidth - worldWidth, viewportWidth / 2 - worldWidth * player.x / 100));
   const targetY = cameraMode === "overview"
-    ? (viewportHeight - worldHeight * targetScale) / 2
+    ? overviewY
     : Math.min(0, Math.max(viewportHeight - worldHeight, viewportHeight / 2 - worldHeight * player.y / 100));
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const blend = immediate || reducedMotion || !townCamera.ready ? 1 : 1 - Math.exp(-8 * deltaSeconds);
