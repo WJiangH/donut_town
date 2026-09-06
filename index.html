@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="styles.css?v=12" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -72,17 +72,15 @@
         </aside>
       </section>
 
-      <aside class="invite-dock" id="inviteDock" aria-label="Invitation priority list">
+      <aside class="invite-dock" id="inviteDock" aria-label="Your pending Donut invitations">
         <button class="dock-handle" id="dockHandle" aria-expanded="true">
-          <span>Invite queue</span>
-          <strong><span id="queueCount">0</span>/3</strong>
+          <span>My invitations</span>
+          <strong><span id="availableInviteCount">3</span>/3 available</strong>
         </button>
         <div class="dock-body">
-          <p class="dock-help">Rank up to three people. This test sends only the first choice.</p>
-          <ol class="queue-list" id="queueList"></ol>
-          <div class="queue-empty" id="queueEmpty">Choose up to three neighbors from the town.</div>
-          <button class="send-button" id="sendInvites" disabled>Send invitations</button>
-          <button class="secondary-button self-test-button" id="sendSelfTest">Send test to myself</button>
+          <p class="dock-help" id="inviteDockHelp">People waiting to answer your invitation appear here.</p>
+          <ol class="pending-invite-list" id="pendingInviteList"></ol>
+          <div class="pending-invite-empty" id="pendingInviteEmpty">You have three invitations available. Choose a neighbor to begin.</div>
         </div>
       </aside>
     </main>
@@ -130,19 +128,7 @@
       </section>
     </aside>
 
-    <div class="modal-scrim" id="modalScrim" hidden>
-      <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-        <div class="bot-badge" aria-hidden="true">DB</div>
-        <h2 id="confirmTitle">Ready for Donut Bot?</h2>
-        <p>For this test, the bot will privately invite your first choice. The remaining choices will not be contacted yet.</p>
-        <div class="modal-actions">
-          <button class="secondary-button" id="cancelSend">Not yet</button>
-          <button class="send-button" id="confirmSend">Send now</button>
-        </div>
-      </section>
-    </div>
-
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=15"></script>
+    <script src="app.js?v=16"></script>
   </body>
 </html>

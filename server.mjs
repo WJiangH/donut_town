@@ -113,6 +113,11 @@ const server = createServer(async (request, response) => {
         currentUserConfigured: Boolean(currentUserId),
         currentUserFound,
         profileConnected: false,
+        outgoingInvitations: currentUserId ? pendingInvitationsFor(currentUserId).map(invitation => ({
+          id: invitation.id,
+          inviteeId: invitation.inviteeId,
+          createdAt: invitation.createdAt
+        })) : [],
         members: members.map(member => ({
           ...member,
           donutCount: null,
@@ -127,9 +132,15 @@ const server = createServer(async (request, response) => {
       if (!slack || !config.channelId) return missingConfiguration(response);
       await ensureInvitationStateHydrated();
       const members = await getCachedChannelMembers();
+      const session = getSlackSession(request);
       response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
-        states: Object.fromEntries(members.map(member => [member.id, invitationStateFor(member.id)]))
+        states: Object.fromEntries(members.map(member => [member.id, invitationStateFor(member.id)])),
+        outgoingInvitations: session?.sub ? pendingInvitationsFor(session.sub).map(invitation => ({
+          id: invitation.id,
+          inviteeId: invitation.inviteeId,
+          createdAt: invitation.createdAt
+        })) : []
       });
     }
 

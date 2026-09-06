@@ -51,11 +51,10 @@ const mapObstacles = [
   { x: 59.8, y: 63.5, rx: 3.6, ry: 3.4 }
 ];
 
-let queue = [];
+let outgoingInvitations = [];
 let selectedResident = null;
 let currentFilter = "all";
 let invitesOpen = true;
-let planActive = false;
 const player = { id: 11, name: "You", x: 50, y: 80 };
 let currentUser = null;
 let currentPairId = null;
@@ -72,9 +71,8 @@ const layer = document.querySelector("#residentsLayer");
 const drawer = document.querySelector("#residentDrawer");
 const drawerScrim = document.querySelector("#drawerScrim");
 const inviteButton = document.querySelector("#inviteButton");
-const queueList = document.querySelector("#queueList");
-const queueEmpty = document.querySelector("#queueEmpty");
-const sendButton = document.querySelector("#sendInvites");
+const pendingInviteList = document.querySelector("#pendingInviteList");
+const pendingInviteEmpty = document.querySelector("#pendingInviteEmpty");
 const toast = document.querySelector("#toast");
 
 function escapeHtml(value) {
@@ -130,11 +128,15 @@ function personMarkup(person, compact = false) {
   const rowPositions = [0, 50, 100];
   const spriteX = columnPositions[atlasIndex % 4];
   const spriteY = rowPositions[Math.floor(atlasIndex / 4)];
-  return `<div class="pixel-person" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${escapeHtml(person.name.split(" ")[0])}</span>`}`;
+  const facingClass = person.pairFacing ? ` pair-facing-${person.pairFacing}` : "";
+  return `<div class="pixel-person${facingClass}" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${escapeHtml(person.name.split(" ")[0])}</span>`}`;
 }
 
 function playerMarkup() {
-  return `<div class="player-character" style="--frame-x:50%;--direction-y:0%" aria-hidden="true"></div>
+  const directionRows = { down: 0, right: 33.333, left: 33.333, up: 100 };
+  const framePositions = [0, 50, 100];
+  const facingClass = playerDirection === "left" ? " facing-left" : "";
+  return `<div class="player-character${facingClass}" style="--frame-x:${framePositions[playerFrame]}%;--direction-y:${directionRows[playerDirection]}%" aria-hidden="true"></div>
     <span class="resident-state"></span><span class="resident-label">You</span>`;
 }
 
@@ -166,6 +168,7 @@ function layoutBookedPairs() {
     person.x = person.baseX;
     person.y = person.baseY;
     person.activity = person.baseActivity;
+    person.pairFacing = null;
   });
 
   const people = [...residents, ...(currentUser ? [{ ...currentUser, isPlayer: true }] : [])];
@@ -187,11 +190,13 @@ function layoutBookedPairs() {
           player.y = spot.y;
           clickPath = [];
         }
+        playerDirection = personIndex === 0 ? "right" : "left";
       } else {
         const resident = residents.find(item => item.slackId === person.slackId);
         resident.x = spot.x;
         resident.y = spot.y;
         resident.activity = "donut-station";
+        resident.pairFacing = personIndex === 0 ? "right" : "left";
       }
     });
     pairActivities.push({
@@ -387,10 +392,24 @@ function openResident(id) {
   const statusLabel = selectedResident.status === "open" ? "Open to invitations" : selectedResident.status === "pending" ? "Invitation pending" : "Booked this week";
   document.querySelector("#drawerStatus").textContent = statusLabel;
 
-  const inQueue = queue.some(person => person.id === selectedResident.id);
-  inviteButton.disabled = planActive || selectedResident.status !== "open" || (!inQueue && queue.length >= 3) || !invitesOpen;
-  inviteButton.classList.toggle("remove", inQueue);
-  inviteButton.textContent = planActive ? "Invitation plan is active" : inQueue ? "Remove from queue" : selectedResident.status === "open" ? (queue.length >= 3 ? "Queue is full" : "Add to invite queue") : "Not available this week";
+  const invitationSent = outgoingInvitations.some(invitation => invitation.inviteeId === selectedResident.slackId);
+  const invitationLimitReached = outgoingInvitations.length >= 3;
+  const currentUserBooked = currentUser?.status === "booked";
+  inviteButton.classList.remove("remove");
+  inviteButton.disabled = invitationSent || selectedResident.status !== "open" || invitationLimitReached || currentUserBooked || !invitesOpen;
+  inviteButton.textContent = invitationSent
+    ? "Invitation sent"
+    : currentUserBooked
+      ? "You are booked this week"
+      : selectedResident.status === "pending"
+        ? "Invitation already pending"
+        : selectedResident.status === "booked"
+          ? "Booked this week"
+          : invitationLimitReached
+            ? "All three invitations are in use"
+            : !invitesOpen
+              ? "Invitations are paused"
+              : "Invite to a Donut chat";
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
   drawerScrim.hidden = false;
@@ -402,6 +421,7 @@ async function syncSlackResidents() {
     if (!response.ok) throw new Error("Slack sync unavailable");
     const data = await response.json();
     const summary = document.querySelector("#neighborSummary");
+    outgoingInvitations = Array.isArray(data.outgoingInvitations) ? data.outgoingInvitations : [];
     currentUser = data.members.find(member => member.isCurrentUser) || null;
     const neighbors = data.members.filter(member => !member.isCurrentUser);
     renderCurrentProfile();
@@ -439,7 +459,6 @@ async function syncSlackResidents() {
           ? `${member.donutCount} completed Donut chats are recorded.`
           : "No completed Donut chats are recorded yet."
     }));
-    queue = [];
     selectedResident = null;
     currentFilter = "all";
     const filtersAvailable = residents.some(person => person.group !== "unknown" || person.donuts !== null);
@@ -455,13 +474,13 @@ async function syncSlackResidents() {
     layoutBookedPairs();
     updateAvailabilityControl();
     renderResidents();
-    renderQueue();
+    renderInvitationDock();
   } catch {
     currentUser = null;
     residents = [];
-    queue = [];
+    outgoingInvitations = [];
     renderResidents();
-    renderQueue();
+    renderInvitationDock();
     document.querySelector("#neighborSummary").textContent = "Slack sync temporarily unavailable · no demo residents shown";
     renderCurrentProfile();
   }
@@ -472,15 +491,15 @@ async function syncInvitationStates() {
   try {
     const response = await fetch("/api/slack/invitation-states", { headers: { accept: "application/json" } });
     if (!response.ok) return;
-    const { states } = await response.json();
+    const { states, outgoingInvitations: nextOutgoingInvitations } = await response.json();
+    outgoingInvitations = Array.isArray(nextOutgoingInvitations) ? nextOutgoingInvitations : [];
     residents.forEach(person => Object.assign(person, states[person.slackId] || { status: "open", partnerId: null, pairId: null }));
     if (currentUser) Object.assign(currentUser, states[currentUser.id] || { status: "open", partnerId: null, pairId: null });
     applyPairPreview();
-    queue = queue.filter(person => person.status === "open");
     layoutBookedPairs();
     updateAvailabilityControl();
     renderResidents();
-    renderQueue();
+    renderInvitationDock();
     if (drawer.classList.contains("open") && selectedResident) openResident(selectedResident.id);
   } catch {
     // Keep the last known state during a temporary network interruption.
@@ -541,38 +560,26 @@ function closeDrawer() {
   drawerScrim.hidden = true;
 }
 
-function toggleSelected() {
-  if (!selectedResident) return;
-  const index = queue.findIndex(person => person.id === selectedResident.id);
-  if (index >= 0) queue.splice(index, 1);
-  else if (queue.length < 3 && selectedResident.status === "open") queue.push(selectedResident);
-  renderQueue();
-  openResident(selectedResident.id);
-}
-
-function renderQueue() {
-  document.querySelector("#queueCount").textContent = queue.length;
-  queueEmpty.hidden = queue.length > 0;
-  sendButton.disabled = queue.length === 0 || planActive;
-  sendButton.textContent = planActive ? "Invitation plan active" : "Send invitations";
-  queueList.innerHTML = queue.map((person, index) => `<li class="queue-item">
-    <span class="priority-number">${index + 1}</span>
-    <span class="queue-name">${escapeHtml(person.name)}</span>
-    <span class="queue-actions">
-      <button data-move="up" data-id="${person.id}" aria-label="Move ${escapeHtml(person.name)} up" ${planActive ? "disabled" : ""}>↑</button>
-      <button data-move="down" data-id="${person.id}" aria-label="Move ${escapeHtml(person.name)} down" ${planActive ? "disabled" : ""}>↓</button>
-      <button data-move="remove" data-id="${person.id}" aria-label="Remove ${escapeHtml(person.name)}" ${planActive ? "disabled" : ""}>×</button>
-    </span>
-  </li>`).join("");
-  queueList.querySelectorAll("button").forEach(button => button.addEventListener("click", () => updateQueue(Number(button.dataset.id), button.dataset.move)));
-}
-
-function updateQueue(id, action) {
-  const index = queue.findIndex(person => person.id === id);
-  if (action === "remove") queue.splice(index, 1);
-  if (action === "up" && index > 0) [queue[index - 1], queue[index]] = [queue[index], queue[index - 1]];
-  if (action === "down" && index < queue.length - 1) [queue[index + 1], queue[index]] = [queue[index], queue[index + 1]];
-  renderQueue();
+function renderInvitationDock() {
+  const available = Math.max(0, 3 - outgoingInvitations.length);
+  const booked = currentUser?.status === "booked";
+  document.querySelector("#availableInviteCount").textContent = booked ? 0 : available;
+  document.querySelector("#inviteDockHelp").textContent = booked
+    ? "Your Donut chat is booked for this week."
+    : "People waiting to answer your invitation appear here.";
+  pendingInviteEmpty.hidden = outgoingInvitations.length > 0;
+  pendingInviteEmpty.textContent = booked
+    ? "Your pending invitations closed when a Donut chat was booked."
+    : `You have ${available === 1 ? "one invitation" : `${available} invitations`} available. Choose a neighbor to begin.`;
+  pendingInviteList.innerHTML = outgoingInvitations.map(invitation => {
+    const person = residents.find(resident => resident.slackId === invitation.inviteeId);
+    const name = person?.name || "Slack member";
+    return `<li class="pending-invite-item">
+      <span class="pending-avatar" aria-hidden="true">${escapeHtml(initialsFor(name))}</span>
+      <span class="pending-copy"><strong>${escapeHtml(name)}</strong><small>Waiting for reply</small></span>
+      <span class="pending-state">Pending</span>
+    </li>`;
+  }).join("");
 }
 
 function showToast(message) {
@@ -583,7 +590,7 @@ function showToast(message) {
 
 document.querySelector("#closeDrawer").addEventListener("click", closeDrawer);
 drawerScrim.addEventListener("click", closeDrawer);
-inviteButton.addEventListener("click", toggleSelected);
+inviteButton.addEventListener("click", sendSelectedInvitation);
 document.querySelector("#profileButton").addEventListener("click", openProfile);
 document.querySelector("#closeProfile").addEventListener("click", closeProfile);
 document.querySelector("#profileScrim").addEventListener("click", closeProfile);
@@ -615,40 +622,30 @@ document.querySelector("#mapWorld").addEventListener("click", event => {
   clickPath = findWalkPath(player, destination);
 });
 
-sendButton.addEventListener("click", () => document.querySelector("#modalScrim").hidden = false);
-document.querySelector("#cancelSend").addEventListener("click", () => document.querySelector("#modalScrim").hidden = true);
-document.querySelector("#confirmSend").addEventListener("click", async event => {
-  const first = queue[0];
-  if (!first?.slackId) return;
-  const button = event.currentTarget;
+async function sendSelectedInvitation() {
+  const person = selectedResident;
+  if (!person?.slackId) return;
   try {
-    const result = await requestInvitation({ inviteeId: first.slackId, priority: 1 }, button, "Send now");
-    document.querySelector("#modalScrim").hidden = true;
-    closeDrawer();
+    const result = await requestInvitation({ inviteeId: person.slackId, priority: outgoingInvitations.length + 1 }, inviteButton, "Invite to a Donut chat");
     if (result.dryRun) {
-      showToast(`Safe preview passed for ${first.name}; Slack sending is still disabled.`);
+      showToast(`Safe preview passed for ${person.name}. Slack sending is still disabled.`);
       return;
     }
-    first.status = "pending";
-    queue = [];
+    outgoingInvitations.push({
+      id: result.invitation.id,
+      inviteeId: person.slackId,
+      createdAt: result.invitation.createdAt
+    });
+    Object.assign(person, { status: "pending", partnerId: currentUser?.id || null, pairId: null });
     renderResidents();
-    renderQueue();
-    showToast(`Donut Bot sent a private invitation to ${first.name}.`);
+    renderInvitationDock();
+    openResident(person.id);
+    showToast(`Donut Bot sent a private invitation to ${person.name}.`);
   } catch (error) {
     showToast(invitationErrorMessage(error));
+    openResident(person.id);
   }
-});
-
-document.querySelector("#sendSelfTest").addEventListener("click", async event => {
-  try {
-    const result = await requestInvitation({ selfTest: true }, event.currentTarget, "Send test to myself");
-    showToast(result.dryRun
-      ? "Safe self-test preview passed; Slack sending is still disabled."
-      : "Donut Bot sent the test invitation to your Slack DM.");
-  } catch (error) {
-    showToast(invitationErrorMessage(error));
-  }
-});
+}
 
 async function requestInvitation(payload, button, idleLabel) {
   button.disabled = true;
@@ -683,9 +680,8 @@ document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     closeDrawer();
     closeProfile();
-    document.querySelector("#modalScrim").hidden = true;
   }
-  if (drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open") || !document.querySelector("#modalScrim").hidden) return;
+  if (drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open")) return;
   const key = event.key.toLowerCase();
   if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
     event.preventDefault();
@@ -699,12 +695,12 @@ window.addEventListener("blur", () => pressedKeys.clear());
 if (window.location.protocol === "file:") {
   residents = [];
   renderResidents();
-  renderQueue();
+  renderInvitationDock();
   document.querySelector("#neighborSummary").innerHTML = `Slack is unavailable in file mode · <a href="http://127.0.0.1:4173/">Open connected town</a>`;
   showToast("This file view cannot connect to Slack. Open the connected town link.");
 } else {
   renderResidents();
-  renderQueue();
+  renderInvitationDock();
   syncSlackResidents().then(syncInvitationStates);
   window.setInterval(syncInvitationStates, 5000);
   document.addEventListener("visibilitychange", () => {
