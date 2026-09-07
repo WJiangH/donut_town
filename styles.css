@@ -144,18 +144,18 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .building-entrance small { margin-top: 4px; color: var(--accent-dark); font-size: 7px; }
 .building-entrance:hover, .building-entrance:focus-visible, .room-exit:hover, .room-exit:focus-visible { transform: translate(-50%, -72%) translateY(-3px); }
 
-.action-spots { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.action-spots { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
 .action-spot {
   position: absolute;
-  transform: translate(-50%, -110%);
+  transform: translate(-50%, -120%);
   pointer-events: auto;
   border: 2px solid var(--ink);
   border-radius: 999px;
-  padding: 3px 7px;
-  background: var(--surface-solid);
+  padding: 5px 9px;
+  background: #fff8e8;
   box-shadow: 2px 2px 0 var(--ink);
   color: var(--ink);
-  font: 800 8px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 800 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   cursor: pointer;
   white-space: nowrap;
 }

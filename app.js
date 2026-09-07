@@ -428,9 +428,12 @@ function renderLivePlayers(deltaSeconds) {
     pin.classList.toggle("booked", person.status === "booked");
     pin.dataset.direction = remote.direction;
     if (person.character) {
-      const movingFrame = remote.moving && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
-      paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, remote.direction, movingFrame, remote.moving ? null : remote.action);
+      const action = !remote.moving && remote.action ? person.character.actions?.[remote.action] : null;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const movingFrame = action
+        ? (action.loop || [0])[Math.floor(performance.now() / (action.frameMs || 240)) % (action.loop || [0]).length]
+        : remote.moving && !reduced ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
+      paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, remote.direction, movingFrame, action ? remote.action : null);
     }
     pin.setAttribute("aria-label", `Open ${person.name}'s profile, online now`);
   }
@@ -689,8 +692,8 @@ function setCameraMode(nextMode, announce = false) {
   cameraMode = nextMode;
   document.querySelector("#mapWrap").dataset.cameraMode = cameraMode;
   document.querySelector("#townMovementHelp").textContent = cameraMode === "overview"
-    ? "Drag to explore · Click to walk · Shift + arrows to pan"
-    : "Click a path or use WASD / arrow keys";
+    ? "Drag to explore · Click a yellow label to sit, sip, or garden"
+    : "Click a yellow label or a path · WASD / arrows to walk";
   document.querySelectorAll("[data-camera-mode]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.cameraMode === cameraMode));
   });
@@ -718,7 +721,7 @@ function renderActionSpots() {
   for (const [scene, rootId] of [["town", "townActionSpots"], ["chemPod", "chemPodActionSpots"]]) {
     const root = document.querySelector(`#${rootId}`);
     if (!root) continue;
-    root.innerHTML = actionSpots.filter(spot => spot.scene === scene && currentUser?.character?.actions?.[spot.id]).map(spot =>
+    root.innerHTML = actionSpots.filter(spot => spot.scene === scene).map(spot =>
       `<button class="action-spot" type="button" style="left:${spot.x}%;top:${spot.y}%" data-index="${actionSpots.indexOf(spot)}" aria-label="${escapeHtml(spot.label)}">${escapeHtml(spot.label)}</button>`
     ).join("");
     root.querySelectorAll(".action-spot").forEach(button => button.addEventListener("click", event => {
@@ -805,9 +808,12 @@ function updatePlayerElement(isMoving) {
   pin.classList.toggle("walking", isMoving);
   const sprite = pin.querySelector(".player-character");
   if (currentUser?.character) {
-    const frame = isMoving && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
-    paintPersonalCharacter(sprite, currentUser.character, playerDirection, frame, isMoving ? null : playerAction);
+    const action = !isMoving && playerAction ? currentUser.character.actions?.[playerAction] : null;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const frame = action
+      ? (action.loop || [0])[Math.floor(performance.now() / (action.frameMs || 240)) % (action.loop || [0]).length]
+      : isMoving && !reduced ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
+    paintPersonalCharacter(sprite, currentUser.character, playerDirection, frame, action ? playerAction : null);
     return;
   }
   const rowByDirection = { down: 0, left: 33.333, right: 33.333, up: 100 };
