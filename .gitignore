@@ -11,3 +11,6 @@ node_modules/
 
 # Local preview launch config.
 .claude/
+
+# Full-resolution generated art stays local; deploy only baked runtime assets.
+art-source/

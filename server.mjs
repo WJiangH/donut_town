@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { timingSafeEqual } from "node:crypto";
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
+import { sendStaticFile } from "./web/static-files.mjs";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
@@ -355,7 +356,7 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method !== "GET" && request.method !== "HEAD") return sendJson(response, 404, { error: "not_found" });
-    return serveStatic(url.pathname, response, request.method === "HEAD");
+    return serveStatic(url.pathname, response, request);
   } catch (error) {
     console.error(error);
     return sendJson(response, error.name === "SyntaxError" ? 400 : 500, { error: error.message });
@@ -724,17 +725,15 @@ function redirect(response, location) {
   response.end();
 }
 
-async function serveStatic(pathname, response, headOnly) {
+async function serveStatic(pathname, response, request) {
   const relativePath = pathname === "/" ? "index.html" : decodeURIComponent(pathname).replace(/^\/+/, "");
   const filePath = resolve(root, normalize(relativePath));
   if (!filePath.startsWith(resolve(root) + "/")) return sendJson(response, 403, { error: "forbidden" });
+  if (filePath.startsWith(resolve(root, "art-source") + "/")) return sendJson(response, 404, { error: "not_found" });
   try {
-    const metadata = await stat(filePath);
-    if (!metadata.isFile()) throw new Error("not_file");
-    const body = headOnly ? null : await readFile(filePath);
-    response.writeHead(200, { "content-type": contentType(extname(filePath)), "content-length": metadata.size });
-    response.end(body);
+    await sendStaticFile(request, response, filePath, contentType(extname(filePath)));
   } catch {
+    if (response.headersSent) { response.destroy(); return; }
     sendJson(response, 404, { error: "not_found" });
   }
 }

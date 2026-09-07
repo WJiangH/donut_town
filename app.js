@@ -1046,6 +1046,11 @@ function gameLoop(timestamp) {
 
   const isMoving = Boolean(dx || dy);
   if (isMoving) {
+    if (chosenPose) {
+      chosenPose = null;
+      try { window.localStorage?.removeItem("donut-town:pose"); } catch {}
+      renderPosePicker();
+    }
     playerAction = null;
     window.TownZones?.reset();
   } else if (!clickPath.length && chosenPose && currentUser?.character?.actions?.[chosenPose]) {

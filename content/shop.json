@@ -40,15 +40,15 @@
       "swatch": "#5f9e5a",
       "blurb": "A green corner for an empty room.",
       "category": "home",
-      "art": "/assets/shop/deco-fern-v1.png",
-      "thumb": "/assets/shop/deco-fern-v1.png",
+      "art": "/assets/shop/deco-fern-art-d4bdefab497d.png",
+      "thumb": "/assets/shop/deco-fern-thumb-e783b8801aea.png",
       "artFrame": {
-        "x": 62,
-        "y": 15,
-        "w": 1174,
-        "h": 1165,
-        "canvasW": 1278,
-        "canvasH": 1230
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 254,
+        "canvasW": 260,
+        "canvasH": 258
       }
     },
     {
@@ -59,15 +59,15 @@
       "swatch": "#b8563f",
       "blurb": "Warms up a bare floor.",
       "category": "home",
-      "art": "/assets/shop/deco-rug-v1.png",
-      "thumb": "/assets/shop/deco-rug-v1.png",
+      "art": "/assets/shop/deco-rug-art-708efaf45e01.png",
+      "thumb": "/assets/shop/deco-rug-thumb-516a24c4302d.png",
       "artFrame": {
-        "x": 12,
-        "y": 354,
-        "w": 1230,
-        "h": 546,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 114,
+        "canvasW": 260,
+        "canvasH": 118
       }
     },
     {
@@ -78,15 +78,15 @@
       "swatch": "#d8a33c",
       "blurb": "Evening light for the reading chair.",
       "category": "home",
-      "art": "/assets/shop/deco-lamp-v1.png",
-      "thumb": "/assets/shop/deco-lamp-v1.png",
+      "art": "/assets/shop/deco-lamp-art-c942bd8e2078.png",
+      "thumb": "/assets/shop/deco-lamp-thumb-be3d590a7d56.png",
       "artFrame": {
-        "x": 409,
-        "y": 9,
-        "w": 437,
-        "h": 1211,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 92,
+        "h": 256,
+        "canvasW": 96,
+        "canvasH": 260
       }
     },
     {
@@ -97,15 +97,15 @@
       "swatch": "#8a5a34",
       "blurb": "Somewhere to keep the good ones.",
       "category": "home",
-      "art": "/assets/shop/deco-shelf-v1.png",
-      "thumb": "/assets/shop/deco-shelf-v1.png",
+      "art": "/assets/shop/deco-shelf-art-56315d7c89f2.png",
+      "thumb": "/assets/shop/deco-shelf-thumb-6355efebb278.png",
       "artFrame": {
-        "x": 135,
-        "y": 118,
-        "w": 981,
-        "h": 1053,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 238,
+        "h": 256,
+        "canvasW": 242,
+        "canvasH": 260
       }
     },
     {
@@ -116,15 +116,15 @@
       "swatch": "#c08a4a",
       "blurb": "A small oak table for your coffee corner.",
       "category": "home",
-      "art": "/assets/shop/deco-table-v1.png",
-      "thumb": "/assets/shop/deco-table-v1.png",
+      "art": "/assets/shop/deco-table-art-cf574cd243b9.png",
+      "thumb": "/assets/shop/deco-table-thumb-5ca16329426b.png",
       "artFrame": {
-        "x": 155,
-        "y": 126,
-        "w": 945,
-        "h": 1003,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 241,
+        "h": 256,
+        "canvasW": 245,
+        "canvasH": 260
       }
     },
     {
@@ -135,15 +135,15 @@
       "swatch": "#79a7c4",
       "blurb": "A freestanding window-style room display.",
       "category": "home",
-      "art": "/assets/shop/deco-window-v1.png",
-      "thumb": "/assets/shop/deco-window-v1.png",
+      "art": "/assets/shop/deco-window-art-49d8f1008057.png",
+      "thumb": "/assets/shop/deco-window-thumb-709d92970773.png",
       "artFrame": {
-        "x": 178,
-        "y": 72,
-        "w": 898,
-        "h": 1117,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 206,
+        "h": 256,
+        "canvasW": 210,
+        "canvasH": 260
       }
     },
     {
@@ -154,15 +154,15 @@
       "swatch": "#f0a0b8",
       "blurb": "A pink donut ornament on a brass stand.",
       "category": "home",
-      "art": "/assets/shop/deco-donut-sign-v1.png",
-      "thumb": "/assets/shop/deco-donut-sign-v1.png",
+      "art": "/assets/shop/deco-donut-sign-art-5c3967b90d61.png",
+      "thumb": "/assets/shop/deco-donut-sign-thumb-f4b9f679e4e0.png",
       "artFrame": {
-        "x": 221,
-        "y": 61,
-        "w": 818,
-        "h": 1127,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 186,
+        "h": 256,
+        "canvasW": 190,
+        "canvasH": 260
       }
     },
     {
@@ -177,15 +177,15 @@
         "w": 2,
         "h": 2
       },
-      "art": "/assets/shop/starter-chair-v1.png",
-      "thumb": "/assets/shop/starter-chair-v1.png",
+      "art": "/assets/shop/starter-chair-art-23a265a5aed8.png",
+      "thumb": "/assets/shop/starter-chair-thumb-bacd0a2e8405.png",
       "artFrame": {
-        "x": 176,
-        "y": 116,
-        "w": 899,
-        "h": 1031,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 223,
+        "h": 256,
+        "canvasW": 227,
+        "canvasH": 260
       }
     },
     {
@@ -196,15 +196,15 @@
       "price": 0,
       "blurb": "A warm light for quiet evenings.",
       "starter": true,
-      "art": "/assets/shop/starter-lamp-v1.png",
-      "thumb": "/assets/shop/starter-lamp-v1.png",
+      "art": "/assets/shop/starter-lamp-art-8905728b8439.png",
+      "thumb": "/assets/shop/starter-lamp-thumb-3cf810c881e7.png",
       "artFrame": {
-        "x": 408,
-        "y": 63,
-        "w": 438,
-        "h": 1112,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 101,
+        "h": 256,
+        "canvasW": 105,
+        "canvasH": 260
       }
     },
     {
@@ -219,15 +219,15 @@
         "w": 2,
         "h": 2
       },
-      "art": "/assets/shop/starter-rug-v1.png",
-      "thumb": "/assets/shop/starter-rug-v1.png",
+      "art": "/assets/shop/starter-rug-art-0c99472d67a2.png",
+      "thumb": "/assets/shop/starter-rug-thumb-51c5a70ddd72.png",
       "artFrame": {
-        "x": 14,
-        "y": 367,
-        "w": 1225,
-        "h": 524,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 110,
+        "canvasW": 260,
+        "canvasH": 114
       }
     },
     {
@@ -241,15 +241,15 @@
         "w": 2,
         "h": 2
       },
-      "art": "/assets/shop/deco-christmas-tree-v1.png",
-      "thumb": "/assets/shop/deco-christmas-tree-v1.png",
+      "art": "/assets/shop/deco-christmas-tree-art-44d025533b5e.png",
+      "thumb": "/assets/shop/deco-christmas-tree-thumb-47262419fe54.png",
       "artFrame": {
-        "x": 257,
-        "y": 12,
-        "w": 739,
-        "h": 1212,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 156,
+        "h": 256,
+        "canvasW": 160,
+        "canvasH": 260
       }
     },
     {
@@ -259,15 +259,15 @@
       "category": "seasonal",
       "price": 2,
       "blurb": "A friendly glow for autumn nights.",
-      "art": "/assets/shop/deco-pumpkin-v1.png",
-      "thumb": "/assets/shop/deco-pumpkin-v1.png",
+      "art": "/assets/shop/deco-pumpkin-art-0823303c986f.png",
+      "thumb": "/assets/shop/deco-pumpkin-thumb-5ff6a65cf231.png",
       "artFrame": {
-        "x": 176,
-        "y": 146,
-        "w": 903,
-        "h": 964,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 240,
+        "h": 256,
+        "canvasW": 244,
+        "canvasH": 260
       }
     },
     {
@@ -277,15 +277,15 @@
       "category": "seasonal",
       "price": 2,
       "blurb": "A festive stack tied with cream ribbons.",
-      "art": "/assets/shop/deco-gift-v1.png",
-      "thumb": "/assets/shop/deco-gift-v1.png",
+      "art": "/assets/shop/deco-gift-art-9afc5f79b281.png",
+      "thumb": "/assets/shop/deco-gift-thumb-83e10765f93b.png",
       "artFrame": {
-        "x": 179,
-        "y": 92,
-        "w": 896,
-        "h": 1099,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 209,
+        "h": 256,
+        "canvasW": 213,
+        "canvasH": 260
       }
     },
     {
@@ -299,15 +299,15 @@
         "w": 2,
         "h": 2
       },
-      "art": "/assets/shop/deco-pet-bed-v1.png",
-      "thumb": "/assets/shop/deco-pet-bed-v1.png",
+      "art": "/assets/shop/deco-pet-bed-art-c3b8b304e0d4.png",
+      "thumb": "/assets/shop/deco-pet-bed-thumb-a10e941cc68d.png",
       "artFrame": {
-        "x": 52,
-        "y": 203,
-        "w": 1150,
-        "h": 869,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 193,
+        "canvasW": 260,
+        "canvasH": 197
       }
     },
     {
@@ -318,15 +318,15 @@
       "price": 2,
       "available": false,
       "blurb": "Amber lenses for sunny afternoons.",
-      "art": "/assets/shop/wear-shades-v1.png",
-      "thumb": "/assets/shop/wear-shades-v1.png",
+      "art": "/assets/shop/wear-shades-art-6164915ca241.png",
+      "thumb": "/assets/shop/wear-shades-thumb-88e6c56b9850.png",
       "artFrame": {
-        "x": 71,
-        "y": 290,
-        "w": 1121,
-        "h": 672,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 153,
+        "canvasW": 260,
+        "canvasH": 157
       }
     },
     {
@@ -337,15 +337,15 @@
       "price": 2,
       "available": false,
       "blurb": "A sage bucket hat for a day in town.",
-      "art": "/assets/shop/wear-hat-v1.png",
-      "thumb": "/assets/shop/wear-hat-v1.png",
+      "art": "/assets/shop/wear-hat-art-5010fbe1e80f.png",
+      "thumb": "/assets/shop/wear-hat-thumb-7c035a2206da.png",
       "artFrame": {
-        "x": 70,
-        "y": 190,
-        "w": 1121,
-        "h": 877,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 200,
+        "canvasW": 260,
+        "canvasH": 204
       }
     }
   ]

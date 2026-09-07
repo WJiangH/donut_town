@@ -1,230 +1,526 @@
 {
-  "version": 1,
+  "version": 2,
   "mode": "built-in imagegen",
   "assets": [
     {
-      "id": "starter-chair",
-      "subject": "A cozy reading armchair with honey oak frame, sage-green upholstered back and seat, four short visible wooden legs. One single chair, no other objects.",
-      "file": "/assets/shop/starter-chair-v1.png",
-      "sha256": "5b50faae3d134a95c00822eda0cabffadda3fc900507fff90717336e57f9dcf3",
-      "frame": {
-        "x": 176,
-        "y": 116,
-        "w": 899,
-        "h": 1031,
-        "canvasW": 1254,
-        "canvasH": 1254
-      }
-    },
-    {
-      "id": "starter-lamp",
-      "subject": "A simple small floor reading lamp: turned honey oak stand, cream linen shade, round wood base. Entire lamp visible.",
-      "file": "/assets/shop/starter-lamp-v1.png",
-      "sha256": "082060b47475cf6818589aff0393f5d534668dc7cc1a2604414bc77696150560",
-      "frame": {
-        "x": 408,
-        "y": 63,
-        "w": 438,
-        "h": 1112,
-        "canvasW": 1254,
-        "canvasH": 1254
-      }
-    },
-    {
-      "id": "starter-rug",
-      "subject": "One flat rectangular cream and sage woven welcome rug, subtle diamond border and short cream fringe. Low flat floor object shown from elevated front view, no text.",
-      "file": "/assets/shop/starter-rug-v1.png",
-      "sha256": "57a64a4dc47e0f63fcf0d5989bb6691f3939632ea3f881e1c3448404167ec6e3",
-      "frame": {
-        "x": 14,
-        "y": 367,
-        "w": 1225,
-        "h": 524,
-        "canvasW": 1254,
-        "canvasH": 1254
-      }
-    },
-    {
-      "id": "deco-christmas-tree",
-      "subject": "A small full evergreen Christmas tree, layered dark sage pine branches, restrained red and gold baubles, golden star topper, little wood trunk and terracotta pot. Cozy compact tree.",
-      "file": "/assets/shop/deco-christmas-tree-v1.png",
-      "sha256": "d03b2aa2d451f449bc7b154ff19094520be4c0a9f0d9688a4870ef8ff67990ac",
-      "frame": {
-        "x": 257,
-        "y": 12,
-        "w": 739,
-        "h": 1212,
-        "canvasW": 1254,
-        "canvasH": 1254
-      }
-    },
-    {
       "id": "deco-fern",
       "subject": "One lush potted fern with several delicate arching fronds in a chunky terracotta pot.",
-      "file": "/assets/shop/deco-fern-v1.png",
-      "sha256": "4478cdcc4655edab68acaf6ff6b49becd7559e59e7f405d93d69bd1163b48721",
+      "file": "/assets/shop/deco-fern-art-d4bdefab497d.png",
+      "sha256": "d4bdefab497d5377ed7e9866fb67109a5af4020fab9e9157fa7d764e5f38be9c",
       "frame": {
-        "x": 62,
-        "y": 15,
-        "w": 1174,
-        "h": 1165,
-        "canvasW": 1278,
-        "canvasH": 1230
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 254,
+        "canvasW": 260,
+        "canvasH": 258
+      },
+      "source": "art-source/shop/deco-fern-v1.png",
+      "sourceSha256": "4478cdcc4655edab68acaf6ff6b49becd7559e59e7f405d93d69bd1163b48721",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-fern-art-d4bdefab497d.png",
+          "sha256": "d4bdefab497d5377ed7e9866fb67109a5af4020fab9e9157fa7d764e5f38be9c",
+          "bytes": 82248,
+          "width": 260,
+          "height": 258
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-fern-thumb-e783b8801aea.png",
+          "sha256": "e783b8801aea53b3a3ff869c14b1f12e16d26d3c2ecbed589523921b1934544f",
+          "bytes": 17326,
+          "width": 100,
+          "height": 99
+        }
       }
     },
     {
       "id": "deco-rug",
       "subject": "One flat red terracotta woven rug with cream geometric diamond border and short tassels. Flat horizontal floor furnishing, viewed from elevated front angle.",
-      "file": "/assets/shop/deco-rug-v1.png",
-      "sha256": "25c770cdd389a9378b6263c9636a4942bf06bb7b8f965b0d017aa3d4a56c1da1",
+      "file": "/assets/shop/deco-rug-art-708efaf45e01.png",
+      "sha256": "708efaf45e018f313f0f9e14ad3ff950e2ce62921dff9a68bf57d31d812c97da",
       "frame": {
-        "x": 12,
-        "y": 354,
-        "w": 1230,
-        "h": 546,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 114,
+        "canvasW": 260,
+        "canvasH": 118
+      },
+      "source": "art-source/shop/deco-rug-v1.png",
+      "sourceSha256": "25c770cdd389a9378b6263c9636a4942bf06bb7b8f965b0d017aa3d4a56c1da1",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-rug-art-708efaf45e01.png",
+          "sha256": "708efaf45e018f313f0f9e14ad3ff950e2ce62921dff9a68bf57d31d812c97da",
+          "bytes": 63196,
+          "width": 260,
+          "height": 118
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-rug-thumb-516a24c4302d.png",
+          "sha256": "516a24c4302dbbaeeb3eadaa565d71d68f6f4c82c4e3397aca71f9549e0279f6",
+          "bytes": 11291,
+          "width": 100,
+          "height": 47
+        }
       }
     },
     {
       "id": "deco-lamp",
       "subject": "One elegant standing brass floor lamp, slender gold post, large deep forest green dome shade with cream underside, circular brass base.",
-      "file": "/assets/shop/deco-lamp-v1.png",
-      "sha256": "23643cd1a49bd4c54498ded9368e54f40b2e017a7f60ab52d7a7687d72465deb",
+      "file": "/assets/shop/deco-lamp-art-c942bd8e2078.png",
+      "sha256": "c942bd8e20789f8c2cb6fef718f2cc6e39fe5f8e2f2336a62d8de4fe8fabab63",
       "frame": {
-        "x": 409,
-        "y": 9,
-        "w": 437,
-        "h": 1211,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 92,
+        "h": 256,
+        "canvasW": 96,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-lamp-v1.png",
+      "sourceSha256": "23643cd1a49bd4c54498ded9368e54f40b2e017a7f60ab52d7a7687d72465deb",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-lamp-art-c942bd8e2078.png",
+          "sha256": "c942bd8e20789f8c2cb6fef718f2cc6e39fe5f8e2f2336a62d8de4fe8fabab63",
+          "bytes": 19305,
+          "width": 96,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-lamp-thumb-be3d590a7d56.png",
+          "sha256": "be3d590a7d56f8a94f7fa704ba86baaceee9d33f76db12288c2e503fa584fddd",
+          "bytes": 3818,
+          "width": 39,
+          "height": 100
+        }
       }
     },
     {
       "id": "deco-shelf",
       "subject": "One small freestanding honey oak bookcase with two shelves of muted red, sage and cream books, solid cabinet sides and four short feet. Entire object visible, no text on spines.",
-      "file": "/assets/shop/deco-shelf-v1.png",
-      "sha256": "3ff6600d86b52ea7b961cf380fc3299b7e48c8c815093fc7ae584ba8a8c17310",
+      "file": "/assets/shop/deco-shelf-art-56315d7c89f2.png",
+      "sha256": "56315d7c89f2677b2bd9528292cfbe0faf2659440e95a3effe5a885de055abf3",
       "frame": {
-        "x": 135,
-        "y": 118,
-        "w": 981,
-        "h": 1053,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 238,
+        "h": 256,
+        "canvasW": 242,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-shelf-v1.png",
+      "sourceSha256": "3ff6600d86b52ea7b961cf380fc3299b7e48c8c815093fc7ae584ba8a8c17310",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-shelf-art-56315d7c89f2.png",
+          "sha256": "56315d7c89f2677b2bd9528292cfbe0faf2659440e95a3effe5a885de055abf3",
+          "bytes": 79655,
+          "width": 242,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-shelf-thumb-6355efebb278.png",
+          "sha256": "6355efebb278d0a7306009cd5ccfc77935462389eb449a78551f8248f64d06d3",
+          "bytes": 16330,
+          "width": 93,
+          "height": 100
+        }
       }
     },
     {
       "id": "deco-table",
       "subject": "One small round honey oak pedestal coffee table. Round tabletop seen as ellipse from elevated front view, sturdy central pedestal and short feet. Only the table, no chairs or objects on it.",
-      "file": "/assets/shop/deco-table-v1.png",
-      "sha256": "76f9e2749b49d05f0c78bfa9da0ced98386dae72a763053712896af3bb3b10ae",
+      "file": "/assets/shop/deco-table-art-cf574cd243b9.png",
+      "sha256": "cf574cd243b97fb21cc9d2ad45c8e8848872542d2c9b4c6f33680d9c2665c73f",
       "frame": {
-        "x": 155,
-        "y": 126,
-        "w": 945,
-        "h": 1003,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 241,
+        "h": 256,
+        "canvasW": 245,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-table-v1.png",
+      "sourceSha256": "76f9e2749b49d05f0c78bfa9da0ced98386dae72a763053712896af3bb3b10ae",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-table-art-cf574cd243b9.png",
+          "sha256": "cf574cd243b97fb21cc9d2ad45c8e8848872542d2c9b4c6f33680d9c2665c73f",
+          "bytes": 64138,
+          "width": 245,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-table-thumb-5ca16329426b.png",
+          "sha256": "5ca16329426b1aae9e2b95718bc7c7b9547fdc529e1d4f9a612d37ee7b378fe9",
+          "bytes": 13240,
+          "width": 94,
+          "height": 100
+        }
       }
     },
     {
       "id": "deco-window",
       "subject": "One freestanding decorative wooden framed window display with blue panes and cream curtains, broad wooden support feet clearly visible. A floor-standing room divider ornament, not a wall or building.",
-      "file": "/assets/shop/deco-window-v1.png",
-      "sha256": "0500accca8ff4b89f952aa083784f58b967ede428df255a780e798504222d700",
+      "file": "/assets/shop/deco-window-art-49d8f1008057.png",
+      "sha256": "49d8f1008057d178ab34d8472b0bf58062fd0d70921351b0284ef049c19be7aa",
       "frame": {
-        "x": 178,
-        "y": 72,
-        "w": 898,
-        "h": 1117,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 206,
+        "h": 256,
+        "canvasW": 210,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-window-v1.png",
+      "sourceSha256": "0500accca8ff4b89f952aa083784f58b967ede428df255a780e798504222d700",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-window-art-49d8f1008057.png",
+          "sha256": "49d8f1008057d178ab34d8472b0bf58062fd0d70921351b0284ef049c19be7aa",
+          "bytes": 76846,
+          "width": 210,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-window-thumb-709d92970773.png",
+          "sha256": "709d9297077315e78558cc0160cf6c7cb27095b053532c139708582afb0c5776",
+          "bytes": 14338,
+          "width": 81,
+          "height": 100
+        }
       }
     },
     {
       "id": "deco-donut-sign",
       "subject": "One freestanding pink-frosted donut ornament on a small brass sign stand and sturdy round wood base. Circular donut with central hole, pink icing and restrained sprinkles. No words or letters.",
-      "file": "/assets/shop/deco-donut-sign-v1.png",
-      "sha256": "ea06e997584fae3b2334df7ff329bb82dc2804949e5ddbefa9ae225cd2655d48",
+      "file": "/assets/shop/deco-donut-sign-art-5c3967b90d61.png",
+      "sha256": "5c3967b90d613224133f7293315835e711ac6f6964530ee48ada7459dd0c310a",
       "frame": {
-        "x": 221,
-        "y": 61,
-        "w": 818,
-        "h": 1127,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 186,
+        "h": 256,
+        "canvasW": 190,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-donut-sign-v1.png",
+      "sourceSha256": "ea06e997584fae3b2334df7ff329bb82dc2804949e5ddbefa9ae225cd2655d48",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-donut-sign-art-5c3967b90d61.png",
+          "sha256": "5c3967b90d613224133f7293315835e711ac6f6964530ee48ada7459dd0c310a",
+          "bytes": 57901,
+          "width": 190,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-donut-sign-thumb-f4b9f679e4e0.png",
+          "sha256": "f4b9f679e4e06482cf5b8ff7cdeb3a2efdf3335a015c617e7888460b0ee1a630",
+          "bytes": 12318,
+          "width": 74,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "starter-chair",
+      "subject": "A cozy reading armchair with honey oak frame, sage-green upholstered back and seat, four short visible wooden legs. One single chair, no other objects.",
+      "file": "/assets/shop/starter-chair-art-23a265a5aed8.png",
+      "sha256": "23a265a5aed882ece25c840ee615f9624b7dc890dc2810b530a70315aa6e5060",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 223,
+        "h": 256,
+        "canvasW": 227,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/starter-chair-v1.png",
+      "sourceSha256": "5b50faae3d134a95c00822eda0cabffadda3fc900507fff90717336e57f9dcf3",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/starter-chair-art-23a265a5aed8.png",
+          "sha256": "23a265a5aed882ece25c840ee615f9624b7dc890dc2810b530a70315aa6e5060",
+          "bytes": 67379,
+          "width": 227,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/starter-chair-thumb-bacd0a2e8405.png",
+          "sha256": "bacd0a2e84051d572131701712a9d22a731802e5c20946e84bbf2e873ec6684f",
+          "bytes": 14658,
+          "width": 88,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "starter-lamp",
+      "subject": "A simple small floor reading lamp: turned honey oak stand, cream linen shade, round wood base. Entire lamp visible.",
+      "file": "/assets/shop/starter-lamp-art-8905728b8439.png",
+      "sha256": "8905728b843959ee0bfa2cbcde4a65c547ff49882be9c803be54528aad8f0831",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 101,
+        "h": 256,
+        "canvasW": 105,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/starter-lamp-v1.png",
+      "sourceSha256": "082060b47475cf6818589aff0393f5d534668dc7cc1a2604414bc77696150560",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/starter-lamp-art-8905728b8439.png",
+          "sha256": "8905728b843959ee0bfa2cbcde4a65c547ff49882be9c803be54528aad8f0831",
+          "bytes": 23813,
+          "width": 105,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/starter-lamp-thumb-3cf810c881e7.png",
+          "sha256": "3cf810c881e7c790d5d2af32908cd95d15d3a590f1c635674c3557e38b2a24e9",
+          "bytes": 5021,
+          "width": 42,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "starter-rug",
+      "subject": "One flat rectangular cream and sage woven welcome rug, subtle diamond border and short cream fringe. Low flat floor object shown from elevated front view, no text.",
+      "file": "/assets/shop/starter-rug-art-0c99472d67a2.png",
+      "sha256": "0c99472d67a2fe9c679c790484fa72802c3f45bb0c52ddab5d5eb96349832c6e",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 110,
+        "canvasW": 260,
+        "canvasH": 114
+      },
+      "source": "art-source/shop/starter-rug-v1.png",
+      "sourceSha256": "57a64a4dc47e0f63fcf0d5989bb6691f3939632ea3f881e1c3448404167ec6e3",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/starter-rug-art-0c99472d67a2.png",
+          "sha256": "0c99472d67a2fe9c679c790484fa72802c3f45bb0c52ddab5d5eb96349832c6e",
+          "bytes": 66294,
+          "width": 260,
+          "height": 114
+        },
+        "thumb": {
+          "file": "/assets/shop/starter-rug-thumb-51c5a70ddd72.png",
+          "sha256": "51c5a70ddd720e8023e4a855676cea41ae771db917ce9ed35edbf6f442835d7c",
+          "bytes": 11397,
+          "width": 100,
+          "height": 45
+        }
+      }
+    },
+    {
+      "id": "deco-christmas-tree",
+      "subject": "A small full evergreen Christmas tree, layered dark sage pine branches, restrained red and gold baubles, golden star topper, little wood trunk and terracotta pot. Cozy compact tree.",
+      "file": "/assets/shop/deco-christmas-tree-art-44d025533b5e.png",
+      "sha256": "44d025533b5e07e1d8975c88013c2955f84d8f09888e0a0542df95a53bb6f995",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 156,
+        "h": 256,
+        "canvasW": 160,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-christmas-tree-v1.png",
+      "sourceSha256": "d03b2aa2d451f449bc7b154ff19094520be4c0a9f0d9688a4870ef8ff67990ac",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-christmas-tree-art-44d025533b5e.png",
+          "sha256": "44d025533b5e07e1d8975c88013c2955f84d8f09888e0a0542df95a53bb6f995",
+          "bytes": 56127,
+          "width": 160,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-christmas-tree-thumb-47262419fe54.png",
+          "sha256": "47262419fe543b55d9edfeda028ffa81ed4245a7992e56bc7f01b6e188ef39f9",
+          "bytes": 10497,
+          "width": 63,
+          "height": 100
+        }
       }
     },
     {
       "id": "deco-pumpkin",
       "subject": "One friendly Halloween pumpkin lantern, deep orange pixel ridges, short green stem, triangular eyes and small warm glowing smile. No glow or shadow outside silhouette.",
-      "file": "/assets/shop/deco-pumpkin-v1.png",
-      "sha256": "3885577a64d2ba49bf33e86bf8b1df70360229f013e159f5258b229a4bb7e041",
+      "file": "/assets/shop/deco-pumpkin-art-0823303c986f.png",
+      "sha256": "0823303c986fb65aeee268286e7d69f9e59b14c15ee8e162e6f7a1d234e19d7c",
       "frame": {
-        "x": 176,
-        "y": 146,
-        "w": 903,
-        "h": 964,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 240,
+        "h": 256,
+        "canvasW": 244,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-pumpkin-v1.png",
+      "sourceSha256": "3885577a64d2ba49bf33e86bf8b1df70360229f013e159f5258b229a4bb7e041",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-pumpkin-art-0823303c986f.png",
+          "sha256": "0823303c986fb65aeee268286e7d69f9e59b14c15ee8e162e6f7a1d234e19d7c",
+          "bytes": 65195,
+          "width": 244,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-pumpkin-thumb-5ff6a65cf231.png",
+          "sha256": "5ff6a65cf2319650f77528fd6997ae46a69fa5b13d52302df1dca6df987f2dc1",
+          "bytes": 13312,
+          "width": 94,
+          "height": 100
+        }
       }
     },
     {
       "id": "deco-gift",
       "subject": "A compact single stack of two beautifully wrapped Christmas gift boxes, one terracotta-red and one sage green, cream ribbons and small gold bows.",
-      "file": "/assets/shop/deco-gift-v1.png",
-      "sha256": "bfe054054e75ef9854264791f23d13b859f255c1e6ecbe48ebba35394770a7ca",
+      "file": "/assets/shop/deco-gift-art-9afc5f79b281.png",
+      "sha256": "9afc5f79b281bd2e72c0353fedddcbabaa34bcaaae0fc168b0091797da41a9b8",
       "frame": {
-        "x": 179,
-        "y": 92,
-        "w": 896,
-        "h": 1099,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 209,
+        "h": 256,
+        "canvasW": 213,
+        "canvasH": 260
+      },
+      "source": "art-source/shop/deco-gift-v1.png",
+      "sourceSha256": "bfe054054e75ef9854264791f23d13b859f255c1e6ecbe48ebba35394770a7ca",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-gift-art-9afc5f79b281.png",
+          "sha256": "9afc5f79b281bd2e72c0353fedddcbabaa34bcaaae0fc168b0091797da41a9b8",
+          "bytes": 73272,
+          "width": 213,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-gift-thumb-83e10765f93b.png",
+          "sha256": "83e10765f93bdc184728dcaedb4b2da3d5cbbd137198261e152c8c1a48e6441b",
+          "bytes": 15565,
+          "width": 82,
+          "height": 100
+        }
       }
     },
     {
       "id": "deco-pet-bed",
       "subject": "One small oval pet bed, thick woven honey tan basket rim and plush sage-green cushion, three-quarter overhead angle. No animal, food, toys or extra objects.",
-      "file": "/assets/shop/deco-pet-bed-v1.png",
-      "sha256": "df7cd16f0a1e98f596f54735753558fe36b49c61c16514a0c5363c603b02699f",
+      "file": "/assets/shop/deco-pet-bed-art-c3b8b304e0d4.png",
+      "sha256": "c3b8b304e0d4a9d17fca1e2ab4cc5ce50331f3f7eceedb39b0933f5394170867",
       "frame": {
-        "x": 52,
-        "y": 203,
-        "w": 1150,
-        "h": 869,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 193,
+        "canvasW": 260,
+        "canvasH": 197
+      },
+      "source": "art-source/shop/deco-pet-bed-v1.png",
+      "sourceSha256": "df7cd16f0a1e98f596f54735753558fe36b49c61c16514a0c5363c603b02699f",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-pet-bed-art-c3b8b304e0d4.png",
+          "sha256": "c3b8b304e0d4a9d17fca1e2ab4cc5ce50331f3f7eceedb39b0933f5394170867",
+          "bytes": 79715,
+          "width": 260,
+          "height": 197
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-pet-bed-thumb-a10e941cc68d.png",
+          "sha256": "a10e941cc68d0512726a65e8dc03e03101c768b29742e003ed254b5f21e23c13",
+          "bytes": 17612,
+          "width": 100,
+          "height": 77
+        }
       }
     },
     {
       "id": "wear-shades",
       "subject": "One pair of black-framed sunglasses with amber-tinted lenses and folded temples, isolated inventory product icon.",
-      "file": "/assets/shop/wear-shades-v1.png",
-      "sha256": "8eaa3a1f69f0bf124461eaf1100bb8df5cb498b151348d5a18239d3f7e8bf4d9",
+      "file": "/assets/shop/wear-shades-art-6164915ca241.png",
+      "sha256": "6164915ca241ddf7ca89a2e75e9abfbd863845f9cc4e4bf38fae92ec3e9eee1a",
       "frame": {
-        "x": 71,
-        "y": 290,
-        "w": 1121,
-        "h": 672,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 153,
+        "canvasW": 260,
+        "canvasH": 157
+      },
+      "source": "art-source/shop/wear-shades-v1.png",
+      "sourceSha256": "8eaa3a1f69f0bf124461eaf1100bb8df5cb498b151348d5a18239d3f7e8bf4d9",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/wear-shades-art-6164915ca241.png",
+          "sha256": "6164915ca241ddf7ca89a2e75e9abfbd863845f9cc4e4bf38fae92ec3e9eee1a",
+          "bytes": 40229,
+          "width": 260,
+          "height": 157
+        },
+        "thumb": {
+          "file": "/assets/shop/wear-shades-thumb-88e6c56b9850.png",
+          "sha256": "88e6c56b9850efd869a174aa53af40599c0479b4b95e3955df0b539f1b498f1e",
+          "bytes": 8709,
+          "width": 100,
+          "height": 62
+        }
       }
     },
     {
       "id": "wear-hat",
       "subject": "One cozy dark sage-green bucket hat with a narrow cream band, isolated inventory product icon.",
-      "file": "/assets/shop/wear-hat-v1.png",
-      "sha256": "347064429c0d44c6ec5c81429b3b533e2f2d73943d81d5ecc3047d2045f70e0c",
+      "file": "/assets/shop/wear-hat-art-5010fbe1e80f.png",
+      "sha256": "5010fbe1e80fee10fd47bdbcacf347f0a3270e0093762e8faf2cf9af1cf8a20c",
       "frame": {
-        "x": 70,
-        "y": 190,
-        "w": 1121,
-        "h": 877,
-        "canvasW": 1254,
-        "canvasH": 1254
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 200,
+        "canvasW": 260,
+        "canvasH": 204
+      },
+      "source": "art-source/shop/wear-hat-v1.png",
+      "sourceSha256": "347064429c0d44c6ec5c81429b3b533e2f2d73943d81d5ecc3047d2045f70e0c",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/wear-hat-art-5010fbe1e80f.png",
+          "sha256": "5010fbe1e80fee10fd47bdbcacf347f0a3270e0093762e8faf2cf9af1cf8a20c",
+          "bytes": 64959,
+          "width": 260,
+          "height": 204
+        },
+        "thumb": {
+          "file": "/assets/shop/wear-hat-thumb-7c035a2206da.png",
+          "sha256": "7c035a2206dac0b62fc7e24ffab4775826d1d66f43fb93a133aa1913a70fc349",
+          "bytes": 14462,
+          "width": 100,
+          "height": 79
+        }
       }
     }
-  ]
+  ],
+  "runtime": {
+    "artMaxSide": 260,
+    "thumbMaxSide": 100,
+    "resampling": "nearest",
+    "transparentPadding": 2,
+    "artByteBudget": 131072,
+    "thumbByteBudget": 32768
+  }
 }

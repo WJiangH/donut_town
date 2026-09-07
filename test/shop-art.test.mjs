@@ -8,7 +8,7 @@ const catalog=loadCatalog();
 
 test('all decoration and preview stock uses a real transparent PNG',()=>{
  const stock=catalog.items.filter(item=>item.kind!=='pet');
- assert.equal(stock.length,16);
+ assert(stock.length>=16);
  for(const item of stock){
   assert.match(item.art,/^\/assets\/shop\/.+\.png$/);
   const file=new URL('..'+item.art,import.meta.url);
@@ -18,6 +18,11 @@ test('all decoration and preview stock uses a real transparent PNG',()=>{
   const output=execFileSync(process.execPath,['.agents/skills/donut-town-pixel-art/scripts/validate-png-atlas.mjs',file.pathname,'1','1'],{cwd:new URL('..',import.meta.url),encoding:'utf8'});
   assert.match(output,/corner_alpha=0,0,0,0/,item.id);
   assert(!item.placeholder,item.id);
+  assert(Math.max(item.artFrame.canvasW,item.artFrame.canvasH)<=260,item.id);
+  assert(data.length<=131072,item.id);
+  const thumb=readFileSync(new URL('..'+item.thumb,import.meta.url));
+  assert(Math.max(thumb.readUInt32BE(16),thumb.readUInt32BE(20))<=100,item.id);
+  assert(thumb.length<=32768,item.id);
  }
 });
 

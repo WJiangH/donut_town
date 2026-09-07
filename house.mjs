@@ -1,4 +1,4 @@
-import { itemSprite } from './shop/item-art.mjs';
+import { itemArt, itemSprite } from './shop/item-art.mjs';
 const MESSAGES = {
   slack_login_required: 'Open the town from Slack to visit your home.',
   member_not_found: 'Only channel members have a home.',
@@ -23,7 +23,8 @@ export function mountHouse(root, {paintCharacter = null} = {}) {
   function tile(item,entry) {
     const {w,h}=size(item.id);
     const style=entry?`grid-column:${entry.x+1}/span ${w};grid-row:${entry.y+1}/span ${h};z-index:${entry.y+h};`:'';
-    return `<button class="house-tile${selected===item.id?' selected':''}" data-item="${escapeHtml(item.id)}" style="${style}" title="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)}" aria-pressed="${selected===item.id}">${itemSprite(item)}</button>`;
+    const art=entry?itemSprite(item):`<img src="${escapeHtml(itemArt(item,true))}" alt="" loading="lazy" decoding="async" draggable="false">`;
+    return `<button class="house-tile${selected===item.id?' selected':''}" data-item="${escapeHtml(item.id)}" style="${style}" title="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)}" aria-pressed="${selected===item.id}">${art}</button>`;
   }
   function render() {
     const focus=document.activeElement?.dataset.item;
