@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { OutfitStore, equippedCharacter, validateOutfit, wardrobeSupported, wardrobeCharacters } from "./characters/wardrobe/store.mjs";
 import { ShopStore, loadCatalog, walletFor, ownedIds, checkPurchase, equippedPet } from "./shop/store.mjs";
-import { HouseStore, HOUSE_GRID, validateLayout } from "./house/store.mjs";
+import { HouseStore, HOUSE_GRID, validateLayout, homeOwned } from "./house/store.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
@@ -208,7 +208,7 @@ const server = createServer(async (request, response) => {
       if (request.method === "GET" && url.pathname === "/api/shop") {
         return sendJson(response, 200, {
           currency: shopCatalog.currency,
-          items: shopCatalog.items,
+          items: shopCatalog.items.filter(item => !item.starter),
           owned: ownedIds(purse),
           pet: equippedPet(purse, shopCatalog),
           wallet: walletFor({ earned, purse })
@@ -239,7 +239,7 @@ const server = createServer(async (request, response) => {
       const verdict = checkPurchase({ item, purse, earned });
       if (verdict.error) return sendJson(response, verdict.error === "item_not_found" ? 404 : 409, { error: verdict.error });
       let next;
-      try { next = await shopStore.buy(key, item, purse); } catch { return sendJson(response, 503, { error: "shop_purchase_failed" }); }
+      try { next = await shopStore.buy(key, item, purse, earned); } catch (error) { return sendJson(response, error.code ? 409 : 503, { error: error.code || "shop_purchase_failed" }); }
       return sendJson(response, 200, { item, owned: ownedIds(next), pet: equippedPet(next, shopCatalog), wallet: walletFor({ earned, purse: next }) });
     }
 
@@ -254,6 +254,7 @@ const server = createServer(async (request, response) => {
       const key = memberCharacterKey(session.sub, config.signingSecret);
       let owned;
       try { owned = ownedIds(await shopStore.purse(key, shopCatalog)); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
+      owned = homeOwned(owned, shopCatalog);
       const furniture = shopCatalog.items.filter(item => item.kind === "decoration");
 
       if (request.method === "GET") {

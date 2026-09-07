@@ -1,11 +1,8 @@
 // The shop as a room: what is on the shelves, and buying it while standing there.
+import { itemArt } from "./shop/item-art.mjs";
 import { SHOP_MESSAGES, shopRequest } from "./shop-panel.mjs";
 
-// Where each kind of stock sits along the back wall, in room percentages.
-const SHELVES = {
-  pet: { y: 40, from: 15, to: 44 },
-  decoration: { y: 40, from: 56, to: 88 }
-};
+const CATEGORIES = {all:'All',home:'Home',seasonal:'Seasonal',pets:'Pets',style:'Style'};
 
 export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = () => {} } = {}) {
   const shelves = root.querySelector('[data-shop="shelves"]');
@@ -14,28 +11,33 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
   const bar = root.querySelector('[data-shop="bar"]');
   let state = { items: [], owned: [], pet: null, wallet: null };
   let selected = null;
+  let category = "all";
+  let page = 0;
   let busy = false;
 
+  const stock = () => state.items.filter(item => !item.starter && (category === "all" || item.category === category));
   function slots() {
-    const rows = [];
-    for (const [kind, shelf] of Object.entries(SHELVES)) {
-      const stock = state.items.filter(item => item.kind === kind);
-      stock.forEach((item, index) => {
-        const spread = stock.length > 1 ? (shelf.to - shelf.from) / (stock.length - 1) : 0;
-        rows.push({ item, x: stock.length > 1 ? shelf.from + spread * index : (shelf.from + shelf.to) / 2, y: shelf.y });
-      });
-    }
-    return rows;
+    return stock().slice(page*6, page*6+6)
+      .map((item, index) => ({item, x: 32 + (index % 3)*18, y: 24 + Math.floor(index/3)*11}));
   }
 
   function render() {
+    const tabs = root.querySelector('[data-shop="categories"]');
+    tabs.innerHTML = Object.entries(CATEGORIES).map(([key,label])=>`<button data-category="${key}" aria-pressed="${category===key}">${label}</button>`).join('');
+    tabs.querySelectorAll('button').forEach(button=>button.onclick=()=>{category=button.dataset.category;page=0;selected=null;render();});
+    const pages = Math.max(1,Math.ceil(stock().length/6));
+    page=Math.min(page,pages-1);
+    const pager=root.querySelector('[data-shop="pages"]');
+    pager.hidden=pages===1;
+    pager.innerHTML=`<button aria-label="Previous shelf" ${page===0?'disabled':''}>←</button><span>${page+1} / ${pages}</span><button aria-label="Next shelf" ${page===pages-1?'disabled':''}>→</button>`;
+    pager.querySelectorAll('button').forEach((button,index)=>button.onclick=()=>{page+=index?1:-1;selected=null;render();});
     shelves.innerHTML = slots().map(({ item, x, y }) => {
       const owned = state.owned.includes(item.id);
-      const art = item.thumb ? `background-image:url('${item.thumb}')` : "";
+      const art = `background-image:url('${itemArt(item, true)}');background-size:contain;background-repeat:no-repeat;background-position:center`;
       return `<button class="shop-slot${owned ? " owned" : ""}${selected === item.id ? " selected" : ""}" type="button"
         data-slot="${item.id}" style="left:${x}%;top:${y}%;--swatch:${item.swatch || "#c9a227"}"
         aria-label="${item.name}, ${owned ? "owned" : `${item.price} donuts`}">
-        <i style="${art}"></i><small>${owned ? "Owned" : `${item.price}🍩`}</small>
+        <i style="${art}"></i><small>${item.available===false ? "Soon" : owned ? "Owned" : `${item.price}🍩`}</small>
       </button>`;
     }).join("");
     shelves.querySelectorAll("[data-slot]").forEach(button => {
@@ -51,17 +53,16 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
     if (!item) return;
     const owned = state.owned.includes(item.id);
     const out = state.pet === item.id;
-    bar.querySelector('[data-shop="bar-thumb"]').style.cssText = item.thumb
-      ? `background-image:url('${item.thumb}');background-size:cover`
-      : `background:${item.swatch || "#c9a227"}`;
+    bar.querySelector('[data-shop="bar-thumb"]').style.cssText = `background-image:url('${itemArt(item, true)}');background-size:contain;background-repeat:no-repeat;background-position:center`;
     bar.querySelector('[data-shop="bar-name"]').textContent = item.name;
     bar.querySelector('[data-shop="bar-blurb"]').textContent = item.blurb || "";
     const action = bar.querySelector('[data-shop="bar-action"]');
     const affordable = state.wallet ? state.wallet.balance >= item.price : false;
-    if (owned && item.kind === "pet") action.textContent = out ? "Leave at home" : "Take out";
+    if (item.available === false) action.textContent = "Coming soon";
+    else if (owned && item.kind === "pet") action.textContent = out ? "Leave at home" : "Take out";
     else if (owned) action.textContent = "Owned";
     else action.textContent = `Buy · ${item.price} 🍩`;
-    action.disabled = busy || (owned && item.kind !== "pet") || (!owned && !affordable);
+    action.disabled = item.available === false || busy || (owned && item.kind !== "pet") || (!owned && !affordable);
     action.onclick = () => (owned && item.kind === "pet" ? equip(out ? null : item.id) : buy(item.id));
   }
 
@@ -75,7 +76,7 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
     try {
       const payload = await shopRequest("/api/shop");
       state = { items: payload.items || [], owned: payload.owned || [], pet: payload.pet || null, wallet: payload.wallet };
-      status.textContent = "Click something on a shelf to look at it.";
+      status.textContent = "Choose a shelf item · new artwork coming soon";
       render();
       onOwnedChange(state.owned);
       onPetChange(state.pet);

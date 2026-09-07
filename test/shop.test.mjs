@@ -113,3 +113,15 @@ test('a purse remembers which pet is out, and forgets a forged one', () => {
   const purse = ShopStore.validPurse({ owned: [], pet: 'pet-cat' }, catalog);
   assert.equal(equippedPet(purse, catalog), null);
 });
+
+test('preview-only wardrobe stock cannot charge a member',()=>{
+ const item=catalog.items.find(item=>item.id==='wear-hat');
+ assert.equal(checkPurchase({item,purse:{owned:[]},earned:99}).error,'item_unavailable');
+ assert.equal(checkPurchase({item:catalog.items.find(item=>item.starter),purse:{owned:[]},earned:99}).error,'item_not_found');
+});
+
+test('Redis encodes an empty Lua list as an object without breaking a purse', async()=>{
+ assert.deepEqual(ShopStore.validPurse({owned:{},pet:null},catalog),{owned:[],pet:null});
+ const store=new ShopStore({url:'https://example.invalid',token:'test',fetchImpl:async()=>({ok:true,json:async()=>({result:'{"owned":{},"pet":null}'})})});
+ assert.deepEqual(await store.equip('a'.repeat(64),{owned:[]},null),{owned:[],pet:null});
+});

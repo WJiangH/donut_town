@@ -1,0 +1,26 @@
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import assert from 'node:assert/strict';
+import {ShopStore,loadCatalog,ownedIds} from '../shop/store.mjs';
+// Run against a disposable local Redis: REDIS_SOCKET=/tmp/... node scripts/verify-shop-redis.mjs
+const exec=promisify(execFile),cli=process.env.REDIS_CLI || 'redis-cli';
+const socket=process.env.REDIS_SOCKET;
+if(!socket)throw Error('Set REDIS_SOCKET to a disposable local Redis Unix socket');
+const cmd=async args=>{const {stdout}=await exec(cli,['-s',socket,'--json',...args.map(String)]);try{return {result:JSON.parse(stdout)}}catch{return {error:stdout}}};
+let loseReply=false;
+const fetchImpl=async(url,opts)=>{const value=await cmd(JSON.parse(opts.body));if(loseReply){loseReply=false;throw Error('lost reply')}return {ok:true,json:async()=>value}};
+const store=new ShopStore({url:'local',token:'test',fetchImpl,key:`donut-shop-test:${process.pid}:${Date.now()}`}),catalog=loadCatalog(),key='a'.repeat(64);
+await cmd(['DEL',store.key]);
+assert.deepEqual((await store.equip(key,{owned:[]},null)).owned,[]);
+const table=catalog.items.find(x=>x.id==='deco-table'),shelf=catalog.items.find(x=>x.id==='deco-shelf');
+const results=await Promise.allSettled([store.buy(key,table,{owned:[]},4),store.buy(key,shelf,{owned:[]},4)]);
+assert.equal(results.filter(x=>x.status==='fulfilled').length,1);assert.equal(results.find(x=>x.status==='rejected').reason.code,'not_enough_donuts');
+assert.equal((await store.purse(key,catalog)).owned.length,1);
+await cmd(['DEL',store.key]);
+await Promise.all([store.buy(key,table,{owned:[]},6),store.buy(key,table,{owned:[]},6)]);assert.equal((await store.purse(key,catalog)).owned.length,1);
+loseReply=true;await store.buy(key,shelf,{owned:[]},6);assert.equal((await store.purse(key,catalog)).owned.length,2);
+const cat=catalog.items.find(x=>x.id==='pet-cat');await store.buy(key,cat,{owned:[]},20);
+const lamp=catalog.items.find(x=>x.id==='deco-lamp');await Promise.all([store.equip(key,{owned:[]},cat.id),store.buy(key,lamp,{owned:[]},20)]);
+const purse=await store.purse(key,catalog);assert.equal(purse.pet,cat.id);assert.equal(purse.owned.length,4);assert(ownedIds(purse).includes(lamp.id));
+console.log('PASS real Redis Lua: concurrent balance limit, same-item idempotency, lost-response retry, simultaneous pet equip and purchase, empty purse equip.');
+await cmd(['DEL',store.key]);

@@ -749,12 +749,13 @@ function isChemPodWalkable(x, y) {
 }
 
 // The shop floor: inside the four walls, and not through the counter.
-const SHOP_COUNTER = { left: 37, right: 63, top: 50, bottom: 64 };
+const SHOP_COUNTER = { left: 38, right: 62, top: 48, bottom: 64 };
 function isShopWalkable(x, y) {
   const bounds = SCENES.donutShop.bounds;
   const inside = x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
   const counter = x >= SHOP_COUNTER.left && x <= SHOP_COUNTER.right && y >= SHOP_COUNTER.top && y <= SHOP_COUNTER.bottom;
-  return inside && !counter;
+  const frontWall = y > 77 && (x < 40 || x > 60);
+  return inside && !counter && !frontWall;
 }
 
 function isWalkable(x, y) {
@@ -1647,9 +1648,15 @@ function openHouse() {
   }
   housePanel?.then(panel => panel?.load());
 }
-function closeHouse() {
+async function closeHouse() {
+  const panel = await housePanel;
+  if (panel && !(await panel.flush())) return false;
   document.querySelector("#houseView").hidden = true;
+  return true;
 }
+document.querySelector("#houseShop").addEventListener("click", async () => {
+  if (await closeHouse()) transitionToScene("donutShop");
+});
 document.querySelector("#openHouse").addEventListener("click", openHouse);
 document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));

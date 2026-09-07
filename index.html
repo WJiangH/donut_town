@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=39" />
+    <link rel="stylesheet" href="styles.css?v=40" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -132,14 +132,7 @@
 
         <div class="map-wrap">
           <div class="map-world shop-world" id="shopWorld">
-            <div class="room-shell" aria-hidden="true">
-              <div class="room-back"></div>
-              <div class="room-left"></div>
-              <div class="room-right"></div>
-              <div class="room-floor-plane"></div>
-              <div class="shop-counter"><span>Donut Shop</span></div>
-              <div class="shop-door"></div>
-            </div>
+            <img class="room-art" src="/assets/donut-shop-interior-v1.png" alt="" draggable="false" />
             <div class="shop-shelves" data-shop="shelves"></div>
             <div class="pets-layer" id="shopPetsLayer" aria-hidden="true"></div>
             <div class="residents-layer" id="shopResidentsLayer" aria-live="polite"></div>
@@ -147,6 +140,8 @@
           </div>
         </div>
 
+        <div class="shop-pages" data-shop="pages" aria-label="Shelf pages"></div>
+        <nav class="shop-categories" data-shop="categories" aria-label="Shop categories"></nav>
         <div class="shop-counter-bar" data-shop="bar" hidden>
           <span class="shop-thumb" data-shop="bar-thumb" aria-hidden="true"></span>
           <span class="shop-bar-copy"><strong data-shop="bar-name"></strong><small data-shop="bar-blurb"></small></span>
@@ -189,24 +184,20 @@
         <button class="room-back-button" id="leaveHouse">Back to town</button>
         <div>
           <span>Your place</span>
-          <strong>Donut house</strong>
+          <strong>Donut Home</strong>
         </div>
         <p class="house-status" role="status" data-house="status">Opening the door…</p>
       </div>
       <div class="house-room">
-        <div class="room-shell" aria-hidden="true">
-          <div class="room-back"></div>
-          <div class="room-left"></div>
-          <div class="room-right"></div>
-          <div class="room-floor-plane"></div>
-        </div>
+        <img class="room-art" src="/assets/donut-home-interior-v1.png" alt="" draggable="false" />
         <div class="house-floor" data-house="floor"></div>
         <div class="house-resident" data-house="resident" aria-hidden="true"></div>
       </div>
       <div class="house-shelf-wrap">
-        <span>Not placed yet</span>
+        <div class="house-tools"><strong data-house="selected">Select a decoration</strong><button data-house="remove" disabled>Put away</button><button data-house="retry" hidden>Retry save</button><button id="houseShop">Visit shop</button></div>
+        <span>Your decorations</span>
         <div class="house-shelf" data-house="shelf"></div>
-        <small>Drag onto the floor · drag off the floor to put it away · arrow keys move the selected piece</small>
+        <small>Drag to place · or select, then tap a spot · arrow keys to move</small>
       </div>
     </section>
 
@@ -232,7 +223,7 @@
 
       <button class="house-entrance" id="openHouse" type="button">
         <span class="house-entrance-mark" aria-hidden="true"></span>
-        <span><strong>My donut house</strong><small>Arrange what you have bought</small></span>
+        <span><strong>My Donut Home</strong><small>Arrange what you have bought</small></span>
       </button>
 
       <section class="my-donuts" aria-labelledby="myDonutsTitle">
@@ -265,6 +256,6 @@
     <script src="town-collision.js?v=3"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=3"></script>
-    <script src="app.js?v=46"></script>
+    <script src="app.js?v=47"></script>
   </body>
 </html>

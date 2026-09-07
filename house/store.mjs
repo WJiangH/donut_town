@@ -2,6 +2,14 @@
 // The grid is the room's own coordinate system, not the map's percentages.
 export const HOUSE_GRID = Object.freeze({ cols: 14, rows: 9 });
 
+export function homeOwned(owned, catalog) {
+  return [...new Set([...owned, ...catalog.items.filter(item => item.starter && item.kind === 'decoration').map(item => item.id)])];
+}
+export function starterLayout(catalog) {
+  const slots = [{id:'starter-chair',x:3,y:2},{id:'starter-lamp',x:6,y:2},{id:'starter-rug',x:7,y:5}];
+  return {items:slots.filter(slot => catalog.items.some(item => item.id === slot.id && item.starter))};
+}
+
 export function validateLayout(input, { ownedIds = [], catalog }) {
   if (!input || typeof input !== 'object' || !Array.isArray(input.items)) throw new Error('invalid_layout');
   if (input.items.length > HOUSE_GRID.cols * HOUSE_GRID.rows) throw new Error('invalid_layout');
@@ -16,10 +24,15 @@ export function validateLayout(input, { ownedIds = [], catalog }) {
     if (!placeable.has(id) || seenIds.has(id)) throw new Error('invalid_layout');
     if (!Number.isInteger(x) || !Number.isInteger(y)) throw new Error('invalid_layout');
     if (x < 0 || y < 0 || x >= HOUSE_GRID.cols || y >= HOUSE_GRID.rows) throw new Error('invalid_layout');
-    const cell = `${x},${y}`;
-    if (seenCells.has(cell)) throw new Error('invalid_layout');
+    const item = catalog.items.find(item => item.id === id);
+    const {w = 1, h = 1} = item.footprint || {};
+    if (x+w > HOUSE_GRID.cols || y+h > HOUSE_GRID.rows) throw new Error('invalid_layout');
+    for (let dx=0;dx<w;dx++) for (let dy=0;dy<h;dy++) {
+      const cell = `${x+dx},${y+dy}`;
+      if (seenCells.has(cell)) throw new Error('invalid_layout');
+      seenCells.add(cell);
+    }
     seenIds.add(id);
-    seenCells.add(cell);
     items.push({ id, x, y });
   }
   return { items };
@@ -64,7 +77,8 @@ export class HouseStore {
   async load(key, options) {
     if (!/^[a-f0-9]{64}$/.test(key || '')) throw new Error('invalid_member_key');
     if (!this.configured) return { items: [] };
-    return readLayout(await this.command(['HGET', this.key, key]), options);
+    const raw = await this.command(['HGET', this.key, key]);
+    return raw === null ? validateLayout(starterLayout(options.catalog), options) : readLayout(raw, options);
   }
   async save(key, layout) {
     if (!/^[a-f0-9]{64}$/.test(key || '')) throw new Error('invalid_member_key');

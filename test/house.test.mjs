@@ -60,3 +60,20 @@ test('every house refusal the server can send has words for the member', () => {
     assert.ok(messages.includes(`${code}:`), `no message for ${code}`);
   }
 });
+
+test('all new homes get the same free furniture, while an intentionally empty saved room stays empty', async () => {
+  const {homeOwned,starterLayout}=await import('../house/store.mjs');
+  const full={ownedIds:homeOwned([],catalog),catalog};
+  assert.equal(full.ownedIds.length,3);
+  assert.equal(validateLayout(starterLayout(catalog),full).items.length,3);
+  const make=raw=>new HouseStore({url:'https://example.invalid',token:'x',fetchImpl:async()=>({ok:true,json:async()=>({result:raw})})});
+  assert.deepEqual(await make(null).load('a'.repeat(64),full),starterLayout(catalog));
+  assert.deepEqual(await make('{"items":[]}').load('a'.repeat(64),full),{items:[]});
+});
+
+test('furniture footprint rejects overlap and clipping at room edges',()=>{
+  const opts={ownedIds:['deco-christmas-tree','deco-pumpkin'],catalog};
+  assert.throws(()=>validateLayout({items:[{id:'deco-christmas-tree',x:13,y:8}]},opts));
+  assert.throws(()=>validateLayout({items:[{id:'deco-christmas-tree',x:2,y:2},{id:'deco-pumpkin',x:3,y:3}]},opts));
+  assert.equal(validateLayout({items:[{id:'deco-christmas-tree',x:2,y:2},{id:'deco-pumpkin',x:4,y:3}]},opts).items.length,2);
+});

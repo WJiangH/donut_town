@@ -1,3 +1,4 @@
+import { itemArt } from "./shop/item-art.mjs";
 // The donut fountain's shop: what the town sells, and what you have already
 // bought. Purchases are spent from the donuts a member has earned.
 export const SHOP_MESSAGES = {
@@ -7,6 +8,7 @@ export const SHOP_MESSAGES = {
   shop_purchase_failed: 'The till did not answer. Try again.',
   not_enough_donuts: 'Not enough donuts yet.',
   already_owned: 'You already own this one.',
+  item_unavailable: 'This item is coming soon.',
   item_not_found: 'That item has left the shelf.',
   invalid_purchase: 'That item cannot be bought.',
   pet_not_owned: 'You do not own that pet yet.',
@@ -41,7 +43,7 @@ export function mountShop(root, { onOwnedChange = () => {}, onPetChange = () => 
 
   function render() {
     wallet.textContent = state.wallet ? `${state.wallet.balance} left of ${state.wallet.earned}` : '—';
-    shelf.innerHTML = state.items.map(item => {
+    shelf.innerHTML = state.items.filter(item => !item.starter).map(item => {
       const owned = state.owned.includes(item.id);
       const affordable = state.wallet ? state.wallet.balance >= item.price : false;
       const out = state.pet === item.id;
@@ -49,12 +51,12 @@ export function mountShop(root, { onOwnedChange = () => {}, onPetChange = () => 
         ? `<button data-pet="${escapeHtml(item.id)}" class="shop-pet${out ? ' out' : ''}">${out ? 'With you' : 'Take out'}</button>`
         : '';
       return `<li class="shop-item${owned ? ' owned' : ''}">
-        <span class="shop-thumb${item.thumb ? ' pictured' : ''}" style="--swatch:${escapeHtml(item.swatch || '#c9a227')}${item.thumb ? `;background-image:url('${escapeHtml(item.thumb)}')` : ''}" aria-hidden="true"></span>
+        <span class="shop-thumb pictured" style="background-image:url('${escapeHtml(itemArt(item, true))}')" aria-hidden="true"></span>
         <span class="shop-copy">
           <strong>${escapeHtml(item.name)}</strong>
           <small>${escapeHtml(KIND_LABEL[item.kind] || item.kind)} · ${escapeHtml(item.blurb || '')}</small>
         </span>
-        ${petButton || `<button data-buy="${escapeHtml(item.id)}"${owned || busy || !affordable ? ' disabled' : ''}>${owned ? 'Owned' : `${item.price} 🍩`}</button>`}
+        ${petButton || `<button data-buy="${escapeHtml(item.id)}"${item.available === false || owned || busy || !affordable ? ' disabled' : ''}>${item.available === false ? 'Coming soon' : owned ? 'Owned' : `${item.price} 🍩`}</button>`}
       </li>`;
     }).join('');
     shelf.querySelectorAll('[data-buy]').forEach(button => { button.onclick = () => buy(button.dataset.buy); });

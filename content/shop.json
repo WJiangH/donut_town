@@ -9,7 +9,8 @@
       "price": 6,
       "swatch": "#d9a25c",
       "blurb": "Trots after you and sits when you sit.",
-      "thumb": "/assets/pets/pet-cat/portrait-v1.png"
+      "thumb": "/assets/pets/pet-cat/portrait-v1.png",
+      "category": "pets"
     },
     {
       "id": "pet-duck",
@@ -18,7 +19,8 @@
       "price": 5,
       "swatch": "#f0c453",
       "blurb": "Waddles behind you, happiest near water.",
-      "thumb": "/assets/pets/pet-duck/portrait-v1.png"
+      "thumb": "/assets/pets/pet-duck/portrait-v1.png",
+      "category": "pets"
     },
     {
       "id": "pet-frog",
@@ -27,7 +29,8 @@
       "price": 4,
       "swatch": "#7fb069",
       "blurb": "Hops along. Fond of the Chem Pod.",
-      "thumb": "/assets/pets/pet-frog/portrait-v1.png"
+      "thumb": "/assets/pets/pet-frog/portrait-v1.png",
+      "category": "pets"
     },
     {
       "id": "deco-fern",
@@ -35,7 +38,9 @@
       "name": "Potted fern",
       "price": 1,
       "swatch": "#5f9e5a",
-      "blurb": "A green corner for an empty room."
+      "blurb": "A green corner for an empty room.",
+      "category": "home",
+      "placeholder": "plant"
     },
     {
       "id": "deco-rug",
@@ -43,7 +48,9 @@
       "name": "Woven rug",
       "price": 2,
       "swatch": "#b8563f",
-      "blurb": "Warms up a bare floor."
+      "blurb": "Warms up a bare floor.",
+      "category": "home",
+      "placeholder": "rug"
     },
     {
       "id": "deco-lamp",
@@ -51,7 +58,9 @@
       "name": "Brass lamp",
       "price": 2,
       "swatch": "#d8a33c",
-      "blurb": "Evening light for the reading chair."
+      "blurb": "Evening light for the reading chair.",
+      "category": "home",
+      "placeholder": "lamp"
     },
     {
       "id": "deco-shelf",
@@ -59,7 +68,9 @@
       "name": "Book shelf",
       "price": 3,
       "swatch": "#8a5a34",
-      "blurb": "Somewhere to keep the good ones."
+      "blurb": "Somewhere to keep the good ones.",
+      "category": "home",
+      "placeholder": "shelf"
     },
     {
       "id": "deco-table",
@@ -67,7 +78,9 @@
       "name": "Round table",
       "price": 3,
       "swatch": "#c08a4a",
-      "blurb": "Two chairs, one pot of coffee."
+      "blurb": "Two chairs, one pot of coffee.",
+      "category": "home",
+      "placeholder": "table"
     },
     {
       "id": "deco-window",
@@ -75,7 +88,9 @@
       "name": "Bay window",
       "price": 4,
       "swatch": "#79a7c4",
-      "blurb": "A view of the town from indoors."
+      "blurb": "A view of the town from indoors.",
+      "category": "home",
+      "placeholder": "window"
     },
     {
       "id": "deco-donut-sign",
@@ -83,7 +98,111 @@
       "name": "Donut sign",
       "price": 5,
       "swatch": "#f0a0b8",
-      "blurb": "The town's own neon, in pixels."
+      "blurb": "The town's own neon, in pixels.",
+      "category": "home",
+      "placeholder": "sign"
+    },
+    {
+      "id": "starter-chair",
+      "name": "Reading chair",
+      "kind": "decoration",
+      "category": "home",
+      "price": 0,
+      "placeholder": "chair",
+      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "starter": true,
+      "footprint": {
+        "w": 2,
+        "h": 2
+      }
+    },
+    {
+      "id": "starter-lamp",
+      "name": "Reading light",
+      "kind": "decoration",
+      "category": "home",
+      "price": 0,
+      "placeholder": "lamp",
+      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "starter": true
+    },
+    {
+      "id": "starter-rug",
+      "name": "Welcome rug",
+      "kind": "decoration",
+      "category": "home",
+      "price": 0,
+      "placeholder": "rug",
+      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "starter": true,
+      "footprint": {
+        "w": 2,
+        "h": 2
+      }
+    },
+    {
+      "id": "deco-christmas-tree",
+      "name": "Christmas tree",
+      "kind": "decoration",
+      "category": "seasonal",
+      "price": 3,
+      "placeholder": "tree",
+      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      }
+    },
+    {
+      "id": "deco-pumpkin",
+      "name": "Pumpkin lantern",
+      "kind": "decoration",
+      "category": "seasonal",
+      "price": 2,
+      "placeholder": "pumpkin",
+      "blurb": "Pixel placeholder \u00b7 home decoration"
+    },
+    {
+      "id": "deco-gift",
+      "name": "Gift stack",
+      "kind": "decoration",
+      "category": "seasonal",
+      "price": 2,
+      "placeholder": "gift",
+      "blurb": "Pixel placeholder \u00b7 home decoration"
+    },
+    {
+      "id": "deco-pet-bed",
+      "name": "Pet corner",
+      "kind": "decoration",
+      "category": "home",
+      "price": 2,
+      "placeholder": "bed",
+      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      }
+    },
+    {
+      "id": "wear-shades",
+      "name": "Sunset shades",
+      "kind": "wardrobe",
+      "category": "style",
+      "price": 2,
+      "available": false,
+      "placeholder": "glasses",
+      "blurb": "Coming soon \u00b7 artwork and fitting pending"
+    },
+    {
+      "id": "wear-hat",
+      "name": "Town hat",
+      "kind": "wardrobe",
+      "category": "style",
+      "price": 2,
+      "available": false,
+      "placeholder": "hat",
+      "blurb": "Coming soon \u00b7 artwork and fitting pending"
     }
   ]
 }
