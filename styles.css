@@ -118,20 +118,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   background: transparent;
   cursor: pointer;
 }
-.building-entrance { left: 6.4%; top: 83.5%; width: 76px; height: 92px; transform: translate(-50%, -72%); align-content: end; }
-.building-entrance::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 1px;
-  width: 42px;
-  height: 16px;
-  transform: translateX(-50%);
-  border: 3px solid rgba(247, 250, 244, .92);
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(23, 49, 38, .75);
-}
-.building-entrance span, .building-entrance small, .room-exit span {
+.room-exit span {
   position: relative;
   padding: 4px 7px;
   border: 2px solid var(--ink);
@@ -141,9 +128,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   font-weight: 900;
   white-space: nowrap;
 }
-.building-entrance span { font-size: 9px; }
-.building-entrance small { margin-top: 4px; color: var(--accent-dark); font-size: 7px; }
-.building-entrance:hover, .building-entrance:focus-visible, .room-exit:hover, .room-exit:focus-visible { transform: translate(-50%, -72%) translateY(-3px); }
+.room-exit:hover, .room-exit:focus-visible { transform:translate(-50%,-72%) translateY(-3px); }
+/* Keep roof signs readable while the map itself zooms. */
+.building-entrance {
+ left:clamp(calc(92px * var(--map-label-scale,1)),var(--label-x),calc(100% - 92px * var(--map-label-scale,1)));
+ top:max(var(--map-label-top,42px),var(--label-y));
+ width:max-content;padding:7px 11px;border:2px solid #3b4834;border-radius:4px;
+ background:#fff0c9;color:#263d2d;box-shadow:3px 3px 0 #24372499;
+ font:800 14px/1.2 ui-monospace,monospace;white-space:nowrap;
+ transform:translate(-50%,-100%) scale(var(--map-label-scale,1));transform-origin:center bottom;
+}
+.building-entrance::after { content:"";position:absolute;left:calc(50% - 5px);top:100%;border:5px solid transparent;border-top-color:#3b4834; }
+.building-entrance:hover,.building-entrance:focus-visible { background:#ffe29d;outline:3px solid #fff8dc;outline-offset:2px; }
+
 
 
 /* The whole room should be in view, and the people in it read as people in a
@@ -271,18 +268,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .house-entrance small { color: var(--muted); font-size: 8px; }
 
 /* The fountain doubles as the shop counter. */
-.shop-entrance {
-  position: absolute; left: 51%; top: 41.5%; z-index: 6;
-  transform: translate(-50%, -140%);
-  display: grid; place-items: center;
-  padding: 5px 11px;
-  background: var(--surface-solid); color: var(--ink);
-  border: 2px solid var(--ink); border-radius: 9px;
-  box-shadow: 3px 3px 0 var(--ink);
-  font: 800 9px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  cursor: pointer;
-}
-.shop-entrance:hover, .shop-entrance:focus-visible { transform: translate(-50%, -140%) translateY(-3px); }
 .shop-drawer {
   position: fixed; z-index: 60; right: 0; top: 0; bottom: 0; width: min(340px, 92vw);
   padding: 26px 24px; overflow-y: auto;
@@ -942,3 +927,5 @@ body.town-sidebar-layout .resident-drawer { background:var(--rail-paper);border:
 #factoryWorld .resident-pin .resident-label { display:none; }
 .factory-pair-label { position:absolute;transform:translateX(-50%);width:19%;text-align:center;font-size:clamp(6px,1cqw,13px);font-weight:bold;color:#3b3329;pointer-events:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 @media(max-width:760px){#factoryView .room-toolbar { top:8px;left:8px;gap:6px; }#factoryView .room-toolbar>div:first-of-type { display:none; }}
+
+@media(max-width:760px){.building-entrance{font-size:10px;padding:6px}.building-entrance .building-prefix{display:none}}

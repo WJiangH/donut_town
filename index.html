@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=51" />
+    <link rel="stylesheet" href="styles.css?v=52" />
     <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
@@ -79,12 +79,11 @@
             <div class="live-players-layer" id="townLivePlayersLayer" aria-live="polite"></div>
             <button class="building-entrance" id="chemPodEntrance" aria-label="Walk to and enter Chem Pod">
               <span>Chem Pod</span>
-              <small>Enter</small>
             </button>
-            <button class="building-entrance" id="factoryEntrance" aria-label="Enter Donut Factory 1"><span>Factory 1</span><small>Enter</small></button>
-            <button class="building-entrance" id="factoryTwoEntrance" aria-label="Enter Donut Factory 2"><span>Factory 2</span><small>Enter</small></button>
-            <button class="shop-entrance" id="shopEntrance" aria-label="Walk to the donut fountain and open the shop">
-              <span>Shop</span>
+            <button class="building-entrance" id="factoryEntrance" aria-label="Enter Donut Factory 1"><span><span class="building-prefix">Donut </span>Factory 1</span></button>
+            <button class="building-entrance" id="factoryTwoEntrance" aria-label="Enter Donut Factory 2"><span><span class="building-prefix">Donut </span>Factory 2</span></button>
+            <button class="building-entrance" id="shopEntrance" aria-label="Walk to the donut fountain and open the shop">
+              <span><span class="building-prefix">Donut </span>Shop</span>
             </button>
           </div>
           <div class="map-empty" id="mapEmpty" hidden>
@@ -319,6 +318,6 @@
     <script src="town-collision.js?v=6"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=6"></script>
-    <script src="app.js?v=58"></script>
+    <script src="app.js?v=59"></script>
   </body>
 </html>

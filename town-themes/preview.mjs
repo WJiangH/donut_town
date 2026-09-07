@@ -30,7 +30,7 @@ try {
     button.onclick=e=>{e.stopPropagation();path=collision.findPath(pos,z.anchor);window.TownZones.reset();};zones.append(button);
   }
   for (const [id,e] of Object.entries(theme.entrances)) {
-    const label=document.createElement('span');label.textContent=({chemPod:'Chem Pod',donutShop:'Shop',donutFactory:'Factory 1',donutFactoryTwo:'Factory 2'})[id] || id;label.style.left=e.x+'%';label.style.top=e.y+'%';document.querySelector('#doors').append(label);
+    const label=document.createElement('span');label.textContent=({chemPod:'Chem Pod',donutShop:'Donut Shop',donutFactory:'Donut Factory 1',donutFactoryTwo:'Donut Factory 2'})[id] || id;label.style.left=(e.label||e).x+'%';label.style.top=(e.label||e).y+'%';document.querySelector('#doors').append(label);
   }
   const reset=()=>{pos={...theme.spawn};path=[];keys.clear();action=null;window.TownZones.reset();};
   document.querySelector('#reset').onclick=reset;

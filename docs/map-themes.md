@@ -98,3 +98,5 @@ old-theme live coordinates are not rendered on another map during transitions.
 The geometry validator proves reachability and image identity, not that the art
 visually matches every collision boundary. That final check needs screenshots
 and walking the map.
+
+Building entrances may include a normalized `label: {x, y}` anchor above the roof, separate from the reachable `landing`. Measure these anchors for each new map; the shared renderer keeps sign text readable as the camera zooms. Buildings without label anchors fall back to their entrance positions.

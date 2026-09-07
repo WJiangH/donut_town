@@ -13,6 +13,7 @@ export function validateTheme(theme) {
   const b=theme.bounds;
   if (!b || !point({x:b.minX,y:b.minY}) || !point({x:b.maxX,y:b.maxY}) || b.minX>=b.maxX || b.minY>=b.maxY) bad();
   for (const key of ['chemPod','donutShop','donutFactory','donutFactoryTwo']) if (!point(theme.entrances?.[key]) || !point(theme.entrances[key].landing)) bad();
+  for (const entry of Object.values(theme.entrances)) if (entry.label!==undefined && !point(entry.label)) bad();
   const m=theme.walkMask;
   if (!m || !Number.isInteger(m.cols) || !Number.isInteger(m.rows) || m.cols<8 || m.rows<8 || m.cols*m.rows>262144 || !/^[A-Za-z0-9+/]+=*$/.test(m.bits || '')) bad();
   if (atob(m.bits).length!==Math.ceil(m.cols*m.rows/8)) bad();

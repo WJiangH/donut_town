@@ -796,6 +796,7 @@ function refreshTownCameraMetrics() {
   stage.style.setProperty('--overview-gutter',`${gutter}px`);
   const sideControls=cameraMode==='overview'&&gutter>=280&&viewportHeight>=600;
   stage.classList.toggle('overview-side-controls',sideControls);
+  townCameraMetrics.labelToolbarBottom=sideControls ? 0 : Math.max(stage.querySelector('.camera-controls').getBoundingClientRect().bottom,stage.querySelector('.week-card').getBoundingClientRect().bottom)-viewport.getBoundingClientRect().top;
   document.querySelector('#townPlaces').open=sideControls;
   document.querySelector('#neighborListToggle').setAttribute('aria-expanded',String(sideControls||stage.classList.contains('directory-open')));
   document.documentElement.style.setProperty('--town-rail-width',`${gutter}px`);
@@ -823,6 +824,8 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
   townCamera.x = cameraMode === "overview" ? targetX : clampCameraOffset(townCamera.x, viewportWidth, worldWidth * townCamera.scale);
   townCamera.y = cameraMode === "overview" ? targetY : clampCameraOffset(townCamera.y, viewportHeight, worldHeight * townCamera.scale);
   townCamera.ready = true;
+  document.querySelector("#mapWorld").style.setProperty("--map-label-scale",1/townCamera.scale);
+  document.querySelector("#mapWorld").style.setProperty("--map-label-top",`${Math.max(42,cameraMode==="overview"?townCameraMetrics.labelToolbarBottom-townCamera.y+42:42)/townCamera.scale}px`);
   document.querySelector("#mapWorld").style.transform = `translate3d(${townCamera.x}px, ${townCamera.y}px, 0) scale(${townCamera.scale})`;
 }
 
@@ -1873,7 +1876,8 @@ function applyTownTheme(theme) {
   art.src = theme.image; art.alt = `${theme.name} pixel-art Donut Town`;
   for (const [id,selector] of [['chemPod','#chemPodEntrance'],['donutShop','#shopEntrance'],['donutFactory','#factoryEntrance'],['donutFactoryTwo','#factoryTwoEntrance']]) {
     const entry=theme.entrances[id], button=document.querySelector(selector);
-    button.style.left=`${entry.x}%`;button.style.top=`${entry.y}%`;
+    const label=entry.label || entry;
+    button.style.setProperty("--label-x",`${label.x}%`);button.style.setProperty("--label-y",`${label.y}%`);
   }
   Object.assign(player, theme.spawn);
   scenePlayerPositions.town = {...theme.spawn};
