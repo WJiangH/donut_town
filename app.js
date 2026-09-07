@@ -244,10 +244,38 @@ function paintPersonalCharacter(element, character, direction = "down", frame = 
   element.classList.toggle("facing-left", facing === "left");
 }
 
+// A neighbour standing on a tagged spot takes up what that spot is for. The
+// choice is fixed per person, so the same neighbour always reads the same way.
+function residentPose(person) {
+  const actions = person.character?.actions;
+  if (!actions || person.status === "booked" || person.pairFacing) return null;
+  const match = window.TownZones?.zoneFor(person, person.scene || "town", actions, []);
+  if (!match) return null;
+  const poses = [match.zone.action].flat().filter(pose => actions[pose]);
+  if (!poses.length) return null;
+  const seed = String(person.slackId || person.id).split("").reduce((total, letter) => total + letter.charCodeAt(0), 0);
+  return poses[seed % poses.length];
+}
+
+let residentPosesAnimate = false;
+function refreshResidentPoses() {
+  residentPosesAnimate = false;
+  for (const person of residents) {
+    person.pose = residentPose(person);
+    const action = person.pose ? person.character?.actions?.[person.pose] : null;
+    if (action?.loop?.length > 1) residentPosesAnimate = true;
+  }
+}
+
 function paintResidentCharacters(container) {
   container.querySelectorAll(".resident-pin[data-id]").forEach(pin => {
     const person = residents.find(item => item.id === Number(pin.dataset.id));
-    if (person?.character) paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, person.pairFacing || "down");
+    if (!person?.character) return;
+    const action = person.pose ? person.character.actions?.[person.pose] : null;
+    const frame = action
+      ? (action.loop || [0])[Math.floor(performance.now() / (action.frameMs || 240)) % (action.loop || [0]).length]
+      : 1;
+    paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, person.pairFacing || "down", frame, person.pose || null);
   });
 }
 
@@ -600,6 +628,7 @@ function layoutBookedPairs() {
     });
   });
   currentPairId = currentUser?.pairId || null;
+  refreshResidentPoses();
 }
 
 function applyPairPreview() {
@@ -977,6 +1006,8 @@ function gameLoop(timestamp) {
   }
 
   updatePlayerElement(isMoving);
+  // Only worth a frame of work when somebody's pose actually moves.
+  if (residentPosesAnimate) paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
   updateTownCamera(deltaSeconds);
   publishPresence(false, isMoving);
   renderLivePlayers(deltaSeconds);
@@ -1206,6 +1237,7 @@ async function syncWardrobeOutfits() {
     const { characters } = await response.json();
     let changed = false;
     for (const person of [currentUser, ...residents]) {
+      if (!person) continue;
       if (person === currentUser && (revision !== wardrobeRevision || document.querySelector("#profileWardrobe").dataset.saving)) continue;
       const next = characters?.[person.characterKey];
       if (!next || JSON.stringify(next.outfit) === JSON.stringify(person.character?.outfit)) continue;
