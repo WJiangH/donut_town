@@ -760,6 +760,12 @@ function refreshTownCameraMetrics() {
     worldWidth: world.offsetWidth,
     worldHeight: world.offsetHeight
   };
+  const {viewportWidth,viewportHeight,worldWidth,worldHeight}=townCameraMetrics;
+  const fit=Math.min(viewportWidth/worldWidth,viewportHeight/worldHeight);
+  const gutter=Math.max(0,(viewportWidth-worldWidth*fit)/2);
+  const stage=document.querySelector('#townView');
+  stage.style.setProperty('--overview-gutter',`${gutter}px`);
+  stage.classList.toggle('overview-side-controls',cameraMode==='overview'&&gutter>=280);
 }
 
 function updateTownCamera(deltaSeconds = 0, immediate = false) {
@@ -767,11 +773,11 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
   if (!townCameraMetrics) refreshTownCameraMetrics();
   const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
   const coverScale = Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight);
-  const targetScale = cameraMode === "overview" ? Math.max(.001,Math.min((viewportWidth-24)/worldWidth,(viewportHeight-206)/worldHeight)) : Math.max(1,coverScale);
+  const targetScale = cameraMode === "overview" ? Math.max(.001,Math.min(viewportWidth/worldWidth,viewportHeight/worldHeight)) : Math.max(1,coverScale);
   const centerX = cameraMode === "overview" ? worldWidth/2 : worldWidth * player.x / 100;
   const centerY = cameraMode === "overview" ? worldHeight/2 : worldHeight * player.y / 100;
   const targetX = cameraMode === "overview" ? (viewportWidth-worldWidth*targetScale)/2 : clampCameraOffset(viewportWidth / 2 - centerX * targetScale, viewportWidth, worldWidth * targetScale);
-  const targetY = cameraMode === "overview" ? 96+(viewportHeight-206-worldHeight*targetScale)/2 : clampCameraOffset(viewportHeight / 2 - centerY * targetScale, viewportHeight, worldHeight * targetScale);
+  const targetY = cameraMode === "overview" ? (viewportHeight-worldHeight*targetScale)/2 : clampCameraOffset(viewportHeight / 2 - centerY * targetScale, viewportHeight, worldHeight * targetScale);
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const blend = immediate || reducedMotion || !townCamera.ready ? 1 : 1 - Math.exp(-8 * deltaSeconds);
   townCamera.x += (targetX - townCamera.x) * blend;
@@ -789,6 +795,7 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
 function setCameraMode(nextMode, announce = false) {
   if (!['overview', 'follow'].includes(nextMode)) return;
   cameraMode = nextMode;
+  townCameraMetrics = null;
   document.querySelector("#mapWrap").dataset.cameraMode = cameraMode;
   document.querySelector("#townMovementHelp").textContent = cameraMode === "overview"
     ? "Whole town · Click to walk · Follow me for a closer view"

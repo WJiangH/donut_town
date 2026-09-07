@@ -67,7 +67,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .town-stage, .interior-stage { position: relative; height: calc(100dvh - 72px); overflow: hidden; }
 .town-stage { background: #233e30; }
 #mapWrap { touch-action: none; user-select: none; }
-#mapWrap[data-camera-mode="overview"] { cursor: grab; }
+#mapWrap[data-camera-mode="overview"] { cursor: default; }
 #mapWrap.is-dragging { cursor: grabbing; }
 #mapWorld .town-map { pointer-events: none; }
 .interior-stage { background: #171d18; }
@@ -939,3 +939,14 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
  #chemPodView .room-toolbar { top:10px;left:10px;gap:7px; }
  #chemPodView .room-toolbar>div,#chemPodView .room-movement-help { display:none; }
 }
+
+/* Wide overview uses its natural side gutters for controls, never shrinks the map for them. */
+#townView.overview-side-controls .map-toolbar { left:12px;right:auto;top:12px;width:calc(var(--overview-gutter) - 24px);flex-direction:column;gap:10px; }
+#townView.overview-side-controls .week-card { min-width:0;width:100%; }
+#townView.overview-side-controls .filter-group { display:flex;flex-wrap:wrap; }
+#townView.overview-side-controls .filter-button { padding:8px; }
+#townView.overview-side-controls .movement-help,
+#townView.overview-side-controls .legend { left:12px;max-width:calc(var(--overview-gutter) - 24px); }
+#townView.overview-side-controls .movement-help { bottom:90px; }
+#townView.overview-side-controls .legend { flex-wrap:wrap;gap:8px; }
+body:has(#townView.overview-side-controls:not([hidden])) .invite-dock { width:256px; }
