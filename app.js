@@ -700,6 +700,20 @@ function setCameraMode(nextMode, announce = false) {
   if (announce) showToast(cameraMode === "overview" ? "Drag to explore. Your view stays where you leave it." : "The camera is following you.");
 }
 
+// A seat with somebody already on it is taken, so look for another one.
+function actionSpotOccupants() {
+  const occupants = [];
+  for (const remote of remotePlayers.values()) {
+    if (remote.scene === currentScene) occupants.push({ x: remote.x, y: remote.y, action: remote.action });
+  }
+  for (const person of residents) {
+    if ((person.scene || "town") === currentScene && !remotePlayers.has(person.slackId)) {
+      occupants.push({ x: person.x, y: person.y, action: person.activity || null });
+    }
+  }
+  return occupants;
+}
+
 function nearestActionSpot(point, radius = 1.6) {
   let best = null;
   for (const spot of actionSpots) {
@@ -897,6 +911,7 @@ function gameLoop(timestamp) {
   const isMoving = Boolean(dx || dy);
   if (isMoving) {
     playerAction = null;
+    window.TownZones?.reset();
     if (pendingActionSpot && pressedKeys.size) pendingActionSpot = null;
   } else if (pendingActionSpot && pendingActionSpot.scene === currentScene && !clickPath.length) {
     if (currentUser?.character?.actions?.[pendingActionSpot.id]) {
@@ -904,6 +919,19 @@ function gameLoop(timestamp) {
       playerDirection = pendingActionSpot.facing;
     }
     pendingActionSpot = null;
+  } else if (!pendingActionSpot && window.TownZones?.ready) {
+    // Standing still somewhere tagged settles you into what that place is for:
+    // a free bench, the lawn, a bridge railing, the cafe tables, a garden bed.
+    if (!clickPath.length) {
+      const settled = window.TownZones.settle(player, currentScene, timestamp, currentUser?.character?.actions, actionSpotOccupants());
+      if (settled?.walkTo) clickPath = findWalkPath(player, settled.walkTo);
+      else if (settled) {
+        playerAction = settled.action;
+        playerDirection = settled.facing;
+      } else {
+        playerAction = null;
+      }
+    }
   } else if (!pendingActionSpot) {
     const spot = nearestActionSpot(player, 1.6);
     if (spot && currentUser?.character?.actions?.[spot.id]) {
