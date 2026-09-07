@@ -354,8 +354,19 @@ function residentIsVisible(person) {
 // not anything moved, and rebuilding identical DOM makes the town flicker.
 let lastTownMarkup = null;
 let lastChemPodMarkup = null;
+let lastDirectoryMarkup = null;
+
+function renderNeighborDirectory() {
+  const query=document.querySelector('#neighborSearch').value.trim().toLocaleLowerCase();
+  const matches=residents.filter(person=>residentIsVisible(person)&&`${person.name} ${person.title||''}`.toLocaleLowerCase().includes(query))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  document.querySelector('#directoryCount').textContent=String(matches.length);
+  const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-initials" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small>${person.scene==='chemPod'?'Chem Pod':'Around town'}</small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
+  if(markup!==lastDirectoryMarkup){document.querySelector('#neighborDirectory').innerHTML=markup;lastDirectoryMarkup=markup;}
+}
 
 function renderResidents() {
+  renderNeighborDirectory();
   const residentsMarkup = residents.map(person => {
     const visible = (person.scene || "town") === "town" && residentIsVisible(person) && !remotePlayers.has(person.slackId);
     return `<button class="resident-pin ${person.status} ${person.status === "booked" ? "making-donut" : ""} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
@@ -765,10 +776,10 @@ function refreshTownCameraMetrics() {
   const gutter=Math.max(0,(viewportWidth-worldWidth*fit)/2);
   const stage=document.querySelector('#townView');
   stage.style.setProperty('--overview-gutter',`${gutter}px`);
-  const sideControls=cameraMode==='overview'&&gutter>=280;
+  const sideControls=cameraMode==='overview'&&gutter>=280&&viewportHeight>=600;
   stage.classList.toggle('overview-side-controls',sideControls);
   document.querySelector('#townPlaces').open=sideControls;
-  document.documentElement.style.setProperty('--town-rail-width',`${Math.min(390,gutter-24)}px`);
+  document.documentElement.style.setProperty('--town-rail-width',`${gutter}px`);
   updateTownSidebar();
 }
 
@@ -1693,6 +1704,9 @@ document.querySelector("#houseShop").addEventListener("click", async () => {
   if (await closeHouse(false)) transitionToScene("donutShop");
 });
 document.querySelector("#openHouse").addEventListener("click", openHouse);
+document.querySelector('#neighborSearch').addEventListener('input',renderNeighborDirectory);
+document.querySelector('#neighborSearch').addEventListener('focus',()=>{pressedKeys.clear();clickPath=[];});
+document.querySelector('#neighborDirectory').addEventListener('click',event=>{const button=event.target.closest('[data-resident]');if(button)openResident(Number(button.dataset.resident));});
 document.querySelector('#railHome').addEventListener('click',openHouse);
 document.querySelector('#railShop').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('donutShop');});
 document.querySelector('#railChem').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('chemPod');});
@@ -1758,7 +1772,7 @@ function invitationErrorMessage(error) {
 }
 
 document.addEventListener("keydown", event => {
-  if (window.townHouseOpen || window.townSettingsOpen) return;
+  if (window.townHouseOpen || window.townSettingsOpen || event.target.closest('input,textarea,select,[contenteditable="true"]')) return;
   if (event.key === "Escape") {
     closeDrawer();
     closeProfile();
