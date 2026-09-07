@@ -4,12 +4,17 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "setup": "node scripts/setup-town.mjs",
+    "doctor": "node scripts/doctor-town.mjs",
+    "privacy:check": "node scripts/check-public.mjs",
+    "export:public": "node scripts/export-public.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "ws": "^8.21.3"
-  }
+  },
+  "license": "Apache-2.0"
 }

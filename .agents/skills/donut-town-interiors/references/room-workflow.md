@@ -16,6 +16,7 @@ Record these inputs before generating:
 | Entrance | Door edge and clear arrival area |
 | Interaction points | Tables, chairs, stations, displays, or counters |
 | Walk paths | Connected routes between entrance and interaction points |
+| Resident scale | Measured painted sprite height / room height, at desktop and mobile widths |
 
 If a Pod name is organizational rather than scientific, ask what the team actually does instead of inferring equipment from the label.
 
@@ -34,7 +35,7 @@ Scene: one complete rectangular room filling a 3:2 landscape canvas. Include [HE
 
 Composition: room boundaries fully visible; a clear [ENTRANCE LOCATION] doorway; broad unobstructed arrival floor; generous connected walking lanes around furniture; furniture arranged as discrete collision islands.
 
-Constraints: no people, characters, animals, text, signs, letters, labels, UI, watermark, grid overlay, exterior scenery, cropped walls, or furniture blocking the entrance. Crisp pixel edges, cohesive scale, production-ready game background.
+Constraints: no people, characters, animals, portraits, photos, faces, text, signs, letters, labels, UI, watermark, grid overlay, exterior scenery, cropped walls, or furniture blocking the entrance. Crisp pixel edges, cohesive scale, production-ready game background.
 ```
 
 Recommended production canvas: 1536 × 1024 PNG. Other 3:2 resolutions are acceptable when they match the existing scene renderer.
@@ -60,14 +61,18 @@ Inspect the final PNG at original size and confirm:
 - any bulletin board or gallery intended for live content has a blank rectangular inset rather than baked text or people;
 - no people, text, watermark, or baked UI are present;
 - perspective, scale, palette, lighting, and pixel density match the town;
-- the player sprite remains readable against both light and dark floor areas.
+- the player sprite remains readable against both light and dark floor areas;
+- judge scale with an actual rendered sprite beside a counter and doorway, not the empty PNG. Chem Pod v3 uses about 22% painted standing height / room height as a compact-room example, not a universal value. Scale with room width rather than a fixed indoor shrink factor;
+- verify desktop and narrow-screen CSS together: later generic `.map-world` rules must not crop a room or undo its fit rule;
+- check furniture depth. When using clipped copies of a shared room image for foreground occlusion, character containers must not create a stacking context that defeats their feet-based z-index. Test in front of and behind each island;
+- record production image dimensions and bytes versus the previous asset. A new full-room PNG need not introduce multiple raster downloads for furniture depth.
 
 ## Integration contract
 
 - Background: one `<img>` or canvas layer that owns no live state.
 - Interaction layer: accessible entrance, exit, and station controls above the image.
 - Character layer: player and verified occupants above the background.
-- Content layer: announcements, team portraits, and event copy loaded separately from the PNG so they can change without regenerating the room.
+- Content layer: announcements and event copy loaded separately from the PNG. Do not add a real-photo gallery; Slack photos belong in profile UI, never in room art or its generation references.
 - Geometry: normalized 0–100 coordinates so collision survives responsive scaling.
 - Navigation: direct entry on the Enter control. Walking toward a doorway may be decorative, but a pathfinding failure must not suppress the scene change.
 - Scene state: store one player position per scene and restore it when returning.
@@ -84,6 +89,6 @@ Start collision with broad rectangles or ellipses around large furniture. Tune a
 5. Exit using both the room door and the toolbar control.
 6. Repeat at desktop and narrow viewport sizes.
 7. Confirm reduced-motion users get an immediate transition.
-8. Confirm the production asset returns successfully from the deployed URL.
+8. Check local asset loading. If deployment is authorized, also confirm the production asset returns successfully from the deployed URL; do not imply local QA verified deployment.
 
 State explicitly whether QA was code-level, local-browser, or deployed-browser testing.

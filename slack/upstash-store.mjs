@@ -39,6 +39,17 @@ export class UpstashInvitationStore {
     await this.#command(["SET", keyForRound(roundId, this.namespace), payload]);
   }
 
+  async loadRecent(roundIds) {
+    if (!this.configured) throw new Error('chat_history_unavailable');
+    const rows = await this.#command(['MGET', ...roundIds.map(id => keyForRound(id, this.namespace))]);
+    return rows.flatMap((raw, index) => {
+      if (raw === null) return [];
+      const payload = JSON.parse(raw);
+      if (payload?.version !== STORE_VERSION || payload.roundId !== roundIds[index] || !Array.isArray(payload.snapshots)) throw new Error('Invalid invitation history');
+      return [payload];
+    });
+  }
+
   async #command(command) {
     const response = await this.fetchImpl(this.url, {
       method: "POST",

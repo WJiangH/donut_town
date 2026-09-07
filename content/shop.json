@@ -49,7 +49,8 @@
         "h": 254,
         "canvasW": 260,
         "canvasH": 258
-      }
+      },
+      "luxury": 10
     },
     {
       "id": "deco-rug",
@@ -68,7 +69,8 @@
         "h": 114,
         "canvasW": 260,
         "canvasH": 118
-      }
+      },
+      "luxury": 20
     },
     {
       "id": "deco-lamp",
@@ -87,7 +89,8 @@
         "h": 256,
         "canvasW": 96,
         "canvasH": 260
-      }
+      },
+      "luxury": 20
     },
     {
       "id": "deco-shelf",
@@ -106,7 +109,8 @@
         "h": 256,
         "canvasW": 242,
         "canvasH": 260
-      }
+      },
+      "luxury": 30
     },
     {
       "id": "deco-table",
@@ -125,7 +129,8 @@
         "h": 256,
         "canvasW": 245,
         "canvasH": 260
-      }
+      },
+      "luxury": 30
     },
     {
       "id": "deco-window",
@@ -144,7 +149,8 @@
         "h": 256,
         "canvasW": 210,
         "canvasH": 260
-      }
+      },
+      "luxury": 40
     },
     {
       "id": "deco-donut-sign",
@@ -163,7 +169,8 @@
         "h": 256,
         "canvasW": 190,
         "canvasH": 260
-      }
+      },
+      "luxury": 50
     },
     {
       "id": "starter-chair",
@@ -186,7 +193,8 @@
         "h": 256,
         "canvasW": 227,
         "canvasH": 260
-      }
+      },
+      "luxury": 0
     },
     {
       "id": "starter-lamp",
@@ -205,7 +213,8 @@
         "h": 256,
         "canvasW": 105,
         "canvasH": 260
-      }
+      },
+      "luxury": 0
     },
     {
       "id": "starter-rug",
@@ -228,7 +237,8 @@
         "h": 110,
         "canvasW": 260,
         "canvasH": 114
-      }
+      },
+      "luxury": 0
     },
     {
       "id": "deco-christmas-tree",
@@ -250,7 +260,8 @@
         "h": 256,
         "canvasW": 160,
         "canvasH": 260
-      }
+      },
+      "luxury": 30
     },
     {
       "id": "deco-pumpkin",
@@ -268,7 +279,8 @@
         "h": 256,
         "canvasW": 244,
         "canvasH": 260
-      }
+      },
+      "luxury": 20
     },
     {
       "id": "deco-gift",
@@ -286,7 +298,8 @@
         "h": 256,
         "canvasW": 213,
         "canvasH": 260
-      }
+      },
+      "luxury": 20
     },
     {
       "id": "deco-pet-bed",
@@ -308,7 +321,8 @@
         "h": 193,
         "canvasW": 260,
         "canvasH": 197
-      }
+      },
+      "luxury": 20
     },
     {
       "id": "wear-shades",
@@ -368,7 +382,8 @@
         "canvasW": 260,
         "canvasH": 198
       },
-      "thumb": "/assets/shop/deco-sofa-thumb-9c6dc62ae310.png"
+      "thumb": "/assets/shop/deco-sofa-thumb-9c6dc62ae310.png",
+      "luxury": 40
     },
     {
       "id": "deco-bed",
@@ -390,7 +405,8 @@
         "canvasW": 238,
         "canvasH": 260
       },
-      "thumb": "/assets/shop/deco-bed-thumb-e5d908c7dcb5.png"
+      "thumb": "/assets/shop/deco-bed-thumb-e5d908c7dcb5.png",
+      "luxury": 50
     },
     {
       "id": "deco-coffee-cart",
@@ -412,7 +428,8 @@
         "canvasW": 206,
         "canvasH": 260
       },
-      "thumb": "/assets/shop/deco-coffee-cart-thumb-80312a6f5cc1.png"
+      "thumb": "/assets/shop/deco-coffee-cart-thumb-80312a6f5cc1.png",
+      "luxury": 30
     },
     {
       "id": "deco-aquarium",
@@ -434,7 +451,8 @@
         "canvasW": 232,
         "canvasH": 260
       },
-      "thumb": "/assets/shop/deco-aquarium-thumb-ee8c76582213.png"
+      "thumb": "/assets/shop/deco-aquarium-thumb-ee8c76582213.png",
+      "luxury": 40
     },
     {
       "id": "deco-record-cabinet",
@@ -456,7 +474,8 @@
         "canvasW": 220,
         "canvasH": 260
       },
-      "thumb": "/assets/shop/deco-record-cabinet-thumb-62af2aaa641d.png"
+      "thumb": "/assets/shop/deco-record-cabinet-thumb-62af2aaa641d.png",
+      "luxury": 30
     },
     {
       "id": "deco-paper-lamp",
@@ -478,7 +497,8 @@
         "canvasW": 103,
         "canvasH": 260
       },
-      "thumb": "/assets/shop/deco-paper-lamp-thumb-e56c0826fce4.png"
+      "thumb": "/assets/shop/deco-paper-lamp-thumb-e56c0826fce4.png",
+      "luxury": 20
     }
   ]
 }

@@ -1,12 +1,14 @@
+# Bootstrap manifest. Run npm run setup -- --url https://YOUR-TOWN.onrender.com
+# to generate the JSON version with the final redirect and interaction URLs.
 display_information:
   name: Donut Town
+  description: A little pixel world for your Slack team.
 features:
   bot_user:
     display_name: Donut Bot
     always_online: false
 oauth_config:
-  redirect_urls:
-    - https://YOUR-PUBLIC-HTTPS-URL/auth/slack/callback
+  redirect_urls: []
   scopes:
     user:
       - openid
@@ -19,8 +21,7 @@ oauth_config:
       - im:write
 settings:
   interactivity:
-    is_enabled: true
-    request_url: https://YOUR-PUBLIC-HTTPS-URL/slack/interactions
+    is_enabled: false
   org_deploy_enabled: false
   socket_mode_enabled: false
   token_rotation_enabled: false

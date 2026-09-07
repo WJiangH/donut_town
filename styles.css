@@ -310,6 +310,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .shop-status { margin: 14px 0 0; color: var(--muted); font-size: 9px; }
 
 .interior-world { width: min(106%, calc((100dvh - 72px) * 1.59)); }
+/* This room always fits in its viewport, including the narrow-screen override. */
+#chemPodWorld { width: min(100%, calc((100dvh - 150px) * 1.5)); }
 .interior-stage .resident-pin,
 .interior-stage .player-pin,
 .interior-stage .remote-player {
@@ -317,34 +319,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   transform-origin: bottom center;
 }
 .interior-map { filter: saturate(.88) brightness(.98); }
-.chem-pod-notice, .chem-pod-team-wall { position: absolute; z-index: 3; pointer-events: none; }
-.chem-pod-notice {
-  left: 13.7%;
-  top: 47.2%;
-  width: 10.2%;
-  height: 15.2%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1%;
-  color: #4a321e;
-  text-align: center;
-  text-shadow: 0 1px 0 rgba(255, 248, 218, .8);
-}
-.chem-pod-notice span { margin-bottom: 5px; font-size: clamp(6px, .45vw, 9px); text-transform: uppercase; letter-spacing: .08em; }
-.chem-pod-notice strong { max-width: 100%; font-size: clamp(8px, .72vw, 14px); line-height: 1.25; }
-.chem-pod-team-wall { left: 68.5%; top: 45.2%; width: 10.8%; height: 17.8%; padding: .55%; }
-.chem-pod-team-wall > div { display: grid; grid-template-columns: repeat(4, 1fr); align-content: center; gap: 4%; width: 100%; height: 100%; }
-.chem-pod-team-wall img, .chem-pod-team-wall span {
-  width: 100%;
-  aspect-ratio: 1;
-  border: 1px solid rgba(247, 226, 180, .84);
-  background: #d7a34f;
-  object-fit: cover;
-  image-rendering: pixelated;
-}
-.chem-pod-team-wall span { display: grid; place-items: center; color: #173126; font-size: clamp(5px, .38vw, 8px); font-weight: 900; }
+#chemPodWorld .interior-map { filter: saturate(.94) brightness(.98); }
+.chem-foreground { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; image-rendering: pixelated; filter: saturate(.94) brightness(.98); }
+#chemPodWorld .resident-pin .resident-label { opacity: 0; }
+#chemPodWorld .resident-pin:is(:hover, :focus-visible) { z-index: var(--feet-depth) !important; }
+#chemPodWorld .resident-pin:is(:hover, :focus-visible) .resident-label { opacity: 1; }
+#chemPodWorld .residents-layer, #chemPodWorld .live-players-layer { z-index: auto; }
+/* Reuse the same decoded room image for depth; no extra foreground PNGs. */
+.chem-bench { z-index: 690; clip-path: polygon(32% 41%, 37% 41%, 37% 38%, 40% 38%, 40% 41%, 60% 41%, 60% 39%, 65% 39%, 68% 43%, 68% 68.5%, 32% 68.5%); }
+.chem-reading { z-index: 740; clip-path: polygon(9% 54%, 10% 50%, 11% 39%, 14% 35%, 18% 36%, 22% 42%, 24.5% 45%, 25% 54%, 23% 56%, 22.5% 73.5%, 9% 73.5%); }
+.chem-coffee { z-index: 740; clip-path: polygon(79% 50%, 84% 50%, 84% 45%, 89% 45%, 90% 49%, 91.5% 51%, 91.5% 73%, 79% 73%); }
+.chem-pod-notice { position: absolute; z-index: 3; pointer-events: none; left: 18.5%; top: 11.7%; width: 9.3%; height: 8%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #4a321e; text-align: center; }
+.chem-pod-notice span { margin-bottom: 4px; font-size: clamp(4px, .5vw, 8px); text-transform: uppercase; letter-spacing: .04em; }
+.chem-pod-notice strong { max-width: 100%; font-size: clamp(5px, .72vw, 12px); line-height: 1.25; }
 .room-toolbar { position: absolute; z-index: 8; left: 20px; top: 18px; display: flex; align-items: center; gap: 13px; padding: 8px; }
 .room-toolbar div { padding-right: 7px; }
 .room-toolbar span, .room-toolbar strong { display: block; }
@@ -732,7 +719,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .house-floor .house-tile { transform: none; position: relative; align-self: stretch; margin: 0; background: none; border: 0; box-shadow: none; min-width: 0; min-height: 0; border-radius: 0; overflow: visible; }
 .house-tile img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; pointer-events: none; }
 .house-floor .house-tile img { position: absolute; bottom: 0; left: 0; height: 180%; object-position: bottom; }
-.house-shelf .house-tile { width: 56px; height: 56px; background: #e8ddc1; border: 2px solid #8c7654; border-radius: 0; padding: 4px; box-shadow: 2px 2px 0 #b0a080; }
+.house-shelf .house-tile { width: 56px; height: 56px; grid-template: minmax(0,1fr) / minmax(0,1fr); background: #e8ddc1; border: 2px solid #8c7654; border-radius: 0; padding: 4px; box-shadow: 2px 2px 0 #b0a080; }
 .house-shelf { max-height: 140px; overflow: auto; border-radius: 2px; }
 .house-ghost { width: 65px; height: 65px; }
 .house-ghost img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
@@ -830,4 +817,50 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
  #shopView .shop-counter-bar { grid-template-columns:36px minmax(0,1fr);gap:9px;bottom:6px;padding:10px; }
  #shopView .shop-counter-bar .shop-thumb { width:34px;height:34px; }
  #shopView .shop-counter-bar button { grid-column:1/-1; }
+}
+
+/* A room's decoration score, with the tier ladder tucked behind its badge. */
+.house-luxury { justify-self:end; width:250px; padding:10px 12px; border:3px solid #76603b; background:#f6eacb; box-shadow:3px 3px 0 #b1a180; color:#453b27; }
+.house-luxury-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.house-luxury-heading > strong { font-size:12px; white-space:nowrap; }
+.house-luxury-heading b[data-house] { font-size:19px; margin-left:5px; }
+.house-luxury-tiers { position:relative; }
+.house-luxury-tiers summary { cursor:pointer; font-size:11px; color:#31553c; padding:5px; }
+.house-luxury-tiers summary span { display:inline; color:inherit; font-size:inherit; }
+.house-tier-list { position:absolute; z-index:5; right:0; top:30px; width:230px; padding:12px; border:3px solid #76603b; background:#fff3d8; box-shadow:3px 4px 0 #9c8968; }
+.house-tier-list ol { list-style:none; margin:0; padding:0; }
+.house-tier-list li { display:flex; justify-content:space-between; gap:20px; padding:7px; font-size:11px; }
+.house-tier-list li span { font-size:11px; color:inherit; }
+.house-tier-list li[aria-current] { background:#d4dfbb; color:#31553c; }
+.house-tier-list p { margin:9px 0 0; font-size:10px; line-height:1.5; }
+.house-luxury progress { display:block; width:100%; height:9px; margin:7px 0; appearance:none; border:1px solid #87704c; background:#ddd0ac; }
+.house-luxury progress::-webkit-progress-bar { background:#ddd0ac; }
+.house-luxury progress::-webkit-progress-value { background:#6b8750; }
+.house-luxury progress::-moz-progress-bar { background:#6b8750; }
+.house-luxury > small { display:block; font-size:9px; color:#625538; }
+.profile-chats { margin-top:24px; padding-top:20px; border-top:2px solid var(--line); }
+.chat-section-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.profile-chats h3 { margin:0; font:700 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; letter-spacing:-.04em; }
+.profile-chats h4 { margin:22px 0 8px; font-size:12px; }
+.profile-chats button { padding:9px 11px; border-radius:2px; font-size:10px; min-height:36px; }
+.chat-stats { display:flex; flex-wrap:wrap; gap:20px; margin:14px 0; padding:12px; background:#e5ecd9; border:2px solid #c1cfb8; font-size:10px; }
+.chat-stats strong { font-size:20px; margin-right:5px; }
+.chat-help { font-size:10px; line-height:1.5; color:var(--muted); margin:8px 0; }
+.friendship-list,.chat-history-list { list-style:none; margin:10px 0; padding:0; }
+.friendship-list li,.chat-history-list li { display:flex; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); }
+.chat-avatar { flex:0 0 36px; width:36px; height:36px; display:grid; place-items:center; overflow:hidden; border:2px solid #b7c5ae; border-radius:6px; background:#e1e7d4; }
+.chat-avatar img { width:100%; height:100%; object-fit:cover; }
+.chat-copy { flex:1; min-width:0; }
+.chat-copy strong { display:block; font-size:12px; overflow-wrap:anywhere; }
+.chat-copy small { display:block; font-size:9px; line-height:1.5; color:var(--muted); margin-top:4px; }
+.friendship-score { white-space:nowrap; font-size:16px; }
+.friendship-score span,.chat-complete { color:#a84c5a; }
+.chat-complete { font-size:11px; white-space:nowrap; }
+.profile-chats .chat-empty { font-size:11px; line-height:1.6; color:var(--muted); }
+.chat-status { font-size:10px; line-height:1.6; color:var(--muted); }
+.chat-history-list button { flex-shrink:0; }
+.house-bar .house-status { grid-column:1/-1; }
+@media(max-width:760px) {
+ .house-luxury { grid-column:1/-1; width:100%; }
+ .house-luxury-tiers summary { padding:8px; }
 }

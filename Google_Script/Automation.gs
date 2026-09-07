@@ -13,7 +13,7 @@ var DONUT_MEMBER_HEADERS = [
 function donutConfigDefaults_() {
   return [
     ["CHANNEL_ID", "", "Slack channel ID; keep workspace-specific values in this private sheet"],
-    ["TOWN_URL", "https://donut-town.onrender.com/auth/slack/start", "Public one-click Donut Town entrance URL"],
+    ["TOWN_URL", "", "Public one-click Donut Town entrance URL"],
     ["AUTO_POST_ENABLED", "TRUE", "TRUE enables the weekly Bot message"],
     ["WEEKLY_POST_DAY", "MONDAY", "MONDAY through SUNDAY"],
     ["WEEKLY_POST_TIME", "09:00", "Local 24-hour time; checked every 15 minutes"],
@@ -34,7 +34,7 @@ function initializeDonutSheets() {
   ensureDonutConfigSheet_();
   ensureDonutRoundsSheet_();
   ensureDonutMembersSheet_();
-  return "Sheets are ready. Fill Configs CHANNEL_ID, then run setupDonutAutomation().";
+  return "Sheets are ready. Fill Configs CHANNEL_ID and TOWN_URL, then run setupDonutAutomation().";
 }
 
 // Run once after filling Configs. It replaces only the three Donut-owned time

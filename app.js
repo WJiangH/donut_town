@@ -13,9 +13,9 @@ const residentSlots = [
   { x: 85, y: 80, activity: "plaza" }
 ];
 const chemPodResidentSlots = [
-  { x: 29, y: 36 }, { x: 40, y: 36 }, { x: 52, y: 36 }, { x: 65, y: 36 }, { x: 76, y: 36 },
-  { x: 28, y: 75 }, { x: 35, y: 84 }, { x: 49, y: 78 }, { x: 51, y: 86 },
-  { x: 63, y: 78 }, { x: 71, y: 84 }, { x: 87, y: 82 }
+  { x: 29, y: 49 }, { x: 29, y: 65 }, { x: 40, y: 75 },
+  { x: 61, y: 75 }, { x: 73, y: 61 }, { x: 74, y: 43 },
+  { x: 35, y: 40 }, { x: 64, y: 40 }
 ];
 
 const donutStations = [
@@ -58,15 +58,7 @@ const mapObstacles = [
   { x: 50, y: 13, rx: 3.2, ry: 3.7 }
 ];
 
-const chemPodObstacles = [
-  { left: 7, right: 27, top: 40, bottom: 69 },
-  { left: 31, right: 66, top: 40, bottom: 68 },
-  { left: 67, right: 94, top: 40, bottom: 70 },
-  { left: 16, right: 82, top: 15, bottom: 37 },
-  { left: 24, right: 46, top: 69, bottom: 88 },
-  { left: 54, right: 62, top: 69, bottom: 89 },
-  { left: 64, right: 85, top: 68, bottom: 90 }
-];
+
 
 let outgoingInvitations = [];
 let selectedResident = null;
@@ -400,7 +392,7 @@ function renderResidents() {
 
 function renderChemPod() {
   const roomLayer = document.querySelector("#chemPodResidentsLayer");
-  const residentsMarkup = residents.filter(person => person.scene === "chemPod" && !remotePlayers.has(person.slackId)).map(person => `<button class="resident-pin ${person.status} ${person.activity || "path"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
+  const residentsMarkup = residents.filter(person => person.scene === "chemPod" && !remotePlayers.has(person.slackId)).map(person => `<button class="resident-pin ${person.status} ${person.activity || "path"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)};--feet-depth:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
     ${personMarkup(person)}
   </button>`).join("");
   const playerClass = `player-pin ${currentUser?.status || "open"}`;
@@ -413,7 +405,6 @@ function renderChemPod() {
   </div>`;
     roomLayer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
   }
-  renderChemPodTeamWall();
   paintResidentCharacters(sceneLayer("residents") || layer);
   updatePlayerElement(false);
   renderLivePlayers(0);
@@ -629,22 +620,6 @@ function connectRealtime() {
   socket.addEventListener("error", () => socket.close());
 }
 
-function renderChemPodTeamWall() {
-  const wall = document.querySelector("#chemPodTeamFaces");
-  if (!wall) return;
-  const people = [
-    ...(currentUser ? [currentUser] : []),
-    ...residents.filter(person => person.homeScene === "chemPod"),
-    ...residents.filter(person => person.homeScene !== "chemPod")
-  ].slice(0, 12);
-  wall.innerHTML = people.map(person => {
-    const name = person.displayName || person.name || "Slack member";
-    return person.avatarUrl
-      ? `<img src="${escapeHtml(person.avatarUrl)}" alt="" title="${escapeHtml(name)}" />`
-      : `<span title="${escapeHtml(name)}">${escapeHtml(initialsFor(name))}</span>`;
-  }).join("");
-}
-
 async function loadRoomContent() {
   try {
     const response = await fetch("/content/rooms.json", { cache: "no-store" });
@@ -742,13 +717,13 @@ function isTownWalkable(x, y) {
   return (plaza || corridor) && !obstacle;
 }
 
-// The baked floor follows the aisles between the benches; the rectangles below
-// stay as a fallback for when the mask file is missing.
+// Collision and its rectangular fallback come from the same room geometry.
 function isChemPodWalkable(x, y) {
   if (window.ChemPodCollision?.ready) return window.ChemPodCollision.isWalkable(x, y);
-  const insideFloor = x >= 10 && x <= 90 && y >= 34 && y <= 89;
-  const blocked = chemPodObstacles.some(obstacle => x >= obstacle.left && x <= obstacle.right && y >= obstacle.top && y <= obstacle.bottom);
-  return insideFloor && !blocked;
+  const geometry = window.CHEMPOD_WALK_MASK?.geometry;
+  if (!geometry) return false;
+  const contains = rect => x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  return geometry.floor.some(contains) && !geometry.blocked.some(contains);
 }
 
 // The shop floor: inside the four walls, and not through the counter.
@@ -1233,7 +1208,8 @@ function spreadResidentSlots(slots, collision, count, spacing) {
   for (const spot of spots) slots.push({ ...spot, activity: "path" });
 }
 spreadResidentSlots(residentSlots, window.TownCollision, 160, 4.2);
-spreadResidentSlots(chemPodResidentSlots, window.ChemPodCollision, 26, 4.5);
+// Keep the compact room's deliberate gathering positions; additional occupants
+// share the same reachable floor using the existing population allocator.
 // After the anchors are settled, put the member back where they left off.
 restorePosition();
 
@@ -1407,10 +1383,11 @@ function renderCurrentProfile() {
   document.querySelector("#myDonutCount").textContent = Number.isInteger(donutCount) ? donutCount : "-";
   document.querySelector("#myDonutNote").textContent = Number.isInteger(donutCount)
     ? "Completed pairings recorded in the Donut Bot sheet."
-    : "Donut history will appear after the Lottery history sync is connected.";
+    : "Lottery donut rewards are not connected yet.";
 }
 
 let wardrobeMount = null;
+let profileChatsMount = null;
 function openProfile() {
   closeDrawer();
   const profileDrawer = document.querySelector("#profileDrawer");
@@ -1418,6 +1395,11 @@ function openProfile() {
   profileDrawer.setAttribute("aria-hidden", "false");
   document.querySelector("#profileScrim").hidden = false;
   document.querySelector("#profileButton").setAttribute("aria-expanded", "true");
+  if (!profileChatsMount) profileChatsMount = import("./profile-chats.mjs").then(module => module.mountProfileChats(document.querySelector("#profileChats"))).catch(() => {
+    profileChatsMount = null;
+    document.querySelector('[data-chats="status"]').textContent = "Chat history unavailable. Reopen to retry.";
+  });
+  profileChatsMount?.then(panel => panel?.load());
   const wardrobe = document.querySelector("#profileWardrobe");
   if (new URLSearchParams(location.search).get("accessories") === "1" && !headwearPrototypeLoad && currentUser?.character?.url === "/assets/residents/r-7f3a2c/walk-v1.png") {
     headwearPrototypeLoad = import("./prototypes/headwear.mjs").then(module => module.attachTownPrototype(profileDrawer, currentUser.character)).then(prototype => { headwearPrototype = prototype; }).catch(() => { headwearPrototypeLoad = null; });
@@ -1756,6 +1738,12 @@ document.addEventListener("keydown", event => {
 
 document.addEventListener("keyup", event => pressedKeys.delete(event.key.toLowerCase()));
 window.addEventListener("blur", () => { pressedKeys.clear(); finishMapDrag(); });
+// Match an 88px painted resident to 22% of the room height on every screen.
+// Observe the scene itself so entering a previously hidden room also sizes it.
+new ResizeObserver(([entry]) => {
+  if (entry.contentRect.width > 0) entry.target.style.setProperty("--pod-figure", entry.contentRect.width / 600);
+}).observe(document.querySelector("#chemPodWorld"));
+
 window.addEventListener("resize", () => {
   finishMapDrag();
   townCameraMetrics = null;

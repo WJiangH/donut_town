@@ -3,6 +3,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { townOrigin } from '../../../../scripts/setup-town.mjs';
 import { SlackClient } from '../../../../slack/client.mjs';
 
 export function findMember(members, query) {
@@ -20,7 +21,8 @@ async function main() {
   if (!query) throw new Error('Usage: node fetch-render-avatar.mjs "Member name"');
   process.loadEnvFile(fileURLToPath(new URL('../../../../.env.local', import.meta.url)));
   if (!process.env.STAGING_PASSWORD) throw new Error('Set STAGING_PASSWORD in the ignored local .env.local file; never paste it into chat.');
-  const endpoint = 'https://donut-town.onrender.com/api/slack/members';
+  if (!process.env.PUBLIC_BASE_URL) throw new Error('Set PUBLIC_BASE_URL to your own deployed Town origin in .env.local.');
+  const endpoint = townOrigin(process.env.PUBLIC_BASE_URL) + '/api/slack/members';
   const response = await fetch(endpoint, {
     headers: { accept: 'application/json', authorization: 'Basic ' + Buffer.from('donut:' + process.env.STAGING_PASSWORD).toString('base64') },
     redirect: 'error', signal: AbortSignal.timeout(30000)

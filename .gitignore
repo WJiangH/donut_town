@@ -14,3 +14,15 @@ node_modules/
 
 # Full-resolution generated art stays local; deploy only baked runtime assets.
 art-source/
+
+# Local deployment manifests and agent setup artifacts.
+.donut/
+
+# Other local credential files and private browser/source exports.
+.env*
+!.env.example
+private-source.json
+private-source-*.json
+*.har
+*.pem
+*.key

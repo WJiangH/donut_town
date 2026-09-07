@@ -2,12 +2,16 @@ import { createServer } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { sendStaticFile } from "./web/static-files.mjs";
+import { isPrivatePath } from "./web/private-path.mjs";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { OutfitStore, equippedCharacter, validateOutfit, wardrobeSupported, wardrobeCharacters } from "./characters/wardrobe/store.mjs";
 import { ShopStore, loadCatalog, walletFor, ownedIds, checkPurchase, equippedPet } from "./shop/store.mjs";
 import { HouseStore, HOUSE_GRID, validateLayout, homeOwned } from "./house/store.mjs";
+import { houseLuxury } from "./house/luxury.mjs";
+import { ChatStore } from "./chats/store.mjs";
+import { ChatService } from "./chats/service.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
@@ -55,6 +59,12 @@ const outfitStore = new OutfitStore({ url: config.upstashUrl, token: config.upst
 const shopStore = new ShopStore({ url: config.upstashUrl, token: config.upstashToken });
 const shopCatalog = loadCatalog();
 const houseStore = new HouseStore({ url: config.upstashUrl, token: config.upstashToken });
+const chatService = new ChatService({
+  invitationStore,
+  store: new ChatStore({ url: config.upstashUrl, token: config.upstashToken, namespace: config.channelId }),
+  keyFor: id => memberCharacterKey(id, config.signingSecret),
+  currentRound: () => ({ roundId: activeRoundId(), snapshots: [...new Set(activeInvitations().map(item => item.inviterId))].map(invitationSnapshotFor) })
+});
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
@@ -261,7 +271,7 @@ const server = createServer(async (request, response) => {
       if (request.method === "GET") {
         let layout;
         try { layout = await houseStore.load(key, { ownedIds: owned, catalog: shopCatalog }); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
-        return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture });
+        return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
       }
       if (request.method !== "POST") return sendJson(response, 405, { error: "method_not_allowed" });
 
@@ -272,7 +282,33 @@ const server = createServer(async (request, response) => {
         layout = validateLayout(body.layout, { ownedIds: owned, catalog: shopCatalog });
       } catch { return sendJson(response, 400, { error: "invalid_layout" }); }
       try { await houseStore.save(key, layout); } catch { return sendJson(response, 503, { error: "house_save_failed" }); }
-      return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture });
+      return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
+    }
+
+    if (url.pathname === "/api/profile/chats" || url.pathname === "/api/profile/chats/confirm") {
+      response.setHeader("cache-control", "private, no-store");
+      const session = getSlackSession(request);
+      if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
+      const confirming = url.pathname.endsWith("/confirm");
+      if (request.method !== (confirming ? "POST" : "GET")) return sendJson(response, 405, { error: "method_not_allowed" });
+      let chatId;
+      if (confirming) {
+        try {
+          const body = JSON.parse(await readBody(request));
+          if (Object.keys(body).length !== 1 || !/^[a-f0-9]{64}$/.test(body.chatId || "")) throw new Error();
+          chatId = body.chatId;
+        } catch { return sendJson(response, 400, { error: "invalid_chat" }); }
+      }
+      try {
+        await ensureInvitationStateHydrated();
+        const members = await getCachedChannelMembers();
+        const data = confirming ? await chatService.confirm(session.sub, chatId, members) : await chatService.profile(session.sub, members);
+        return sendJson(response, 200, data);
+      } catch (error) {
+        if (error.message === "member_not_found") return sendJson(response, 403, { error: "member_not_found" });
+        if (error.message === "chat_not_found") return sendJson(response, 404, { error: "chat_not_found" });
+        return sendJson(response, 503, { error: "chat_history_unavailable" });
+      }
     }
 
     if (request.method === "POST" && url.pathname === "/api/profile") {
@@ -727,6 +763,7 @@ function redirect(response, location) {
 
 async function serveStatic(pathname, response, request) {
   const relativePath = pathname === "/" ? "index.html" : decodeURIComponent(pathname).replace(/^\/+/, "");
+  if (isPrivatePath(relativePath)) return sendJson(response, 404, { error: "not_found" });
   const filePath = resolve(root, normalize(relativePath));
   if (!filePath.startsWith(resolve(root) + "/")) return sendJson(response, 403, { error: "forbidden" });
   if (filePath.startsWith(resolve(root, "art-source") + "/")) return sendJson(response, 404, { error: "not_found" });

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile, writeFile } from 'node:fs/promises';
+import { townOrigin } from './setup-town.mjs';
 import { createHash } from 'node:crypto';
 import { findMember } from '../.agents/skills/donut-town-pixel-art/scripts/fetch-render-avatar.mjs';
 
@@ -10,7 +11,8 @@ if (!name || !/^r-[a-z0-9-]+$/.test(id || '') || (mode && mode !== '--verify')) 
 }
 process.loadEnvFile(new URL('../.env.local', import.meta.url));
 if (!process.env.STAGING_PASSWORD) throw new Error('Missing local STAGING_PASSWORD');
-const origin = 'https://donut-town.onrender.com';
+if (!process.env.PUBLIC_BASE_URL) throw new Error('Set PUBLIC_BASE_URL to your own deployed Town origin in .env.local.');
+const origin = townOrigin(process.env.PUBLIC_BASE_URL);
 const headers = { authorization: 'Basic ' + Buffer.from('donut:' + process.env.STAGING_PASSWORD).toString('base64') };
 async function get(path) {
   const response = await fetch(origin + path, { headers, redirect: 'error', signal: AbortSignal.timeout(30000) });

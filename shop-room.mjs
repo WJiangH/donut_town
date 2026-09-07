@@ -1,6 +1,7 @@
 // A paged product wall; purchases and pet equipment use the existing shop API.
 import { itemArt } from "./shop/item-art.mjs";
 import { SHOP_MESSAGES, shopRequest } from "./shop-panel.mjs";
+import { decorationLuxury } from "./house/luxury.mjs";
 
 const PAGE_SIZE = 16;
 const escapeHtml = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
@@ -58,7 +59,8 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
     const out = state.pet === item.id;
     bar.querySelector('[data-shop="bar-thumb"]').style.cssText = `background-image:url('${itemArt(item, true)}');background-size:contain;background-repeat:no-repeat;background-position:center`;
     bar.querySelector('[data-shop="bar-name"]').textContent = item.name;
-    bar.querySelector('[data-shop="bar-blurb"]').textContent = item.blurb || "";
+    const luxury = decorationLuxury(item);
+    bar.querySelector('[data-shop="bar-blurb"]').textContent = [item.blurb, luxury ? `+${luxury} Luxury when placed` : ''].filter(Boolean).join(' · ');
     const action = bar.querySelector('[data-shop="bar-action"]');
     const affordable = state.wallet ? state.wallet.balance >= item.price : false;
     if (item.available === false) action.textContent = "Coming soon";

@@ -20,14 +20,14 @@ Do not claim that generated furniture automatically supplies collision, that a v
 ## Workflow
 
 1. Inspect the current town map, one approved resident sprite, and any existing Pod interior at original resolution.
-2. Define the Pod's purpose, signature equipment, palette accents, entrance location, interaction points, and required floor paths.
+2. Measure the current rendered sprite-to-room ratio; a scale problem can come from CSS/camera as well as art. Define the Pod's purpose, signature equipment, palette accents, entrance location, interaction points, and required floor paths.
 3. Read [references/room-workflow.md](references/room-workflow.md) before generating or integrating a room.
 4. Use the existing town only as a style, camera, lighting, scale, and pixel-density reference. Do not reproduce its outdoor composition.
-5. Generate the background without people, labels, UI, or baked interaction markers. Keep a clear bottom-center entrance unless the existing building requires another orientation.
-6. Save approved production art as `assets/<pod-slug>-interior.png`. Keep failed drafts and intermediate generations out of Git.
+5. Use only approved game art as generation references, never original Slack/profile photos. Generate the background without people, portraits, labels, UI, or baked interaction markers. Keep a clear bottom-center entrance unless the existing building requires another orientation.
+6. Save approved production art as `assets/<pod-slug>-interior[-vN].png`. Keep failed drafts and intermediate generations out of Git.
 7. Implement the room as a distinct scene. Door buttons must respond immediately; optional character approach animation must never block entry.
 8. Define walkability and collision separately in normalized 0–100 coordinates. Use a few maintainable furniture islands rather than tracing every pixel.
-9. Verify entry, exit, keyboard and click movement, collision, mobile framing, reduced motion, and asset loading over the actual application.
+9. Verify entry, exit, keyboard and click movement, furniture occlusion, collision, desktop/mobile framing and sprite scale, reduced motion, and asset loading over the actual application.
 
 ## Consistency rules
 

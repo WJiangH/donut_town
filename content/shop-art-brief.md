@@ -77,3 +77,20 @@ Six additional pieces use the same built-in imagegen workflow, palette, transpar
 | Paper floor lamp | 2 | 1×1 |
 
 These add 526,881 bytes across six runtime PNGs and six thumbnails, bringing the collection to 1,707,047 bytes. They use the existing purchase, inventory, drag, overlap and save contracts. Existing item IDs, prices, starter grants and saved room layouts are unchanged. The expanded shop has 22 non-starter products over two pages; each page remains capped at 16 thumbnails.
+
+## Home luxury
+
+`luxury` is a fixed integer in each decoration's catalog entry, independent of later price changes. Starter items contribute zero. The initial assignment is 10–50 points per purchased decoration. Only owned items currently placed in the room count; an item counts once. Moving furniture and repeated saves do not accumulate points, and putting it away removes its contribution. Existing homes derive their score from their saved layouts without migration or a separate counter.
+
+`house/luxury.mjs` is shared by the editor and server. The editor previews changes immediately alongside its existing save status; GET and successful POST `/api/house` responses derive `luxury` from the validated layout and owned inventory. The API accepts no submitted score. Shop details show the item's points before purchase.
+
+| Tier | Minimum luxury |
+|---|---:|
+| Simple | 0 |
+| Cozy | 20 |
+| Charming | 60 |
+| Elegant | 120 |
+| Luxurious | 200 |
+| Grand | 320 |
+
+These tiers describe the room's decoration only. The header shows the score, tier and progress to the next tier; its tier badge opens the full ladder. This is not a member ranking and does not affect invitations or donut earnings.

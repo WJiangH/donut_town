@@ -61,17 +61,15 @@
     { action: "sitGrass", scene: "town", x: 69.5, y: 33.2, radius: 2.0, seats: 2, note: "east cottage green" },
     { action: "sitGrass", scene: "town", x: 51.8, y: 82.4, radius: 2.0, seats: 2, note: "south lane green" },
 
-    // Chem Pod interior: the same idea, against the room's own floor.
-    { action: "experiment", scene: "chemPod", x: 50, y: 60, seats: 3, note: "central lab bench" },
-    { action: "experiment", scene: "chemPod", x: 46, y: 30, seats: 2, note: "fume hood" },
-    { action: "experiment", scene: "chemPod", x: 74, y: 50, seats: 2, note: "east workbench" },
-    { action: "experiment", scene: "chemPod", x: 22, y: 34, seats: 2, note: "west workbench" },
-    { action: ["read", "coffee"], scene: "chemPod", x: 36, y: 74, seats: 2, note: "reading table" },
-    { action: "read", scene: "chemPod", x: 88, y: 40, seats: 1, note: "bookshelf" },
-    { action: "read", scene: "chemPod", x: 15, y: 55, seats: 1, note: "notice board" },
-    { action: "coffee", scene: "chemPod", x: 76, y: 72, seats: 3, note: "coffee counter" },
-    { action: "coffee", scene: "chemPod", x: 58, y: 72, seats: 1, note: "sample trolley" },
-    { action: ["read", "experiment"], scene: "chemPod", x: 66, y: 56, seats: 2, note: "blackboard" }
+    // Feet beside the compact v3 room's furniture, not on its painted tops.
+    { action: "experiment", scene: "chemPod", x: 43, y: 71, seats: 2, note: "central lab bench" },
+    { action: "experiment", scene: "chemPod", x: 58, y: 71, seats: 2, note: "microscope" },
+    { action: "experiment", scene: "chemPod", x: 50, y: 40, seats: 1, note: "fume hood" },
+    { action: "read", scene: "chemPod", x: 72, y: 40, seats: 1, note: "bookshelf" },
+    { action: ["read", "coffee"], scene: "chemPod", x: 27, y: 61, seats: 1, note: "reading nook" },
+    { action: "read", scene: "chemPod", x: 21, y: 77, seats: 1, note: "bookstand" },
+    { action: "coffee", scene: "chemPod", x: 76, y: 62, seats: 1, note: "coffee counter" }
+
   ];
 
   // How close you have to stop, and how long you have to stay, before a pose starts.

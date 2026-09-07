@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=42" />
+    <link rel="stylesheet" href="styles.css?v=45" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -97,14 +97,14 @@
 
         <div class="map-wrap">
           <div class="map-world interior-world" id="chemPodWorld">
-            <img class="town-map interior-map" src="assets/chem-pod-interior-v2.png" alt="A warm pixel-art chemistry clubhouse with workbenches, an announcement board, a team wall, a collaboration table and open floor paths." />
+            <img class="town-map interior-map" src="assets/chem-pod-interior-v3.png" alt="A compact pixel-art chemistry clubhouse with one experiment bench, a reading nook, a coffee counter and a clear central doorway." />
             <aside class="chem-pod-notice" aria-label="Chem Pod announcement">
               <span id="chemPodNoticeKicker">This week</span>
-              <strong id="chemPodNoticeTitle">Congrats Yulia!</strong>
+              <strong id="chemPodNoticeTitle">Welcome, neighbors!</strong>
             </aside>
-            <section class="chem-pod-team-wall" aria-label="Chem Pod team wall">
-              <div id="chemPodTeamFaces"></div>
-            </section>
+            <img class="chem-foreground chem-bench" src="assets/chem-pod-interior-v3.png" alt="" aria-hidden="true" />
+            <img class="chem-foreground chem-reading" src="assets/chem-pod-interior-v3.png" alt="" aria-hidden="true" />
+            <img class="chem-foreground chem-coffee" src="assets/chem-pod-interior-v3.png" alt="" aria-hidden="true" />
             <div class="residents-layer" id="chemPodResidentsLayer" aria-live="polite"></div>
             <div class="pets-layer" id="chemPodPetsLayer" aria-hidden="true"></div>
             <div class="live-players-layer" id="chemPodLivePlayersLayer" aria-live="polite"></div>
@@ -178,6 +178,15 @@
           <span>Your place</span>
           <strong>Donut Home</strong>
         </div>
+        <div class="house-luxury" aria-label="Home luxury">
+          <div class="house-luxury-heading"><strong>Luxury <b data-house="luxury-score">—</b></strong>
+            <details class="house-luxury-tiers"><summary aria-label="Luxury tiers"><span data-house="luxury-tier">Simple</span></summary>
+              <div class="house-tier-list"><ol data-house="luxury-tiers"></ol><p>Placed decorations count. Starter items add 0.</p></div>
+            </details>
+          </div>
+          <progress data-house="luxury-progress" max="100" value="0" aria-label="Progress to next luxury tier"></progress>
+          <small data-house="luxury-next">Place decorations to add Luxury</small>
+        </div>
         <p class="house-status" role="status" data-house="status">Opening the door…</p>
       </div>
       <div class="house-room">
@@ -229,6 +238,20 @@
           <strong id="myDonutCount">-</strong>
         </div>
       </section>
+      <section id="profileChats" class="profile-chats" aria-labelledby="chatHistoryTitle">
+        <div class="chat-section-heading"><h3 id="chatHistoryTitle">Donut chats</h3><button type="button" data-chats="retry">Refresh</button></div>
+        <div class="chat-stats"><span><strong data-chats="completed">—</strong> completed</span><span><strong data-chats="connections">—</strong> <span data-chats="connections-label">connections</span></span></div>
+        <h4>Friendships</h4>
+        <p class="chat-help">+10 per chat, once both confirm.</p>
+        <ul class="friendship-list" data-chats="friends"></ul>
+        <button type="button" data-chats="more-friends" hidden>More friends</button>
+        <h4>Recent chats</h4>
+        <ul class="chat-history-list" data-chats="history"></ul>
+        <button type="button" data-chats="more" hidden>More chats</button>
+        <p class="chat-help" data-chats="older" hidden>Showing the latest 50 confirmations. Friendship totals include all confirmed chats.</p>
+        <p class="chat-help">Town matches: past 52 weeks. Lottery history not connected.</p>
+        <p class="chat-status" data-chats="status" role="status"></p>
+      </section>
       <section id="profileWardrobe" class="profile-wardrobe" aria-labelledby="wardrobeTitle" hidden>
         <h3 id="wardrobeTitle">Wardrobe</h3>
         <div class="wardrobe-body">
@@ -244,10 +267,10 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
     <script src="assets/town-walkmask.js?v=3"></script>
-    <script src="assets/chempod-walkmask.js?v=1"></script>
+    <script src="assets/chempod-walkmask.js?v=2"></script>
     <script src="town-collision.js?v=3"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
-    <script src="town-zones.js?v=3"></script>
-    <script src="app.js?v=51"></script>
+    <script src="town-zones.js?v=4"></script>
+    <script src="app.js?v=53"></script>
   </body>
 </html>

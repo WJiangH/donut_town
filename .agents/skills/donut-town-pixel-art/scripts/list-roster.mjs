@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { townOrigin } from '../../../../scripts/setup-town.mjs';
 import { SlackClient } from '../../../../slack/client.mjs';
 
 const REQUIRED_ACTIONS = ['sitChair', 'sitGrass', 'garden', 'lookout', 'read', 'coffee', 'experiment', 'dance', 'fish'];
@@ -8,7 +9,8 @@ const missingActions = process.argv.includes('--missing-actions');
 
 process.loadEnvFile(fileURLToPath(new URL('../../../../.env.local', import.meta.url)));
 if (!process.env.STAGING_PASSWORD) throw new Error('Set STAGING_PASSWORD in the ignored local .env.local file.');
-const endpoint = 'https://donut-town.onrender.com/api/slack/members';
+if (!process.env.PUBLIC_BASE_URL) throw new Error('Set PUBLIC_BASE_URL to your own deployed Town origin in .env.local.');
+  const endpoint = townOrigin(process.env.PUBLIC_BASE_URL) + '/api/slack/members';
 const response = await fetch(endpoint, {
   headers: { accept: 'application/json', authorization: 'Basic ' + Buffer.from('donut:' + process.env.STAGING_PASSWORD).toString('base64') },
   redirect: 'error', signal: AbortSignal.timeout(30000)

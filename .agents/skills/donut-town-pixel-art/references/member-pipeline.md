@@ -1,6 +1,6 @@
 # New member resident (fast path)
 
-Use this for one named #donut-be-strangers member who should get an editable Town character. Do not read the other reference files unless a gate fails.
+Use this for one named member of the configured Slack channel who should get an editable Town character. Do not read the other reference files unless a gate fails.
 
 A batch coordinator may assign a unique `r-` + 6 hex id and tell the agent not to bind, commit, or deploy. In that mode, write only that id's assets and stop. The coordinator binds every ready id, then deploys once.
 
@@ -15,6 +15,8 @@ Keep the shared default Town atlas when any of these is true. Write no files and
 Do not invent a human body from a cat, logo, or default silhouette. Already-bound members stay on their current character unless the user asked to replace that one person.
 
 ## 1. Fetch and inspect
+
+Set `PUBLIC_BASE_URL` to this workspace's deployed HTTPS Town origin in the ignored `.env.local`, along with its `STAGING_PASSWORD`. Fetch and binding helpers require that origin; never substitute another team's service URL.
 
 For a batch, the coordinator may first run `node .agents/skills/donut-town-pixel-art/scripts/list-roster.mjs` to drop default avatars and already-bound members. For interaction poses on existing residents, use `--missing-actions` and [action-pipeline.md](action-pipeline.md).
 

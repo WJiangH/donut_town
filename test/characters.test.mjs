@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { createHmac } from 'node:crypto';
 import { characterForMember, memberCharacterKey, createCharacterResolver } from '../characters/catalog.mjs';
 
@@ -22,10 +22,15 @@ test('member bindings require the right ID and server secret, with domain separa
 
 test('public bindings contain only digests and existing transparent character assets', () => {
   const bindings = JSON.parse(readFileSync(new URL('../characters/assignments.json', import.meta.url), 'utf8'));
-  assert.ok(Object.keys(bindings).length);
   for (const [key, id] of Object.entries(bindings)) {
     assert.match(key, /^[a-f0-9]{64}$/);
     assert.match(id, /^r-[a-z0-9-]+$/);
+    assert.ok(readdirSync(new URL('../characters/', import.meta.url)).includes(`${id}.json`));
+  }
+  // A fresh public deployment has no production bindings; still validate all art.
+  const ids = readdirSync(new URL('../characters/', import.meta.url)).filter(file => /^r-[a-z0-9-]+\.json$/.test(file)).map(file => file.slice(0,-5));
+  assert.ok(ids.length);
+  for (const id of ids) {
     const art = JSON.parse(readFileSync(new URL(`../characters/${id}.json`, import.meta.url), 'utf8'));
     const bytes = readFileSync(new URL(`..${art.url}`, import.meta.url));
     assert.equal(bytes.subarray(1, 4).toString(), 'PNG');

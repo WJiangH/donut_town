@@ -37,6 +37,7 @@ export function loadCatalog(url = new URL('../content/shop.json', import.meta.ur
     if (!/^[a-z0-9-]{3,40}$/.test(item.id || '') || ids.has(item.id)) throw new Error(`Invalid shop item id: ${item.id}`);
     if (!KINDS.has(item.kind)) throw new Error(`Invalid shop item kind: ${item.kind}`);
     if (!Number.isInteger(item.price) || item.price < 0 || item.price > 999) throw new Error(`Invalid price for ${item.id}`);
+    if (item.luxury !== undefined && (!Number.isSafeInteger(item.luxury) || item.luxury < 0 || item.luxury > 9999 || (item.luxury > 0 && (item.kind !== 'decoration' || item.starter)))) throw new Error(`Invalid luxury for ${item.id}`);
     if (typeof item.name !== 'string' || !item.name.trim()) throw new Error(`Invalid name for ${item.id}`);
     if (item.thumb !== undefined && !/^\/assets\/[\w./-]+\.(png|jpg)$/.test(item.thumb)) throw new Error(`Invalid thumbnail for ${item.id}`);
     if (item.art !== undefined && !/^\/assets\/[\w./-]+\.png$/.test(item.art)) throw new Error(`Invalid art for ${item.id}`);

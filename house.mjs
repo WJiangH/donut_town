@@ -1,4 +1,5 @@
 import { itemArt, itemSprite } from './shop/item-art.mjs';
+import { decorationLuxury, houseLuxury, LUXURY_TIERS } from './house/luxury.mjs';
 const MESSAGES = {
   slack_login_required: 'Open the town from Slack to visit your home.',
   member_not_found: 'Only channel members have a home.',
@@ -24,16 +25,28 @@ export function mountHouse(root, {paintCharacter = null} = {}) {
     const {w,h}=size(item.id);
     const style=entry?`grid-column:${entry.x+1}/span ${w};grid-row:${entry.y+1}/span ${h};z-index:${entry.y+h};`:'';
     const art=entry?itemSprite(item):`<img src="${escapeHtml(itemArt(item,true))}" alt="" loading="lazy" decoding="async" draggable="false">`;
-    return `<button class="house-tile${selected===item.id?' selected':''}" data-item="${escapeHtml(item.id)}" style="${style}" title="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)}" aria-pressed="${selected===item.id}">${art}</button>`;
+    return `<button class="house-tile${selected===item.id?' selected':''}" data-item="${escapeHtml(item.id)}" style="${style}" title="${escapeHtml(item.name)} · +${decorationLuxury(item)} Luxury" aria-label="${escapeHtml(item.name)}" aria-pressed="${selected===item.id}">${art}</button>`;
   }
   function render() {
     const focus=document.activeElement?.dataset.item;
     floor.style.setProperty('--cols',grid.cols);floor.style.setProperty('--rows',grid.rows);
     floor.innerHTML=layout.map(entry=>furniture.has(entry.id)?tile(furniture.get(entry.id),entry):'').join('')+'<span class="house-target" hidden></span>';
     shelf.innerHTML=owned.filter(id=>furniture.has(id)&&!placed(id)).map(id=>tile(furniture.get(id))).join('') || '<p class="house-empty">All placed. Find more in the shop.</p>';
-    root.querySelector('[data-house="selected"]').textContent=furniture.get(selected)?.name || 'Select a decoration';
+    const selectedItem=furniture.get(selected);
+    root.querySelector('[data-house="selected"]').textContent=selectedItem ? `${selectedItem.name} · +${decorationLuxury(selectedItem)} Luxury` : 'Select a decoration';
     root.querySelector('[data-house="remove"]').disabled=!placed(selected);
+    renderLuxury();
     if(focus)root.querySelector(`[data-item="${focus}"]`)?.focus({preventScroll:true});
+  }
+  function renderLuxury() {
+    const luxury=houseLuxury({items:layout},{catalog:{items:[...furniture.values()]},ownedIds:owned});
+    root.querySelector('[data-house="luxury-score"]').textContent=luxury.score;
+    root.querySelector('[data-house="luxury-tier"]').textContent=luxury.tier.name;
+    root.querySelector('[data-house="luxury-next"]').textContent=luxury.nextTier ? `${luxury.remaining} to ${luxury.nextTier.name}` : 'Top tier';
+    const progress=root.querySelector('[data-house="luxury-progress"]');
+    progress.value=luxury.progress;
+    progress.setAttribute('aria-valuetext',`${luxury.score} Luxury, ${luxury.tier.name}${luxury.nextTier ? `, ${luxury.remaining} to ${luxury.nextTier.name}` : ', top tier'}`);
+    root.querySelector('[data-house="luxury-tiers"]').innerHTML=LUXURY_TIERS.map(tier=>`<li${tier===luxury.tier?' aria-current="step"':''}><b>${tier.name}</b><span>${tier.min}+</span></li>`).join('');
   }
   async function flush() {
     clearTimeout(timer);

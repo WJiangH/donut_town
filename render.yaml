@@ -3,7 +3,7 @@ services:
     name: donut-town
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -22,7 +22,7 @@ services:
       - key: SLACK_CLIENT_SECRET
         sync: false
       - key: STAGING_PASSWORD
-        sync: false
+        generateValue: true
       - key: UPSTASH_REDIS_REST_URL
         sync: false
       - key: UPSTASH_REDIS_REST_TOKEN

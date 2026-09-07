@@ -107,3 +107,28 @@ test('a crowd gets its own space instead of stacking up', () => {
     assert.deepEqual(collision.spreadPoints(count, spacing), spots);
   }
 });
+
+test('compact Chem Pod keeps a route around every side of the island', () => {
+  const stops = [{x:50,y:86},{x:28,y:55},{x:50,y:40},{x:74,y:55},{x:50,y:75}];
+  for (let i = 0; i < stops.length; i++) {
+    assert.ok(ChemPodCollision.isWalkable(stops[i].x, stops[i].y));
+    const path = ChemPodCollision.findPath(stops[i], stops[(i + 1) % stops.length]);
+    assert.ok(path.length, `route ${i} must exist`);
+    let previous = stops[i];
+    for (const point of path) {
+      // Check segments, not just waypoints: a shortcut must not cross furniture.
+      for (let step = 0; step <= 100; step++) {
+        const x = previous.x + (point.x - previous.x) * step / 100;
+        const y = previous.y + (point.y - previous.y) * step / 100;
+        assert.ok(ChemPodCollision.isWalkable(x,y), `route ${i} cuts furniture at ${x},${y}`);
+      }
+      previous = point;
+    }
+  }
+  for (const point of [{x:50,y:55},{x:18,y:61},{x:85,y:60},{x:20,y:85},{x:80,y:85}]) {
+    assert.equal(ChemPodCollision.isWalkable(point.x,point.y),false);
+    const target = ChemPodCollision.nearestWalkable(point.x,point.y);
+    assert.ok(ChemPodCollision.isWalkable(target.x,target.y));
+    assert.ok(ChemPodCollision.findPath(stops[0],target).length);
+  }
+});
