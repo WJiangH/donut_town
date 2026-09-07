@@ -81,7 +81,8 @@ This is still a testing build:
 - Real DM sending is disabled by default; dry-run is the default behavior.
 - Residents can be filtered and inspected in the product prototype.
 - The current user can click paths or hold WASD / arrow keys to walk.
-- Walking is limited to the roads, lawns and bridges painted on the map.
+- Walking is limited to the roads, lawns, bridges and crop rows on the map.
+- Standing still somewhere tagged settles a character into what that place is for.
 - A user can rank up to three invitations.
 - Booked and pending residents have visible status without revealing partners.
 
@@ -101,8 +102,30 @@ Regenerate it whenever the map art changes, and open the town with
 node scripts/build-town-walkmask.mjs --preview /tmp/walkmask.png
 ```
 
-Bridges and deeply shaded crossings are listed as `ALLOW_SEGMENTS` inside that
-script; add to them if a new crossing reads as water to the colour pass.
+Bridges, boardwalks and shaded crossings are listed as `ALLOW_SEGMENTS` inside
+that script, and fenced ground you should still be able to walk - the farm crop
+rows - as `ALLOW_SHAPES`. Add to them when the colour pass reads a crossing as
+water or fences off somewhere the town should be able to wander.
+
+### What each place on the map is for
+
+Characters do not need a button to sit down: stop somewhere for a second or two
+and they settle into whatever that spot is for - a free bench, the open lawn, a
+bridge railing, the cafe tables, the crop rows. Seats are single occupancy, so
+a bench with somebody already on it is left alone.
+
+The tags come from two places. `town-zones.js` holds the hand-placed furniture -
+every bench, cafe table, the gazebo, the picnic blanket, the bridges - written
+as the object's own position; the spot to stand and the way to face are worked
+out from the walk mask at load. `assets/town-zones-auto.js` holds the tags that
+can be measured instead of placed: open lawn, riverbank viewpoints and planted
+beds. Regenerate those after changing the map or the walk mask:
+
+```
+node scripts/build-town-zones.mjs
+```
+
+Open the town with `?zones=1` to see every tag drawn over the map.
 
 ### Free invitation history with Upstash
 

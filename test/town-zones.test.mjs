@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 function loadTown() {
   const scope = {window: {location: {search: ''}}, document: {addEventListener() {}}};
   scope.window.window = scope.window;
-  for (const file of ['../assets/town-walkmask.js', '../town-collision.js', '../town-zones.js']) {
+  for (const file of ['../assets/town-walkmask.js', '../town-collision.js', '../assets/town-zones-auto.js', '../town-zones.js']) {
     const source = readFileSync(new URL(file, import.meta.url), 'utf8');
     new Function('window', 'document', 'atob', source)(scope.window, scope.document, atob);
   }
@@ -20,12 +20,24 @@ const ALL_ACTIONS = Object.fromEntries(
 test('every tagged spot in town stands on ground a character can reach', () => {
   assert.equal(TownZones.ready, true);
   const townZones = TownZones.list.filter(zone => zone.scene === 'town');
-  assert.ok(townZones.length >= 30);
+  assert.ok(townZones.length >= 150, `only ${townZones.length} tags in town`);
+  assert.ok(townZones.filter(zone => zone.measured).length >= 100);
   for (const zone of townZones) {
     assert.ok(TownCollision.isWalkable(zone.anchor.x, zone.anchor.y), `${zone.note} stands off the map`);
     const path = TownCollision.findPath({x: 50, y: 59}, zone.anchor);
     assert.ok(path.length, `${zone.note} cannot be walked to`);
   }
+});
+
+test('every action has somewhere to happen, in more than one corner of town', () => {
+  const spread = {};
+  for (const zone of TownZones.list.filter(zone => zone.scene === 'town')) {
+    for (const pose of [zone.action].flat()) (spread[pose] ??= []).push(zone);
+  }
+  for (const pose of ['sitChair', 'sitGrass', 'coffee', 'read', 'lookout', 'garden']) {
+    assert.ok(spread[pose]?.length >= 4, `${pose} has only ${spread[pose]?.length ?? 0} places`);
+  }
+  assert.ok(spread.garden.filter(zone => zone.x > 72 && zone.y < 27).length >= 10, 'the farm should be full of garden tags');
 });
 
 test('a character only settles into poses their art actually has', () => {

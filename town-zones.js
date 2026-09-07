@@ -4,25 +4,27 @@
 (function () {
   const ZONES = [
     // Benches: sit down when the seat is free.
-    { action: "sitChair", scene: "town", x: 43.5, y: 47.0, note: "fountain west bench" },
-    { action: "sitChair", scene: "town", x: 56.4, y: 47.1, note: "fountain east bench" },
-    { action: "sitChair", scene: "town", x: 57.2, y: 34.3, note: "fountain north-east bench" },
-    { action: "sitChair", scene: "town", x: 57.4, y: 54.5, note: "fountain south-east bench" },
-    { action: "sitChair", scene: "town", x: 54.3, y: 61.3, note: "south plaza bench" },
-    { action: "sitChair", scene: "town", x: 62.1, y: 63.4, note: "east lane bench" },
-    { action: "sitChair", scene: "town", x: 63.1, y: 66.9, note: "east lane lower bench" },
-    { action: "sitChair", scene: "town", x: 53.6, y: 73.1, note: "south lane bench" },
-    { action: "sitChair", scene: "town", x: 33.5, y: 67.8, note: "science lane bench" },
-    { action: "sitChair", scene: "town", x: 45.6, y: 72.4, note: "mid south bench" },
-    { action: "sitChair", scene: "town", x: 43.1, y: 26.1, note: "north lane bench" },
-    { action: "sitChair", scene: "town", x: 76.3, y: 78.2, note: "fire pit bench" },
-    { action: "sitChair", scene: "town", x: 79.4, y: 77.0, note: "fire pit bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 43.5, y: 47.0, note: "fountain west bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 56.4, y: 47.1, note: "fountain east bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 57.2, y: 34.3, note: "fountain north-east bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 57.4, y: 54.5, note: "fountain south-east bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 54.3, y: 61.3, note: "south plaza bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 62.1, y: 63.4, note: "east lane bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 63.1, y: 66.9, note: "east lane lower bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 53.6, y: 73.1, note: "south lane bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 33.5, y: 67.8, note: "science lane bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 45.6, y: 72.4, note: "mid south bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 43.1, y: 26.1, note: "north lane bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 76.3, y: 78.2, note: "fire pit bench" },
+    { action: ["sitChair", "sitChair", "read"], scene: "town", x: 79.4, y: 77.0, note: "fire pit bench" },
 
     // Cafe terrace and picnic tables: have a coffee.
     { action: "coffee", scene: "town", x: 29.3, y: 26.4, seats: 2, note: "cafe terrace table" },
     { action: "coffee", scene: "town", x: 33.1, y: 26.0, seats: 2, note: "cafe terrace table" },
     { action: "coffee", scene: "town", x: 35.3, y: 23.0, seats: 2, note: "cafe upper table" },
     { action: "coffee", scene: "town", x: 10.3, y: 88.2, seats: 2, note: "orchard picnic table" },
+    { action: "coffee", scene: "town", x: 80.6, y: 88.0, seats: 3, note: "south-east umbrella table" },
+    { action: "coffee", scene: "town", x: 88.0, y: 85.6, seats: 4, note: "pergola banquet table" },
 
     // Quiet corners: read a book.
     { action: "read", scene: "town", x: 10.1, y: 25.0, seats: 2, note: "picnic blanket" },
@@ -60,12 +62,15 @@
   ];
 
   // How close you have to stop, and how long you have to stay, before a pose starts.
-  const REACH = 2.4;
+  const REACH = 3.2;
   const AT_SPOT = 0.8;
   const SEAT_TAKEN = 1.3;
-  const DWELL_FURNITURE = 2200;
-  const DWELL_AREA = 1400;
-  const DWELL_JITTER = 900;
+  const DWELL_FURNITURE = 1600;
+  const DWELL_AREA = 900;
+  const DWELL_JITTER = 700;
+
+  // Lawn, riverbank and planted-bed tags measured off the map art.
+  for (const measured of window.TOWN_ZONES_AUTO || []) ZONES.push({ ...measured, measured: true });
 
   const zones = { ready: false, list: ZONES };
   window.TownZones = zones;
@@ -129,6 +134,10 @@
     zones.ready = true;
   };
 
+  function poses(zone) {
+    return Array.isArray(zone.action) ? zone.action : [zone.action];
+  }
+
   function seatIsFree(zone, occupants) {
     const limit = zone.radius ? zone.radius : SEAT_TAKEN;
     let taken = 0;
@@ -143,7 +152,7 @@
     let best = null;
     for (const zone of ZONES) {
       if (zone.scene !== scene) continue;
-      if (!actions || !actions[zone.action]) continue;
+      if (!actions || !poses(zone).some(pose => actions[pose])) continue;
       const reach = zone.radius || REACH;
       const gap = distance(point.x, point.y, zone.anchor.x, zone.anchor.y);
       if (gap > reach) continue;
@@ -169,10 +178,14 @@
     }
     const { zone, gap } = match;
     if (!pending || pending.zone !== zone) {
+      // Pick which of the zone's poses this visit gets, so a bench is
+      // sometimes a place to sit and sometimes a place to read.
+      const available = poses(zone).filter(pose => actions[pose]);
       pending = {
         zone,
         since: now,
         delay: (zone.radius ? DWELL_AREA : DWELL_FURNITURE) + Math.random() * DWELL_JITTER,
+        pose: available[Math.floor(Math.random() * available.length)],
         walked: false
       };
     }
@@ -184,7 +197,7 @@
       pending.since = now;
       return { walkTo: { x: zone.anchor.x, y: zone.anchor.y }, zone };
     }
-    return { action: zone.action, facing: zone.facing, zone };
+    return { action: pending.pose, facing: zone.facing, zone };
   };
 
   // ?zones=1 marks every tagged spot so the map tags can be checked by eye.
@@ -197,7 +210,7 @@
     overlay.innerHTML = ZONES.filter(zone => zone.scene === "town").map(zone => {
       const size = (zone.radius || 1) * 2;
       return `<div style="position:absolute;left:${zone.anchor.x}%;top:${zone.anchor.y}%;width:${size}%;height:${size * 1.5}%;transform:translate(-50%,-50%);border:2px solid rgba(255,90,220,.9);border-radius:50%"></div>
-        <div style="position:absolute;left:${zone.x}%;top:${zone.y}%;transform:translate(-50%,-50%);color:#fff;background:rgba(20,20,30,.75);font:10px/1.2 monospace;padding:1px 3px;white-space:nowrap">${zone.action}</div>`;
+        <div style="position:absolute;left:${zone.x}%;top:${zone.y}%;transform:translate(-50%,-50%);color:#fff;background:rgba(20,20,30,.75);font:10px/1.2 monospace;padding:1px 3px;white-space:nowrap">${poses(zone)[0]}</div>`;
     }).join("");
     world.appendChild(overlay);
   };

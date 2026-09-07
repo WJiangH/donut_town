@@ -1,118 +1,37 @@
 // Bakes the town collision mask straight out of the map art.
 // Run: node scripts/build-town-walkmask.mjs [--preview scratch/walkmask.png]
 import { readFileSync, writeFileSync } from "node:fs";
-import { inflateSync, deflateSync } from "node:zlib";
+import { deflateSync } from "node:zlib";
+import { CELL, readPng, classify, cellFractions } from "./lib/map-art.mjs";
 
 const MAP_PATH = new URL("../assets/donut-town-map-v2.png", import.meta.url);
 const OUTPUT_PATH = new URL("../assets/town-walkmask.js", import.meta.url);
-// One mask cell per 8x8 art pixels: fine enough for the narrowest garden path.
-const CELL = 8;
-
-// Bridges and shaded crossings the colour pass cannot see, in map percentages.
+// Bridges, boardwalks and shaded crossings the colour pass cannot see.
 const ALLOW_SEGMENTS = [
   { from: [10.0, 30.0], to: [18.2, 33.8], width: 1.0, note: "west river footbridge" },
   { from: [76.6, 62.2], to: [85.4, 59.4], width: 1.0, note: "east stone arch bridge" },
-  { from: [57.6, 73.6], to: [66.4, 70.6], width: 1.0, note: "south-east plank bridge" }
+  { from: [57.6, 73.6], to: [66.4, 70.6], width: 1.0, note: "south-east plank bridge" },
+  // The waterfall trail: up from the west meadow, along the pier and the
+  // plank stairs, and over the little bridge on the far side.
+  { from: [9.5, 21.5], to: [11.0, 17.5], width: 1.1, note: "meadow path north" },
+  { from: [11.0, 17.5], to: [12.6, 14.6], width: 1.0, note: "riverside path" },
+  { from: [11.8, 13.6], to: [14.2, 13.0], width: 0.9, note: "river pier" },
+  { from: [13.2, 13.2], to: [15.6, 10.0], width: 0.9, note: "boardwalk lower" },
+  { from: [15.6, 10.0], to: [18.4, 8.2], width: 0.9, note: "boardwalk upper" },
+  { from: [18.4, 8.2], to: [20.4, 11.6], width: 0.9, note: "plank bridge" },
+  { from: [20.4, 11.6], to: [21.8, 13.6], width: 0.9, note: "plank bridge landing" },
+  { from: [15.6, 10.0], to: [13.6, 6.6], width: 0.9, note: "cliff stairs" },
+  { from: [13.6, 6.6], to: [11.4, 3.4], width: 0.9, note: "cliff stairs top" },
+  { from: [12.0, 7.2], to: [10.4, 9.2], width: 0.9, note: "waterfall ledge" }
+];
+// Fenced ground that should still be walkable: you can wander the crop rows.
+const ALLOW_SHAPES = [
+  { left: 73.4, right: 83.0, top: 6.6, bottom: 20.8, note: "farm west plots" },
+  { left: 84.4, right: 92.4, top: 15.4, bottom: 25.6, note: "farm east plots" },
+  { left: 82.6, right: 84.8, top: 15.0, bottom: 28.4, note: "farm gate lane" }
 ];
 // Places the art reads as walkable but the world should not let you stand on.
 const BLOCK_SHAPES = [];
-
-function readPng(buffer) {
-  let offset = 8;
-  const idat = [];
-  let width = 0;
-  let height = 0;
-  let colorType = 0;
-  let bitDepth = 0;
-  while (offset < buffer.length) {
-    const length = buffer.readUInt32BE(offset);
-    const type = buffer.toString("ascii", offset + 4, offset + 8);
-    const data = buffer.subarray(offset + 8, offset + 8 + length);
-    if (type === "IHDR") {
-      width = data.readUInt32BE(0);
-      height = data.readUInt32BE(4);
-      bitDepth = data[8];
-      colorType = data[9];
-      if (data[12] !== 0) throw new Error("Interlaced PNGs are not supported");
-    }
-    if (type === "IDAT") idat.push(data);
-    if (type === "IEND") break;
-    offset += length + 12;
-  }
-  if (bitDepth !== 8 || (colorType !== 2 && colorType !== 6)) {
-    throw new Error(`Unsupported PNG format: depth ${bitDepth}, colour type ${colorType}`);
-  }
-  const channels = colorType === 6 ? 4 : 3;
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = width * channels;
-  const pixels = Buffer.alloc(height * stride);
-  for (let y = 0; y < height; y++) {
-    const filter = raw[y * (stride + 1)];
-    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
-    const target = y * stride;
-    const previous = target - stride;
-    for (let x = 0; x < stride; x++) {
-      const left = x >= channels ? pixels[target + x - channels] : 0;
-      const up = y > 0 ? pixels[previous + x] : 0;
-      const upLeft = y > 0 && x >= channels ? pixels[previous + x - channels] : 0;
-      let value = line[x];
-      if (filter === 1) value += left;
-      else if (filter === 2) value += up;
-      else if (filter === 3) value += (left + up) >> 1;
-      else if (filter === 4) {
-        const p = left + up - upLeft;
-        const dl = Math.abs(p - left);
-        const du = Math.abs(p - up);
-        const dul = Math.abs(p - upLeft);
-        value += dl <= du && dl <= dul ? left : du <= dul ? up : upLeft;
-      }
-      pixels[target + x] = value & 0xff;
-    }
-  }
-  return { width, height, channels, pixels };
-}
-
-// Surface classes, tuned against the v2 map art.
-function classify({ width, height, channels, pixels }) {
-  const size = width * height;
-  const path = new Uint8Array(size);
-  const lawn = new Uint8Array(size);
-  const water = new Uint8Array(size);
-  const veryDark = new Uint8Array(size);
-  const scenery = new Uint8Array(size);
-  for (let i = 0; i < size; i++) {
-    const r = pixels[i * channels];
-    const g = pixels[i * channels + 1];
-    const b = pixels[i * channels + 2];
-    const luma = 0.299 * r + 0.587 * g + 0.114 * b;
-    const isWater = b > r + 25 && b > 80;
-    const isPath = !isWater && r > 150 && r - b > 40 && r >= g && g > b;
-    const isGrass = !isWater && !isPath && g > r && g > b + 35;
-    water[i] = isWater ? 1 : 0;
-    path[i] = isPath ? 1 : 0;
-    lawn[i] = isGrass && luma >= 112 ? 1 : 0;
-    veryDark[i] = !isWater && luma < 80 ? 1 : 0;
-    // Roofs, walls, fences, stone: anything that is neither ground nor water.
-    scenery[i] = !isWater && !isPath && !isGrass ? 1 : 0;
-  }
-  return { path, lawn, water, veryDark, scenery };
-}
-
-function cellFractions(layer, width, cols, rows) {
-  const out = new Float32Array(cols * rows);
-  const area = CELL * CELL;
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      let sum = 0;
-      for (let y = 0; y < CELL; y++) {
-        const base = (row * CELL + y) * width + col * CELL;
-        for (let x = 0; x < CELL; x++) sum += layer[base + x];
-      }
-      out[row * cols + col] = sum / area;
-    }
-  }
-  return out;
-}
 
 function label(mask, cols, rows) {
   const labels = new Int32Array(cols * rows).fill(-1);
@@ -281,6 +200,16 @@ for (const segment of ALLOW_SEGMENTS) {
       const x = ((col + 0.5) / cols) * 100;
       const y = ((row + 0.5) / rows) * 100;
       if (distanceToSegment(x, y, segment.from, segment.to) <= segment.width) mask[row * cols + col] = 1;
+    }
+  }
+}
+
+for (const shape of ALLOW_SHAPES) {
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const x = ((col + 0.5) / cols) * 100;
+      const y = ((row + 0.5) / rows) * 100;
+      if (x >= shape.left && x <= shape.right && y >= shape.top && y <= shape.bottom) mask[row * cols + col] = 1;
     }
   }
 }
