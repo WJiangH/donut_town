@@ -779,6 +779,7 @@ function refreshTownCameraMetrics() {
   const sideControls=cameraMode==='overview'&&gutter>=280&&viewportHeight>=600;
   stage.classList.toggle('overview-side-controls',sideControls);
   document.querySelector('#townPlaces').open=sideControls;
+  document.querySelector('#neighborListToggle').setAttribute('aria-expanded',String(sideControls||stage.classList.contains('directory-open')));
   document.documentElement.style.setProperty('--town-rail-width',`${gutter}px`);
   updateTownSidebar();
 }
@@ -809,12 +810,13 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
 
 function setCameraMode(nextMode, announce = false) {
   if (!['overview', 'follow'].includes(nextMode)) return;
+  document.querySelector("#townView").classList.remove("directory-open");
   cameraMode = nextMode;
   townCameraMetrics = null;
   document.querySelector("#mapWrap").dataset.cameraMode = cameraMode;
   document.querySelector("#townMovementHelp").textContent = cameraMode === "overview"
-    ? "Whole town · Click to walk · Follow me for a closer view"
-    : "Click a path or use WASD · Stop somewhere and see what you do";
+    ? "Whole town · Click to walk · Space to switch view"
+    : "Click a path or use WASD · Space to switch view";
   document.querySelectorAll("[data-camera-mode]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.cameraMode === cameraMode));
   });
@@ -1166,7 +1168,9 @@ function openResident(id) {
               : "Invite to a Donut chat";
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
-  drawerScrim.hidden = false;
+  // ponytail: the existing neighbor drawer replaces the existing own profile.
+  document.querySelector("#profileDrawer").hidden=true;
+  drawerScrim.hidden = document.body.classList.contains("town-sidebar-layout") || document.querySelector("#townView").classList.contains("directory-open");
 }
 
 function stableMemberScore(member) {
@@ -1493,6 +1497,7 @@ function closeProfile() {
 }
 
 function closeDrawer() {
+  document.querySelector("#profileDrawer").hidden=false;
   drawer.classList.remove("open");
   drawer.setAttribute("aria-hidden", "true");
   drawerScrim.hidden = true;
@@ -1553,6 +1558,7 @@ document.querySelector("#dockHandle").addEventListener("click", () => {
 
 function movePlayerFromMapClick(event) {
   if (event.target.closest("button")) return;
+  event.currentTarget.focus({preventScroll:true});
   const bounds = event.currentTarget.getBoundingClientRect();
   const x = ((event.clientX - bounds.left) / bounds.width) * 100;
   const y = ((event.clientY - bounds.top) / bounds.height) * 100;
@@ -1656,6 +1662,7 @@ function setChosenPose(pose) {
 // A member's own room, entered from their profile.
 let housePanel = null;
 function openHouse() {
+  closeDrawer();
   const view = document.querySelector("#houseView");
   view.hidden = false;
   window.townHouseOpen = true;
@@ -1704,6 +1711,13 @@ document.querySelector("#houseShop").addEventListener("click", async () => {
   if (await closeHouse(false)) transitionToScene("donutShop");
 });
 document.querySelector("#openHouse").addEventListener("click", openHouse);
+document.querySelector('#neighborListToggle').addEventListener('click',()=>{
+  const stage=document.querySelector('#townView'),directory=document.querySelector('#townDirectory');
+  const open=stage.classList.contains('overview-side-controls')||stage.classList.toggle('directory-open');
+  document.querySelector('#neighborListToggle').setAttribute('aria-expanded',String(open));
+  directory.style.setProperty('--directory-top',`${document.querySelector('#neighborListToggle').getBoundingClientRect().bottom+8}px`);
+  if(open)document.querySelector('#neighborSearch').focus();
+});
 document.querySelector('#neighborSearch').addEventListener('input',renderNeighborDirectory);
 document.querySelector('#neighborSearch').addEventListener('focus',()=>{pressedKeys.clear();clickPath=[];});
 document.querySelector('#neighborDirectory').addEventListener('click',event=>{const button=event.target.closest('[data-resident]');if(button)openResident(Number(button.dataset.resident));});
@@ -1773,9 +1787,16 @@ function invitationErrorMessage(error) {
 
 document.addEventListener("keydown", event => {
   if (window.townHouseOpen || window.townSettingsOpen || event.target.closest('input,textarea,select,[contenteditable="true"]')) return;
+  if (event.code==='Space' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.isComposing && currentScene==='town' && !event.target.closest('button:not([data-camera-mode]),a,summary,[role="button"]')) {
+    event.preventDefault();
+    if(!event.repeat)setCameraMode(cameraMode==='overview'?'follow':'overview',true);
+    return;
+  }
   if (event.key === "Escape") {
     closeDrawer();
     closeProfile();
+    document.querySelector("#townView").classList.remove("directory-open");
+    document.querySelector("#neighborListToggle").setAttribute("aria-expanded",String(document.querySelector("#townView").classList.contains("overview-side-controls")));
     if (currentScene === "donutShop") transitionToScene("town");
   }
   if (currentScene === "donutShop" || drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open")) return;

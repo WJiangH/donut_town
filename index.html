@@ -41,16 +41,16 @@
 
       <section class="town-stage" id="townView" aria-label="Interactive Donut Town map">
         <div class="map-toolbar">
-          <div class="week-card">
+          <button class="week-card" id="neighborListToggle" type="button" aria-label="Show neighbors" aria-controls="townDirectory" aria-expanded="false">
             <span>This week</span>
             <strong id="neighborSummary">Loading residents…</strong>
-          </div>
+          </button>
           <div class="filter-group" aria-label="Filter residents">
             <button class="filter-button active" data-filter="all">Everyone</button>
             <button class="filter-button" data-filter="new">New faces</button>
             <button class="filter-button" data-filter="other">Other teams</button>
           </div>
-          <div class="camera-controls" role="group" aria-label="Camera view">
+          <div class="camera-controls" role="group" aria-label="Camera view" title="Space: switch view">
             <button class="camera-toggle" data-camera-mode="overview" type="button" aria-pressed="true">Town overview</button>
             <button class="camera-toggle" data-camera-mode="follow" type="button" aria-pressed="false">Follow me</button>
           </div>
@@ -63,7 +63,7 @@
             <button type="button" id="railChem"><span aria-hidden="true">⚗</span> Chem Pod <span aria-hidden="true">→</span></button>
             </nav>
           </details>
-          <section class="town-directory" aria-labelledby="directoryTitle">
+          <section id="townDirectory" class="town-directory" aria-labelledby="directoryTitle">
             <div class="directory-heading"><h2 id="directoryTitle">Neighbors</h2><span id="directoryCount"></span></div>
             <input id="neighborSearch" type="search" placeholder="Find a neighbor…" aria-label="Find a neighbor" autocomplete="off" />
             <div id="neighborDirectory" class="directory-list"></div>
@@ -71,7 +71,7 @@
         </div>
 
         <div class="map-wrap" id="mapWrap" data-camera-mode="overview">
-          <div class="map-world" id="mapWorld">
+          <div class="map-world" id="mapWorld" tabindex="-1">
             <img class="town-map" alt="Pixel-art Donut Town" />
             <div class="residents-layer" id="residentsLayer" aria-live="polite"></div>
             <div class="pets-layer" id="townPetsLayer" aria-hidden="true"></div>
@@ -92,7 +92,7 @@
 
         <div class="movement-help">
           <strong>Walk around</strong>
-          <span id="townMovementHelp">Whole town · Click to walk · Follow me for a closer view</span>
+          <span id="townMovementHelp">Whole town · Click to walk · Space to switch view</span>
         </div>
 
         <aside class="legend" aria-label="Availability legend">
