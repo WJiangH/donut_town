@@ -32,7 +32,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
   };
   const roomBackdrop=new ResizeObserver(()=>{
     const room=root.querySelector('.house-room').getBoundingClientRect();
-    if(room.width){root.style.setProperty('--home-figure',Math.max(.2,Math.min(1.6,room.width/1100)));root.style.setProperty('--home-horizon',`${room.top-root.getBoundingClientRect().top+room.height*.34}px`);}
+    if(room.width){root.style.setProperty('--home-figure',Math.max(.2,Math.min(1.6,room.width/1100)));}
   });
   roomBackdrop.observe(root.querySelector('.house-room'));roomBackdrop.observe(root.querySelector('.house-viewport'));
   const keys=new Set();

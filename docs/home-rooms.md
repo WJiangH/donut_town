@@ -2,7 +2,7 @@
 
 Everyone starts in Cozy Cottage with the same free chair, lamp, and rug. Buy Modern Loft (12 donuts) or Moonlight Suite (18 donuts) in **Shop → Rooms**, then choose it with **My Home → Room**. Switching rooms keeps furniture and Luxury unchanged. Only placed decorations contribute Luxury.
 
-Home uses one fixed, complete-room view. Its surrounding wall and floor background matches the selected room; controls and the decoration shelf have their own space. Home has no camera zoom or panning.
+Home uses one fixed, complete-room view. Its softly shaded surround matches the selected room. A CSS outline clips the black matte from the artwork without changing floor coordinates. Controls and the decoration shelf have their own space. Home has no camera zoom or panning.
 
 Decorate mode supports drag and drop, selecting an item then clicking the floor, and quarter-cell arrow-key nudges (Shift + arrow moves one full cell). Done decorating returns to walking. The clear floor near the back wall is usable; wall surfaces are not furniture slots.
 
