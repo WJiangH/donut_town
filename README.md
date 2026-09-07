@@ -143,6 +143,29 @@ node scripts/build-town-zones.mjs
 
 Open the town with `?zones=1` to see every tag drawn over the map.
 
+### The shop at the fountain
+
+The donut in the middle of the plaza is the shop. Clicking it walks you over
+and opens the shelves. Donuts earned from pairings are the currency, so a
+wallet is what a member has earned less what they have already spent, and a
+purchase is recorded with the price that was paid - a later price change never
+rewrites what somebody spent.
+
+- `content/shop.json` is the catalogue: `id`, `kind` (`pet` / `decoration` /
+  `wardrobe`), `name`, `price`, `blurb`, `swatch`. Edit it to stock the shop.
+- `GET /api/shop` returns the catalogue, what the member owns and their wallet.
+- `POST /api/shop/purchase` takes `{ itemId }`, checks it is affordable and not
+  already owned, and records it.
+- Ownership lives in the same Upstash instance as the wardrobe, under
+  `donut-town:shop:v1`, keyed by the member's character key.
+
+Until the Donut Bot history sync lands there is nothing earned to spend, so
+`starterDonuts` in the catalogue is what everybody begins with.
+
+Still to build on top of this: pets as followers that walk behind their owner,
+and a member's own donut house, entered from the profile, where bought
+decorations are dragged into place. Both read the same ownership records.
+
 ### Changing how you look
 
 The profile drawer previews a look and only equips it when **Save look** is

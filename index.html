@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=29" />
+    <link rel="stylesheet" href="styles.css?v=30" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -63,6 +63,9 @@
             <button class="building-entrance" id="chemPodEntrance" aria-label="Walk to and enter Chem Pod">
               <span>Chem Pod</span>
               <small>Enter</small>
+            </button>
+            <button class="shop-entrance" id="shopEntrance" aria-label="Walk to the donut fountain and open the shop">
+              <span>Shop</span>
             </button>
           </div>
           <div class="map-empty" id="mapEmpty" hidden>
@@ -146,6 +149,21 @@
       <button class="invite-button" id="inviteButton"></button>
     </aside>
 
+    <div class="shop-scrim" id="shopScrim" hidden></div>
+    <aside class="shop-drawer" id="shopDrawer" aria-hidden="true" aria-labelledby="shopTitle">
+      <button class="close-button" id="closeShop" aria-label="Leave the shop">Close</button>
+      <div class="shop-heading">
+        <div class="mini-donut" aria-hidden="true"></div>
+        <div>
+          <span>Donut fountain</span>
+          <h2 id="shopTitle">Shop</h2>
+        </div>
+        <strong class="shop-wallet" data-shop="wallet">—</strong>
+      </div>
+      <ul class="shop-shelf" data-shop="shelf"></ul>
+      <p class="shop-status" role="status" data-shop="status">Opening the shop…</p>
+    </aside>
+
     <div class="profile-scrim" id="profileScrim" hidden></div>
     <aside class="profile-drawer" id="profileDrawer" aria-hidden="true" aria-labelledby="profileName">
       <button class="close-button" id="closeProfile" aria-label="Close your profile">Close</button>
@@ -190,6 +208,6 @@
     <script src="town-collision.js?v=3"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=3"></script>
-    <script src="app.js?v=33"></script>
+    <script src="app.js?v=34"></script>
   </body>
 </html>

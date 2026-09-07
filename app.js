@@ -1422,6 +1422,38 @@ function movePlayerFromMapClick(event) {
 
 document.querySelector("#mapWorld").addEventListener("click", movePlayerFromMapClick);
 document.querySelector("#chemPodWorld").addEventListener("click", movePlayerFromMapClick);
+// The donut fountain is the shop counter: walk over, then the shelves open.
+let shopPanel = null;
+let ownedShopItems = [];
+function openShop() {
+  const drawer = document.querySelector("#shopDrawer");
+  drawer.classList.add("open");
+  drawer.setAttribute("aria-hidden", "false");
+  document.querySelector("#shopScrim").hidden = false;
+  if (!shopPanel) {
+    shopPanel = import("./shop-panel.mjs")
+      .then(module => module.mountShop(drawer, { onOwnedChange: owned => { ownedShopItems = owned; } }))
+      .catch(() => {
+        drawer.querySelector('[data-shop="status"]').textContent = "Shop unavailable. Close and try again.";
+        shopPanel = null;
+        return null;
+      });
+  }
+  shopPanel?.then(panel => panel?.load());
+}
+function closeShop() {
+  const drawer = document.querySelector("#shopDrawer");
+  drawer.classList.remove("open");
+  drawer.setAttribute("aria-hidden", "true");
+  document.querySelector("#shopScrim").hidden = true;
+}
+document.querySelector("#shopEntrance").addEventListener("click", event => {
+  event.stopPropagation();
+  if (currentScene === "town") clickPath = findWalkPath(player, { x: 51, y: 47 });
+  openShop();
+});
+document.querySelector("#closeShop").addEventListener("click", closeShop);
+document.querySelector("#shopScrim").addEventListener("click", closeShop);
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));
 document.querySelector("#chemPodExit").addEventListener("click", () => transitionToScene("town"));
 document.querySelector("#leaveChemPod").addEventListener("click", () => transitionToScene("town"));

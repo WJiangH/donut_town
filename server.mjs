@@ -5,6 +5,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { OutfitStore, equippedCharacter, validateOutfit, wardrobeSupported, wardrobeCharacters } from "./characters/wardrobe/store.mjs";
+import { ShopStore, loadCatalog, walletFor, ownedIds, checkPurchase } from "./shop/store.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
@@ -48,6 +49,8 @@ const slack = config.botToken ? new SlackClient(config.botToken) : null;
 const profileStore = new SheetProfileStore({ url: config.profileApiUrl, secret: config.profileApiSecret });
 const invitationStore = new UpstashInvitationStore({ url: config.upstashUrl, token: config.upstashToken, namespace: config.channelId });
 const outfitStore = new OutfitStore({ url: config.upstashUrl, token: config.upstashToken });
+const shopStore = new ShopStore({ url: config.upstashUrl, token: config.upstashToken });
+const shopCatalog = loadCatalog();
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
@@ -178,6 +181,44 @@ const server = createServer(async (request, response) => {
         await outfitStore.save(memberCharacterKey(session.sub, config.signingSecret), outfit, character);
       } catch { return sendJson(response, 503, { error: "outfit_save_failed" }); }
       return sendJson(response, 200, { outfit, character: equippedCharacter(character, outfit) });
+    }
+
+    // The donut fountain is the shop. Donuts earned from pairings are the
+    // currency, so a wallet is what you have earned less what you have spent.
+    if (url.pathname === "/api/shop" || url.pathname === "/api/shop/purchase") {
+      response.setHeader("cache-control", "private, no-store");
+      const session = getSlackSession(request);
+      if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
+      const members = await getCachedChannelMembers();
+      const member = members.find(entry => entry.id === session.sub);
+      if (!member) return sendJson(response, 403, { error: "member_not_found" });
+      if (!shopStore.configured) return sendJson(response, 503, { error: "shop_store_unavailable" });
+      const key = memberCharacterKey(session.sub, config.signingSecret);
+      const earned = shopCatalog.starterDonuts + (Number.isInteger(member.donutCount) ? member.donutCount : 0);
+      let purse;
+      try { purse = await shopStore.purse(key, shopCatalog); } catch { return sendJson(response, 503, { error: "shop_store_unavailable" }); }
+
+      if (request.method === "GET" && url.pathname === "/api/shop") {
+        return sendJson(response, 200, {
+          currency: shopCatalog.currency,
+          items: shopCatalog.items,
+          owned: ownedIds(purse),
+          wallet: walletFor({ earned, purse })
+        });
+      }
+      if (request.method !== "POST" || url.pathname !== "/api/shop/purchase") return sendJson(response, 405, { error: "method_not_allowed" });
+
+      let item;
+      try {
+        const body = JSON.parse(await readBody(request));
+        if (Object.keys(body).length !== 1 || typeof body.itemId !== "string") throw new Error("invalid_purchase");
+        item = shopCatalog.items.find(entry => entry.id === body.itemId);
+      } catch { return sendJson(response, 400, { error: "invalid_purchase" }); }
+      const verdict = checkPurchase({ item, purse, earned });
+      if (verdict.error) return sendJson(response, verdict.error === "item_not_found" ? 404 : 409, { error: verdict.error });
+      let next;
+      try { next = await shopStore.buy(key, item, purse); } catch { return sendJson(response, 503, { error: "shop_purchase_failed" }); }
+      return sendJson(response, 200, { item, owned: ownedIds(next), wallet: walletFor({ earned, purse: next }) });
     }
 
     if (request.method === "POST" && url.pathname === "/api/profile") {

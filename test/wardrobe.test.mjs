@@ -41,7 +41,7 @@ test('every wardrobe refusal the server can send has words for the member', () =
   const client = readFileSync(new URL('../profile-wardrobe.mjs', import.meta.url), 'utf8');
   const messages = client.slice(client.indexOf('const SAVE_MESSAGES'), client.indexOf('};', client.indexOf('const SAVE_MESSAGES')));
   const server = readFileSync(new URL('../server.mjs', import.meta.url), 'utf8');
-  const wardrobeRoute = server.slice(server.indexOf('/api/wardrobe'), server.indexOf('/api/profile'));
+  const wardrobeRoute = server.slice(server.indexOf('/api/wardrobe'), server.indexOf('/api/shop'));
   const codes = [...wardrobeRoute.matchAll(/error: "(\w+)"/g)].map(match => match[1]);
   assert.ok(codes.length >= 4);
   for (const code of codes) {

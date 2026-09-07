@@ -163,6 +163,43 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 
 /* The whole room should be in view, and the people in it read as people in a
    room rather than furniture: hold the pod to the stage and stand them down. */
+/* The fountain doubles as the shop counter. */
+.shop-entrance {
+  position: absolute; left: 51%; top: 41.5%; z-index: 6;
+  transform: translate(-50%, -140%);
+  display: grid; place-items: center;
+  padding: 5px 11px;
+  background: var(--surface-solid); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: 9px;
+  box-shadow: 3px 3px 0 var(--ink);
+  font: 800 9px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+.shop-entrance:hover, .shop-entrance:focus-visible { transform: translate(-50%, -140%) translateY(-3px); }
+.shop-drawer {
+  position: fixed; z-index: 60; right: 0; top: 0; bottom: 0; width: min(340px, 92vw);
+  padding: 26px 24px; overflow-y: auto;
+  background: var(--surface-solid); border-left: 3px solid var(--ink);
+  box-shadow: var(--shadow);
+  transform: translateX(100%); transition: transform 220ms ease;
+}
+.shop-drawer.open { transform: none; }
+.shop-scrim { position: fixed; z-index: 55; inset: 0; background: rgba(16, 30, 22, .35); }
+.shop-heading { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; margin: 5px 0 18px; }
+.shop-heading span { color: var(--muted); font-size: 9px; }
+.shop-heading h2 { margin: 4px 0 0; font: 700 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: -.04em; }
+.shop-wallet { font-size: 11px; color: var(--muted); }
+.shop-shelf { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.shop-item { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 9px; background: #e5efdf; border: 2px solid var(--line); border-radius: 10px; }
+.shop-item.owned { opacity: .68; }
+.shop-thumb { width: 26px; height: 26px; background: var(--swatch); border: 2px solid var(--ink); box-shadow: inset -3px -3px 0 rgba(0, 0, 0, .18); image-rendering: pixelated; }
+.shop-copy { display: grid; gap: 3px; min-width: 0; }
+.shop-copy strong { font-size: 11px; }
+.shop-copy small { color: var(--muted); font-size: 8px; line-height: 1.4; }
+.shop-item button { border: 2px solid var(--ink); border-radius: 7px; padding: 6px 9px; background: var(--accent); color: #fffaf2; font: 800 9px/1 inherit; cursor: pointer; white-space: nowrap; }
+.shop-item button[disabled] { background: var(--surface-solid); color: var(--muted); border-color: var(--line); cursor: default; }
+.shop-status { margin: 14px 0 0; color: var(--muted); font-size: 9px; }
+
 .interior-world { width: min(106%, calc((100dvh - 72px) * 1.59)); }
 .interior-stage .resident-pin,
 .interior-stage .player-pin,
@@ -484,7 +521,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   :root { --ink: #dce9df; --muted: #a2b5a8; --paper: #1d2c24; --surface: rgba(24, 40, 31, .95); --surface-solid: #182a21; --line: rgba(220, 233, 223, .22); --accent: #c95868; --accent-dark: #f08a98; --shadow: 0 16px 42px rgba(5, 14, 9, .45); }
   html, body { background: #17271e; }
   .topbar { background: #182a21; }
-  .filter-button:hover, .filter-button.active, .topic, .donut-total { background: #2b4535; }
+  .filter-button:hover, .filter-button.active, .topic, .donut-total, .shop-item { background: #2b4535; }
   .pending-state { background: #5d512a; color: #f7e7ad; }
   .connection-note { background: #2b4535; border-color: var(--green); }
   .town-map { filter: saturate(.72) brightness(.73); }
