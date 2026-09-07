@@ -829,7 +829,7 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
   document.querySelector("#mapWorld").style.transform = `translate3d(${townCamera.x}px, ${townCamera.y}px, 0) scale(${townCamera.scale})`;
 }
 
-function setCameraMode(nextMode, announce = false) {
+function setCameraMode(nextMode) {
   if (!['overview', 'follow'].includes(nextMode)) return;
   document.querySelector("#townView").classList.remove("directory-open");
   cameraMode = nextMode;
@@ -838,10 +838,9 @@ function setCameraMode(nextMode, announce = false) {
   document.querySelector("#townMovementHelp").textContent = cameraMode === "overview"
     ? "Whole town · Click to walk · Space to switch view"
     : "Click a path or use WASD · Space to switch view";
-  document.querySelectorAll("[data-camera-mode]").forEach(button => {
+  document.querySelectorAll("button.camera-toggle[data-camera-mode]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.cameraMode === cameraMode));
   });
-  if (announce) showToast(cameraMode === "overview" ? "The whole town stays in view while you walk." : "The camera is following you.");
 }
 
 // A seat with somebody already on it is taken, so look for another one.
@@ -1768,7 +1767,7 @@ document.querySelector('#leaveFactory').onclick=document.querySelector('#factory
 document.querySelector('#factoryPrevious').onclick=()=>changeFactoryWorkshop(-2);
 document.querySelector('#factoryNext').onclick=()=>changeFactoryWorkshop(2);
 document.querySelector("#leaveChemPod").addEventListener("click", () => transitionToScene("town"));
-document.querySelectorAll("[data-camera-mode]").forEach(button => button.addEventListener("click", () => setCameraMode(button.dataset.cameraMode, true)));
+document.querySelectorAll("button.camera-toggle[data-camera-mode]").forEach(button => button.addEventListener("click", () => setCameraMode(button.dataset.cameraMode)));
 
 async function sendSelectedInvitation() {
   const person = selectedResident;
@@ -1828,7 +1827,7 @@ document.addEventListener("keydown", event => {
   if (window.townHouseOpen || window.townSettingsOpen || event.target.closest('input,textarea,select,[contenteditable="true"]')) return;
   if (event.code==='Space' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.isComposing && currentScene==='town' && !event.target.closest('button:not([data-camera-mode]),a,summary,[role="button"]')) {
     event.preventDefault();
-    if(!event.repeat)setCameraMode(cameraMode==='overview'?'follow':'overview',true);
+    if(!event.repeat)setCameraMode(cameraMode==='overview'?'follow':'overview');
     return;
   }
   if (event.key === "Escape") {
