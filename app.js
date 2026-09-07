@@ -90,6 +90,9 @@ let playerFrame = 1;
 let playerAction = null;
 // The pet a member has taken out with them, learned from the shop.
 let equippedPet = null;
+// A pose a member has chosen to hold anywhere, instead of what the map suggests.
+let chosenPose = null;
+try { chosenPose = window.localStorage?.getItem("donut-town:pose") || null; } catch { chosenPose = null; }
 let lastFrameChange = 0;
 
 let lastGameTime = performance.now();
@@ -926,6 +929,10 @@ function gameLoop(timestamp) {
   if (isMoving) {
     playerAction = null;
     window.TownZones?.reset();
+  } else if (!clickPath.length && chosenPose && currentUser?.character?.actions?.[chosenPose]) {
+    // A pose the member picked themselves is held wherever they stand.
+    playerAction = chosenPose;
+    playerDirection = currentUser.character.actions[chosenPose].facing || playerDirection;
   } else if (!clickPath.length && window.TownZones?.ready) {
     // Standing still somewhere tagged settles you into what that place is for:
     // a free bench, the lawn, a bridge railing, the cafe tables, a garden bed.
@@ -1254,6 +1261,7 @@ function renderCurrentProfile() {
   profileButton.setAttribute("aria-label", currentUser ? `Open ${name}'s Slack profile` : "Open your profile");
   setSlackAvatar(document.querySelector("#profileAvatar"), currentUser || { displayName: name });
   document.querySelector("#profileWardrobe").hidden = !currentUser?.character?.layers;
+  renderPosePicker();
   document.querySelector("#profileName").textContent = name;
   const ownFacts = [
     ["Role", currentUser?.title],
@@ -1477,6 +1485,47 @@ function updatePetFollowers(deltaSeconds, ownerMoving) {
 function remotePlayerHasPet() {
   for (const remote of remotePlayers.values()) if (remote.pet) return true;
   return false;
+}
+
+const POSE_LABELS = {
+  sitChair: "Sit down",
+  sitGrass: "Sit on the grass",
+  read: "Read",
+  coffee: "Coffee",
+  garden: "Gardening",
+  lookout: "Take in the view",
+  experiment: "Experiment",
+  dance: "Dance",
+  fish: "Fish"
+};
+
+function renderPosePicker() {
+  const section = document.querySelector("#profilePoses");
+  const actions = currentUser?.character?.actions;
+  const poses = actions ? Object.keys(actions).filter(pose => POSE_LABELS[pose]) : [];
+  section.hidden = poses.length === 0;
+  if (section.hidden) return;
+  const options = section.querySelector('[data-poses="options"]');
+  options.innerHTML = [["", "Let the place decide"], ...poses.map(pose => [pose, POSE_LABELS[pose]])]
+    .map(([pose, label]) => `<button type="button" data-pose="${escapeHtml(pose)}" aria-pressed="${String((chosenPose || "") === pose)}">${escapeHtml(label)}</button>`)
+    .join("");
+  options.querySelectorAll("[data-pose]").forEach(button => {
+    button.onclick = () => setChosenPose(button.dataset.pose || null);
+  });
+}
+
+// A chosen pose is a display preference, so it lives in this browser.
+function setChosenPose(pose) {
+  chosenPose = pose;
+  try {
+    if (pose) window.localStorage?.setItem("donut-town:pose", pose);
+    else window.localStorage?.removeItem("donut-town:pose");
+  } catch {
+    // A browser that refuses storage still holds the pose for this visit.
+  }
+  window.TownZones?.reset();
+  renderPosePicker();
+  publishPresence(true, false);
 }
 
 // A member's own room, entered from their profile.

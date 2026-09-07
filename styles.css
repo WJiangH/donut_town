@@ -196,6 +196,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .house-shelf { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 52px; padding: 8px; background: #e5d9c3; border: 2px solid var(--line); border-radius: 10px; }
 .house-shelf .house-tile { width: 44px; height: 44px; margin: 0; }
 .house-empty { margin: 0; align-self: center; color: var(--muted); font-size: 9px; }
+.profile-poses { margin-top: 22px; padding-top: 18px; border-top: 2px solid var(--line); }
+.profile-poses h3 { margin: 0 0 6px; font: 700 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: -.04em; }
+.poses-help { margin: 0 0 10px; color: var(--muted); font-size: 8px; line-height: 1.5; }
+.poses-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.poses-options button { border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; background: var(--surface-solid); color: var(--ink); font: inherit; font-size: 10px; cursor: pointer; }
+.poses-options button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+
 .house-entrance { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; width: 100%; margin-top: 22px; padding: 11px; background: #e5efdf; border: 2px solid var(--line); border-radius: 10px; text-align: left; cursor: pointer; }
 .house-entrance-mark { width: 26px; height: 26px; background: #b98d5b; border: 2px solid var(--ink); box-shadow: inset -4px -4px 0 rgba(0, 0, 0, .2); }
 .house-entrance strong { display: block; font-size: 11px; }

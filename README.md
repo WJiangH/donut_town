@@ -180,6 +180,14 @@ facing right and mirrored in code. Replace the files with real art of the same
 shape - or point `petArt()` in `pets.mjs` at new names - and nothing else
 changes.
 
+### Choosing your own pose
+
+The profile lists every pose a member's character has. Pick one and they hold
+it wherever they stand - fishing on dry land if that is the joke they want -
+and other members see it through presence. "Let the place decide" hands the
+choice back to the map. The choice is a display preference, so it is kept in
+that browser rather than on the server.
+
 ### A member's own donut house
 
 The profile has a door to a member's own room. It starts bare; decorations
