@@ -182,11 +182,32 @@ The small UI icons are pixel art rather than CSS circles:
 node scripts/build-pixel-icons.mjs
 ```
 
-### Free invitation history with Upstash
+### Connect Upstash, the town's memory
+
+One free Upstash Redis database holds everything the town has to remember:
+invitation history, the outfit each member is wearing, and what they have
+bought. Without it the town still runs, but nothing can be saved - the wardrobe
+answers `outfit_store_unavailable` and the shop `shop_store_unavailable`.
+
+1. Create a database at [console.upstash.com](https://console.upstash.com) -
+   the free tier is enough. Pick the region closest to the Render service.
+2. On the database page open **REST API** and copy the **UPSTASH_REDIS_REST_URL**
+   and **UPSTASH_REDIS_REST_TOKEN** values.
+3. In Render, open the service, **Environment**, and add both as environment
+   variables. Both are required; setting only one is refused at boot. Save, and
+   Render redeploys.
+4. Check it took: `curl https://<service>.onrender.com/api/health` now reports
+   `"storage": true`. That endpoint needs no login and reveals no credentials.
+
+For local development put the same two lines in `.env.local`. The keys written
+are `donut-town:invitations:*`, `donut-town:wardrobe:v1` and
+`donut-town:shop:v1`, so one database can serve several towns as long as they
+share a workspace.
+
+### Free invitation history
 
 The preferred persistent store is an Upstash Redis database in the same region
-as Render. Copy its **REST URL** and **REST Token** into Render as
-`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. Donut Town writes one
+as Render. Donut Town writes one
 versioned snapshot per week and reads it once after a Render restart; normal
 town polling continues to use process memory.
 

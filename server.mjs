@@ -71,7 +71,9 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
 
     if (request.method === "GET" && url.pathname === "/api/health") {
-      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true, navigationV2: true, freeOverview: true, personalCharacters: "hmac-v1" });
+      // `storage` says whether Upstash is wired up, so wardrobe and shop
+      // failures can be diagnosed without signing in. No secret is exposed.
+      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true, navigationV2: true, freeOverview: true, personalCharacters: "hmac-v1", storage: outfitStore.configured && shopStore.configured });
     }
 
     if (request.method === "GET" && url.pathname === "/enter") {
