@@ -49,3 +49,7 @@ Publish an immutable full PNG and a small thumbnail under `assets/homes/`, add a
 ## Completion report
 
 Report the production asset path, final generation prompt, generation mode, collision assumptions, observable QA performed, and any behavior that remains simulated.
+
+## Donut Factory reference
+
+Use `content/donut-factory-art-brief.md` and `assets/donut-factory-interior-v1.png` for the approved bakery interior. There are two factories, each with six double-person stations; additional pairs use shifts without stacking occupants. Both factories share one art asset and navigation mask. Keep twelve reserved feet positions reachable from the entrance with clear furniture footprints, scale pets with people, and preserve the single whole-room view. Match assignment uses reciprocal confirmed invitation records, not online presence or theme-specific state. New artwork must be measured again before reusing station coordinates.

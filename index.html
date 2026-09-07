@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=49" />
+    <link rel="stylesheet" href="styles.css?v=50" />
     <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
@@ -60,6 +60,7 @@
             <span class="rail-label">Explore</span>
             <button type="button" id="railShop"><span class="mini-donut" aria-hidden="true"></span> Shop <span aria-hidden="true">→</span></button>
             <button type="button" id="railHome"><span class="house-entrance-mark" aria-hidden="true"></span> My Home <span aria-hidden="true">→</span></button>
+            <button type="button" id="railFactory"><span aria-hidden="true">♨</span> Donut Factory <span aria-hidden="true">→</span></button>
             <button type="button" id="railChem"><span aria-hidden="true">⚗</span> Chem Pod <span aria-hidden="true">→</span></button>
             </nav>
           </details>
@@ -80,6 +81,8 @@
               <span>Chem Pod</span>
               <small>Enter</small>
             </button>
+            <button class="building-entrance" id="factoryEntrance" aria-label="Enter Donut Factory 1"><span>Factory 1</span><small>Enter</small></button>
+            <button class="building-entrance" id="factoryTwoEntrance" aria-label="Enter Donut Factory 2"><span>Factory 2</span><small>Enter</small></button>
             <button class="shop-entrance" id="shopEntrance" aria-label="Walk to the donut fountain and open the shop">
               <span>Shop</span>
             </button>
@@ -135,6 +138,23 @@
           <strong>Explore Chem Pod</strong>
           <span>Click the floor or use WASD · Stop by a bench to settle in</span>
         </div>
+      </section>
+
+      <section class="interior-stage" id="factoryView" aria-label="Donut Factory interior" hidden>
+        <div class="room-toolbar">
+          <button class="room-back-button" id="leaveFactory">Back to town</button>
+          <div><span id="factoryCount"></span><strong>Donut Factory</strong></div>
+          <select id="factoryChoice" aria-label="Choose a factory"><option value="0">Factory 1</option><option value="1">Factory 2</option></select>
+          <div id="factoryPaging"><button id="factoryPrevious" aria-label="Previous shift">←</button><span id="factoryWorkshop"></span><button id="factoryNext" aria-label="Next shift">→</button></div>
+        </div>
+        <div class="map-wrap"><div class="map-world interior-world" id="factoryWorld">
+          <img class="town-map interior-map" loading="lazy" decoding="async" src="assets/donut-factory-interior-v1.png" alt="Pixel-art donut bakery with copper machinery and six double-person baking stations." />
+          <div class="residents-layer" id="factoryResidentsLayer"></div>
+          <div class="pets-layer" id="factoryPetsLayer" aria-hidden="true"></div>
+          <div class="live-players-layer" id="factoryLivePlayersLayer"></div>
+          <button class="room-exit" id="factoryExit" aria-label="Leave Donut Factory"><span>Exit</span></button>
+        </div></div>
+        <div class="movement-help room-movement-help"><strong>Better together</strong><span id="factoryEmpty">Confirmed chat pairs will appear here.</span></div>
       </section>
 
       <section class="interior-stage shop-stage shop-wall-stage" id="shopView" aria-label="Donut Shop" hidden>
@@ -295,9 +315,10 @@
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
     <script src="assets/town-walkmask.js?v=3"></script>
     <script src="assets/chempod-walkmask.js?v=4"></script>
-    <script src="town-collision.js?v=5"></script>
+    <script src="donut-factory.js?v=1"></script>
+    <script src="town-collision.js?v=6"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=6"></script>
-    <script src="app.js?v=57"></script>
+    <script src="app.js?v=58"></script>
   </body>
 </html>

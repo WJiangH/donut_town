@@ -22,18 +22,7 @@ const chemPodResidentSlots = [
   { x: 27, y: 45 }, { x: 52, y: 74 }
 ];
 
-const donutStations = [
-  { x: 31, y: 31, left: { x: 28.4, y: 33 }, right: { x: 33.6, y: 33 } },
-  { x: 42, y: 40, left: { x: 39.4, y: 42 }, right: { x: 44.6, y: 42 } },
-  { x: 61, y: 40, left: { x: 58.4, y: 42 }, right: { x: 63.6, y: 42 } },
-  { x: 42, y: 53, left: { x: 39.4, y: 55 }, right: { x: 44.6, y: 55 } },
-  { x: 61, y: 53, left: { x: 58.4, y: 55 }, right: { x: 63.6, y: 55 } },
-  { x: 50, y: 67, left: { x: 47.4, y: 69 }, right: { x: 52.6, y: 69 } },
-  { x: 24, y: 51, left: { x: 21.4, y: 53 }, right: { x: 26.6, y: 53 } },
-  { x: 78, y: 51, left: { x: 75.4, y: 53 }, right: { x: 80.6, y: 53 } },
-  { x: 29, y: 69, left: { x: 26.4, y: 71 }, right: { x: 31.6, y: 71 } },
-  { x: 73, y: 70, left: { x: 70.4, y: 72 }, right: { x: 75.6, y: 72 } }
-];
+
 
 const walkCorridors = [
   { from: [50, 8], to: [50, 70], width: 5.2 },
@@ -72,7 +61,8 @@ const player = { id: 11, name: "You", x: 50, y: 59 };
 const scenePlayerPositions = {
   town: { x: player.x, y: player.y },
   chemPod: { x: 50, y: 86 },
-  donutShop: { x: 50, y: 84 }
+  donutShop: { x: 50, y: 84 },
+  donutFactory: { x: 50, y: 88 }
 };
 let currentScene = "town";
 let sceneTransitioning = false;
@@ -80,7 +70,10 @@ let currentUser = null;
 let headwearPrototype = null;
 let headwearPrototypeLoad = null;
 let currentPairId = null;
-let pairActivities = [];
+let factoryPairs = [];
+let factoryPage = 0;
+let lastFactoryMarkup = null;
+let requestedFactory = null;
 const previewPairUserId = new URLSearchParams(window.location.search).get("previewPair");
 const pressedKeys = new Set();
 let clickPath = [];
@@ -130,7 +123,7 @@ function restorePosition() {
   if (!saved?.spots) return;
   for (const [scene, spot] of Object.entries(saved.spots)) {
     if (!scenePlayerPositions[scene] || !Number.isFinite(spot?.x) || !Number.isFinite(spot?.y)) continue;
-    const collision = scene === "chemPod" ? window.ChemPodCollision : window.TownCollision;
+    const collision = scene === "chemPod" ? window.ChemPodCollision : scene === "donutFactory" ? window.FactoryCollision : window.TownCollision;
     const landing = collision?.ready ? collision.nearestWalkable(spot.x, spot.y) : spot;
     scenePlayerPositions[scene] = { x: landing.x, y: landing.y };
   }
@@ -376,7 +369,7 @@ function renderNeighborDirectory() {
   const matches=residents.filter(person=>residentIsVisible(person)&&`${person.name} ${person.title||''}`.toLocaleLowerCase().includes(query))
     .sort((a,b)=>a.name.localeCompare(b.name));
   document.querySelector('#directoryCount').textContent=String(matches.length);
-  const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-initials" data-avatar="${escapeHtml(person.avatarUrl || '')}" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small>${person.scene==='chemPod'?'Chem Pod':'Around town'}</small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
+  const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-initials" data-avatar="${escapeHtml(person.avatarUrl || '')}" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small>${person.scene==='donutFactory'?'Donut Factory':person.scene==='chemPod'?'Chem Pod':'Around town'}</small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
   if(markup!==lastDirectoryMarkup){
     const directory=document.querySelector('#neighborDirectory');
     directory.innerHTML=markup;lastDirectoryMarkup=markup;
@@ -388,28 +381,19 @@ function renderResidents() {
   renderNeighborDirectory();
   const residentsMarkup = residents.map(person => {
     const visible = (person.scene || "town") === "town" && residentIsVisible(person) && !remotePlayers.has(person.slackId);
-    return `<button class="resident-pin ${person.status} ${person.status === "booked" ? "making-donut" : ""} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
+    return `<button class="resident-pin ${person.status} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
   }).join("");
-  const activityMarkup = pairActivities.map(activity => `<div class="donut-workstation" style="left:${activity.x}%;top:${activity.y}%;z-index:${Math.round(activity.y * 10) - 1}" role="img" aria-label="${escapeHtml(activity.label)}">
-    <span class="workstation-copy">Making donuts</span>
-    <span class="workstation-flour flour-one" aria-hidden="true"></span>
-    <span class="workstation-flour flour-two" aria-hidden="true"></span>
-    <span class="workstation-flour flour-three" aria-hidden="true"></span>
-    <span class="workstation-rolling-pin" aria-hidden="true"></span>
-    <span class="workstation-dough" aria-hidden="true"></span>
-    <span class="workstation-counter" aria-hidden="true"><i></i></span>
-  </div>`).join("");
-  const playerClass = `player-pin ${currentUser?.status || "open"} ${currentUser?.status === "booked" ? "making-donut" : ""}`;
+  const playerClass = `player-pin ${currentUser?.status || "open"} `;
   const playerBody = playerMarkup();
   // Replacing the pins with identical markup restarts every idle animation and
   // reloads the layered sprite art, which reads as the town flickering on each
   // five second sync, so only touch the DOM when something actually changed.
-  const signature = [activityMarkup, residentsMarkup, playerClass, playerBody].join("\u0000");
+  const signature = [residentsMarkup, playerClass, playerBody].join("\u0000");
   if (signature !== lastTownMarkup || !layer.querySelector("#townPlayerPin")) {
     lastTownMarkup = signature;
-    layer.innerHTML = `${activityMarkup}${residentsMarkup}<div class="${playerClass}" id="townPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+    layer.innerHTML = `${residentsMarkup}<div class="${playerClass}" id="townPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
     ${playerBody}
   </div>`;
     layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
@@ -440,6 +424,37 @@ function renderChemPod() {
   renderLivePlayers(0);
 }
 
+function renderFactory() {
+  const roomLayer=document.querySelector('#factoryResidentsLayer');
+  const pairs=factoryPairs.filter(pair=>pair.page===factoryPage);
+  const people=pairs.flatMap(pair=>pair.members).filter(person=>!person.isPlayer && !(remotePlayers.get(person.slackId)?.scene==='donutFactory' && remotePlayers.get(person.slackId)?.workshop===factoryPage));
+  const markup=people.map(person=>`<button class="resident-pin booked" data-id="${person.id}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y*10)}" aria-label="Open ${escapeHtml(person.name)}'s profile">${personMarkup(person)}</button>`).join('')+
+    pairs.map(pair=>`<div class="factory-pair-label" style="left:${pair.station.x}%;top:${pair.station.y+4}%">${pair.members.map(p=>escapeHtml(p.displayName||p.name)).join(' + ')}</div>`).join('')+
+    `<div class="player-pin ${currentUser?.status||'open'}" id="factoryPlayerPin">${playerMarkup()}</div>`;
+  if(markup!==lastFactoryMarkup){
+    roomLayer.innerHTML=markup;lastFactoryMarkup=markup;
+    roomLayer.querySelectorAll('[data-id]').forEach(pin=>pin.onclick=()=>openResident(Number(pin.dataset.id)));
+  }
+  const pages=Math.max(1,Math.ceil(factoryPairs.length/6));
+  document.querySelector('#factoryCount').textContent=`${pairs.length} / 6 pairs this week`;
+  document.querySelector('#factoryChoice').value=String(factoryPage%2);
+  const shifts=Math.max(1,Math.ceil((pages-factoryPage%2)/2));
+  document.querySelector('#factoryWorkshop').textContent=`Shift ${Math.floor(factoryPage/2)+1} / ${shifts}`;
+  document.querySelector('#factoryPrevious').disabled=factoryPage<2;
+  document.querySelector('#factoryNext').disabled=factoryPage+2>=pages;
+  document.querySelector('#factoryPaging').hidden=shifts===1;
+  document.querySelector('#factoryEmpty').hidden=pairs.length>0;
+  paintResidentCharacters(roomLayer);updatePlayerElement(false);renderLivePlayers(0);
+}
+
+function changeFactoryWorkshop(delta) {
+  factoryPage=Math.max(0,Math.min(Math.max(1,Math.ceil(factoryPairs.length/6)-1),factoryPage+delta));
+  Object.assign(player,{x:50,y:88});clickPath=[];pressedKeys.clear();playerAction=null;
+  const own=factoryPairs.find(p=>p.page===factoryPage&&p.members.some(m=>m.isPlayer));
+  if(own){Object.assign(player,own.members[0].isPlayer?own.station.left:own.station.right);playerDirection=own.members[0].isPlayer?'right':'left';}
+  renderFactory();publishPresence(true,false);
+}
+
 let shopRoom = null;
 function renderShopRoom() {
   const layer = document.querySelector("#shopResidentsLayer");
@@ -468,6 +483,7 @@ function renderShopRoom() {
 function renderCurrentScene() {
   if (currentScene === "chemPod") renderChemPod();
   else if (currentScene === "donutShop") renderShopRoom();
+  else if (currentScene === "donutFactory") renderFactory();
   else renderResidents();
 }
 
@@ -503,7 +519,7 @@ function replaceRemotePlayers(players) {
 
 function upsertRemotePlayer(state, refreshResidents = true) {
   if (!state?.userId || state.userId === currentUser?.id) return;
-  if ((state.themeId || 'classic') !== activeThemeId) {
+  if (state.scene === 'town' && (state.themeId || 'classic') !== activeThemeId) {
     removeRemotePlayer(state.userId);
     return;
   }
@@ -514,8 +530,9 @@ function upsertRemotePlayer(state, refreshResidents = true) {
   remotePlayers.set(state.userId, {
     userId: state.userId,
     scene: state.scene,
-    x: previous?.x ?? x,
-    y: previous?.y ?? y,
+    workshop: state.workshop || 0,
+    x: previous?.scene===state.scene && previous.workshop===(state.workshop||0) ? previous.x : x,
+    y: previous?.scene===state.scene && previous.workshop===(state.workshop||0) ? previous.y : y,
     targetX: x,
     targetY: y,
     direction: ["up", "down", "left", "right"].includes(state.direction) ? state.direction : "down",
@@ -523,14 +540,14 @@ function upsertRemotePlayer(state, refreshResidents = true) {
     action: typeof state.action === "string" && state.action ? state.action : null,
     pet: typeof state.pet === "string" && state.pet ? state.pet : null
   });
-  if (refreshResidents && !previous) renderCurrentScene();
+  if (refreshResidents && (!previous || previous.scene!==state.scene || previous.workshop!==(state.workshop||0))) renderCurrentScene();
 }
 
 function renderLivePlayers(deltaSeconds) {
   const expectedIds = new Set();
   for (const remote of remotePlayers.values()) {
     const person = residents.find(resident => resident.slackId === remote.userId);
-    if (!person || remote.scene !== currentScene || !residentIsVisible(person)) continue;
+    if (!person || remote.scene !== currentScene || (currentScene==='donutFactory' && remote.workshop!==factoryPage) || (currentScene==='town' && !residentIsVisible(person))) continue;
     expectedIds.add(remote.userId);
     const smoothing = deltaSeconds > 0 ? 1 - Math.exp(-14 * deltaSeconds) : 1;
     remote.x += (remote.targetX - remote.x) * smoothing;
@@ -576,13 +593,14 @@ function renderLivePlayers(deltaSeconds) {
 function publishPresence(force = false, moving = false) {
   if (!realtimeSocket || realtimeSocket.readyState !== WebSocket.OPEN || !currentUser?.id) return;
   const now = performance.now();
-  const signature = `${currentScene}|${playerDirection}|${moving}|${playerAction || ""}|${equippedPet || ""}`;
+  const signature = `${currentScene}|${factoryPage}|${playerDirection}|${moving}|${playerAction || ""}|${equippedPet || ""}`;
   const stateChanged = signature !== lastPresenceSignature;
   if (!force && !stateChanged && (!moving || now - lastPresenceSentAt < 125)) return;
   realtimeSocket.send(JSON.stringify({
     type: "state",
     themeId: activeThemeId,
     scene: currentScene,
+    workshop: currentScene==='donutFactory'?factoryPage:0,
     x: player.x,
     y: player.y,
     direction: playerDirection,
@@ -669,6 +687,9 @@ async function loadRoomContent() {
 }
 
 function layoutBookedPairs() {
+  const previousOwn=factoryPairs.find(p=>p.members.some(m=>m.isPlayer));
+  const previousSpot=previousOwn && (previousOwn.members[0].isPlayer?previousOwn.station.left:previousOwn.station.right);
+  const atOwnStation=previousSpot && currentScene==='donutFactory' && factoryPage===previousOwn.page && Math.hypot(player.x-previousSpot.x,player.y-previousSpot.y)<.5;
   residents.forEach(person => {
     person.x = person.baseX;
     person.y = person.baseY;
@@ -677,43 +698,20 @@ function layoutBookedPairs() {
     person.pairFacing = null;
   });
 
-  const people = [...residents, ...(currentUser ? [{ ...currentUser, isPlayer: true }] : [])];
-  const bookedPairs = new Map();
-  people.filter(person => person.status === "booked" && person.pairId).forEach(person => {
-    if (!bookedPairs.has(person.pairId)) bookedPairs.set(person.pairId, []);
-    bookedPairs.get(person.pairId).push(person);
-  });
-  pairActivities = [];
-  [...bookedPairs.entries()].sort(([left], [right]) => left.localeCompare(right)).forEach(([pairId, pair], index) => {
-    if (pair.length < 2) return;
-    const station = donutStations[index % donutStations.length];
-    pair.sort((left, right) => (left.slackId || left.id).localeCompare(right.slackId || right.id));
-    pair.forEach((person, personIndex) => {
-      const spot = personIndex === 0 ? station.left : station.right;
-      if (person.isPlayer) {
-        if (currentPairId !== pairId) {
-          const townPosition = currentScene === "town" ? player : scenePlayerPositions.town;
-          townPosition.x = spot.x;
-          townPosition.y = spot.y;
-          clickPath = [];
-        }
-        if (currentScene === "town") playerDirection = personIndex === 0 ? "right" : "left";
-      } else {
-        const resident = residents.find(item => item.slackId === person.slackId);
-        resident.x = spot.x;
-        resident.y = spot.y;
-        resident.activity = "donut-station";
-        resident.scene = "town";
-        resident.pairFacing = personIndex === 0 ? "right" : "left";
+  factoryPairs = window.DonutFactory.pairsFor([...residents, ...(currentUser ? [{...currentUser,isPlayer:true}] : [])]);
+  const lastPage=Math.max(1,Math.ceil(factoryPairs.length/6)-1);
+  if(factoryPage>lastPage)factoryPage=Math.max(factoryPage%2,lastPage-(lastPage%2!==factoryPage%2?1:0));
+  for (const pair of factoryPairs) pair.members.forEach((person,index)=>{
+    const spot=index===0?pair.station.left:pair.station.right;
+    if(person.isPlayer){
+      const stationChanged=atOwnStation && (previousOwn.page!==pair.page || previousSpot.x!==spot.x || previousSpot.y!==spot.y);
+      if(currentPairId!==pair.pairId || stationChanged){
+        scenePlayerPositions.donutFactory={...spot};
+        if(currentScene==='donutFactory'){factoryPage=pair.page;Object.assign(player,spot);clickPath=[];}
       }
-    });
-    pairActivities.push({
-      pairId,
-      x: station.x,
-      y: station.y,
-      label: `${pair.map(person => person.displayName || person.name).join(" and ")} are making a donut`
-    });
+    } else Object.assign(person,{...spot,scene:'donutFactory',factoryPage:pair.page,activity:'donut-station',pairFacing:index===0?'right':'left'});
   });
+  document.querySelector('#neighborSummary').textContent=`${residents.length+(currentUser?1:0)} Slack members · ${factoryPairs.length} matched pairs · ${residents.filter(p=>p.scene==='chemPod').length} in Chem Pod`;
   currentPairId = currentUser?.pairId || null;
   refreshResidentPoses();
 }
@@ -773,6 +771,7 @@ function isShopWalkable(x, y) {
 
 function isWalkable(x, y) {
   if (currentScene === "chemPod") return isChemPodWalkable(x, y);
+  if (currentScene === "donutFactory") return window.FactoryCollision.isWalkable(x,y);
   if (currentScene === "donutShop") return isShopWalkable(x, y);
   return isTownWalkable(x, y);
 }
@@ -846,10 +845,10 @@ function setCameraMode(nextMode, announce = false) {
 function actionSpotOccupants() {
   const occupants = [];
   for (const remote of remotePlayers.values()) {
-    if (remote.scene === currentScene) occupants.push({ x: remote.x, y: remote.y, action: remote.action });
+    if (remote.scene === currentScene && (currentScene!=='donutFactory'||remote.workshop===factoryPage)) occupants.push({ x: remote.x, y: remote.y, action: remote.action });
   }
   for (const person of residents) {
-    if ((person.scene || "town") === currentScene && !remotePlayers.has(person.slackId)) {
+    if ((person.scene || "town") === currentScene && (currentScene!=='donutFactory'||person.factoryPage===factoryPage) && !remotePlayers.has(person.slackId)) {
       occupants.push({ x: person.x, y: person.y, action: person.activity || null });
     }
   }
@@ -880,6 +879,11 @@ const SCENES = {
     facing: "up",
     bounds: { minX: 8, maxX: 92, minY: 30, maxY: 92 },
     collision: () => window.ChemPodCollision
+  },
+  donutFactory: {
+    title:'Donut Factory',view:'#factoryView',residents:'#factoryResidentsLayer',
+    players:'#factoryLivePlayersLayer',pets:'#factoryPetsLayer',pin:'#factoryPlayerPin',
+    facing:'up',bounds:{minX:10,maxX:90,minY:35,maxY:93},collision:()=>window.FactoryCollision
   },
   donutShop: {
     title: "Donut Shop",
@@ -1007,8 +1011,16 @@ function setScene(nextScene) {
   if (nextScene === currentScene) return;
   scenePlayerPositions[currentScene] = { x: player.x, y: player.y };
   currentScene = nextScene;
+  if(currentScene==='donutFactory'){
+    const own=factoryPairs.find(p=>p.members.some(m=>m.isPlayer));
+    factoryPage=requestedFactory ?? own?.page ?? 0;
+    requestedFactory=null;
+    scenePlayerPositions.donutFactory={x:50,y:88};
+    if(own && own.page===factoryPage){factoryPage=own.page;scenePlayerPositions.donutFactory={...(own.members[0].isPlayer?own.station.left:own.station.right)};}
+  }
   Object.assign(player, scenePlayerPositions[currentScene]);
   playerDirection = scene().facing;
+  if(currentScene==='donutFactory'){const own=factoryPairs.find(p=>p.page===factoryPage&&p.members.some(m=>m.isPlayer));if(own)playerDirection=own.members[0].isPlayer?'right':'left';}
   playerFrame = 1;
   playerAction = null;
   clickPath = [];
@@ -1243,7 +1255,6 @@ for (let step = 0; step <= 5; step++) {
     const y = path.from[1] + (path.to[1] - path.from[1]) * step / 5;
     if (!isTownWalkable(x, y)) continue;
     if (residentSlots.some(spot => Math.hypot(spot.x - x, spot.y - y) < 3)) continue;
-    if (donutStations.some(station => Math.hypot(station.x - x, station.y + 2 - y) < 4)) continue;
     residentSlots.push({ x, y, activity: "path" });
   }
 }
@@ -1255,7 +1266,6 @@ function snapTownAnchors() {
     point.x = spot.x;
     point.y = spot.y;
   };
-  donutStations.forEach(station => [station, station.left, station.right].forEach(snap));
   [player, scenePlayerPositions.town].forEach(snap);
 }
 snapTownAnchors();
@@ -1586,6 +1596,7 @@ function movePlayerFromMapClick(event) {
 
 document.querySelector("#mapWorld").addEventListener("click", movePlayerFromMapClick);
 document.querySelector("#chemPodWorld").addEventListener("click", movePlayerFromMapClick);
+document.querySelector("#factoryWorld").addEventListener("click", movePlayerFromMapClick);
 // The donut in the middle of the plaza is the shop's front door.
 let ownedShopItems = [];
 document.querySelector("#shopEntrance").addEventListener("click", event => {
@@ -1616,18 +1627,18 @@ function updatePetFollowers(deltaSeconds, ownerMoving) {
   const owners = [];
   if (equippedPet) owners.push({ id: "you", x: player.x, y: player.y, scene: currentScene, pet: equippedPet, moving: ownerMoving });
   for (const remote of remotePlayers.values()) {
-    if (remote.pet && remote.scene === currentScene) owners.push({ id: remote.userId, x: remote.x, y: remote.y, scene: remote.scene, pet: remote.pet, moving: remote.moving });
+    if (remote.pet && remote.scene === currentScene && (currentScene!=='donutFactory'||remote.workshop===factoryPage)) owners.push({ id: remote.userId, x: remote.x, y: remote.y, scene: remote.scene, pet: remote.pet, moving: remote.moving });
   }
   petsApi.updatePets(owners, {
     deltaSeconds,
     layerFor: name => sceneLayer("pets", name),
     geometryFor: name => {
       const collision=scene(name).collision(),world=sceneLayer('pets',name)?.parentElement;
-      return {key:name==='town'?activeThemeId:name,width:world?.offsetWidth,height:world?.offsetHeight,
-        figureScale:name==='chemPod'?(world?.offsetWidth||1750)/1750:1,
+      return {key:name==='town'?activeThemeId:name==='donutFactory'?`factory:${factoryPage}`:name,width:world?.offsetWidth,height:world?.offsetHeight,
+        figureScale:name==='donutFactory'?(world?.offsetWidth||2100)/2100:name==='chemPod'?(world?.offsetWidth||1750)/1750:1,
         lineIsClear:collision?.lineIsClear,findPath:collision?.findPath};
     },
-    isWalkable: (x, y, name) => name === "chemPod" ? isChemPodWalkable(x,y) : name === "donutShop" ? isShopWalkable(x,y) : isTownWalkable(x,y)
+    isWalkable: (x, y, name) => name === "donutFactory" ? window.FactoryCollision.isWalkable(x,y) : name === "chemPod" ? isChemPodWalkable(x,y) : name === "donutShop" ? isShopWalkable(x,y) : isTownWalkable(x,y)
   });
 }
 
@@ -1746,6 +1757,13 @@ document.querySelector("#shopHome").addEventListener("click", openHouse);
 document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));
 document.querySelector("#chemPodExit").addEventListener("click", () => transitionToScene("town"));
+document.querySelector('#factoryEntrance').onclick=()=>{requestedFactory=0;transitionToScene('donutFactory');};
+document.querySelector('#factoryTwoEntrance').onclick=()=>{requestedFactory=1;transitionToScene('donutFactory');};
+document.querySelector('#factoryChoice').onchange=event=>changeFactoryWorkshop(Number(event.target.value)-factoryPage);
+document.querySelector('#railFactory').onclick=()=>{closeProfile();closeDrawer();transitionToScene('donutFactory');};
+document.querySelector('#leaveFactory').onclick=document.querySelector('#factoryExit').onclick=()=>transitionToScene('town');
+document.querySelector('#factoryPrevious').onclick=()=>changeFactoryWorkshop(-2);
+document.querySelector('#factoryNext').onclick=()=>changeFactoryWorkshop(2);
 document.querySelector("#leaveChemPod").addEventListener("click", () => transitionToScene("town"));
 document.querySelectorAll("[data-camera-mode]").forEach(button => button.addEventListener("click", () => setCameraMode(button.dataset.cameraMode, true)));
 
@@ -1831,6 +1849,9 @@ window.addEventListener("blur", () => { pressedKeys.clear(); });
 new ResizeObserver(([entry]) => {
   if (entry.contentRect.width > 0) entry.target.style.setProperty("--pod-figure", entry.contentRect.width / 1750);
 }).observe(document.querySelector("#chemPodWorld"));
+new ResizeObserver(([entry])=>{
+  if(entry.contentRect.width>0)entry.target.style.setProperty('--pod-figure',entry.contentRect.width/2100);
+}).observe(document.querySelector('#factoryWorld'));
 
 window.addEventListener("resize", () => {
   townCameraMetrics = null;
@@ -1850,13 +1871,12 @@ function applyTownTheme(theme) {
   world.dataset.theme = theme.id;
   const art = world.querySelector('.town-map');
   art.src = theme.image; art.alt = `${theme.name} pixel-art Donut Town`;
-  for (const [id,selector] of [['chemPod','#chemPodEntrance'],['donutShop','#shopEntrance']]) {
+  for (const [id,selector] of [['chemPod','#chemPodEntrance'],['donutShop','#shopEntrance'],['donutFactory','#factoryEntrance'],['donutFactoryTwo','#factoryTwoEntrance']]) {
     const entry=theme.entrances[id], button=document.querySelector(selector);
     button.style.left=`${entry.x}%`;button.style.top=`${entry.y}%`;
   }
   Object.assign(player, theme.spawn);
   scenePlayerPositions.town = {...theme.spawn};
-  donutStations.splice(0, donutStations.length, ...structuredClone(theme.stations));
   snapTownAnchors();
   spreadResidentSlots(residentSlots, window.TownCollision, 160, 4.2);
   restorePosition();

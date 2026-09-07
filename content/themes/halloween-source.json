@@ -40,6 +40,22 @@
           "x": 17.4,
           "y": 46.8
         }
+      },
+      "donutFactory": {
+        "x": 50,
+        "y": 27,
+        "landing": {
+          "x": 50,
+          "y": 35
+        }
+      },
+      "donutFactoryTwo": {
+        "x": 69,
+        "y": 24,
+        "landing": {
+          "x": 69,
+          "y": 29
+        }
       }
     },
     "stations": [

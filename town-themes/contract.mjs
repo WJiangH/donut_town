@@ -12,7 +12,7 @@ export function validateTheme(theme) {
   if (!Number.isFinite(theme.worldWidth) || theme.worldWidth < 512 || theme.worldWidth > 8192) bad();
   const b=theme.bounds;
   if (!b || !point({x:b.minX,y:b.minY}) || !point({x:b.maxX,y:b.maxY}) || b.minX>=b.maxX || b.minY>=b.maxY) bad();
-  for (const key of ['chemPod','donutShop']) if (!point(theme.entrances?.[key]) || !point(theme.entrances[key].landing)) bad();
+  for (const key of ['chemPod','donutShop','donutFactory','donutFactoryTwo']) if (!point(theme.entrances?.[key]) || !point(theme.entrances[key].landing)) bad();
   const m=theme.walkMask;
   if (!m || !Number.isInteger(m.cols) || !Number.isInteger(m.rows) || m.cols<8 || m.rows<8 || m.cols*m.rows>262144 || !/^[A-Za-z0-9+/]+=*$/.test(m.bits || '')) bad();
   if (atob(m.bits).length!==Math.ceil(m.cols*m.rows/8)) bad();

@@ -44,3 +44,7 @@ Keep the cozy 16-bit, top-down three-quarter style, complete scene framing and c
 ## Completion
 
 Report candidate art and manifest paths, what was actually tested, file sizes, and whether the current theme was changed or pushed. Show the preview/settings result. Explicitly distinguish fixture roles/members from real Slack and deployment verification. If activation was not requested, leave the live town unchanged.
+
+## Shared Donut Factories
+
+Every selectable theme must supply `donutFactory` and `donutFactoryTwo` entrance markers with separately measured reachable `landing` points, alongside `chemPod` and `donutShop`. These two buildings open the same shared factory scene. Never duplicate its roster or matching data per theme. Outdoor `stations` remain legacy package geometry; confirmed pairs are now placed by `donut-factory.js` in the shared interiors.
