@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=36" />
+    <link rel="stylesheet" href="styles.css?v=39" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -120,6 +120,41 @@
         </div>
       </section>
 
+      <section class="interior-stage shop-stage" id="shopView" aria-label="Donut Shop" hidden>
+        <div class="room-toolbar">
+          <button class="room-back-button" id="leaveShop">Back to town</button>
+          <div>
+            <span>Inside</span>
+            <strong>Donut Shop</strong>
+          </div>
+          <strong class="shop-wallet" data-shop="wallet">—</strong>
+        </div>
+
+        <div class="map-wrap">
+          <div class="map-world shop-world" id="shopWorld">
+            <div class="room-shell" aria-hidden="true">
+              <div class="room-back"></div>
+              <div class="room-left"></div>
+              <div class="room-right"></div>
+              <div class="room-floor-plane"></div>
+              <div class="shop-counter"><span>Donut Shop</span></div>
+              <div class="shop-door"></div>
+            </div>
+            <div class="shop-shelves" data-shop="shelves"></div>
+            <div class="pets-layer" id="shopPetsLayer" aria-hidden="true"></div>
+            <div class="residents-layer" id="shopResidentsLayer" aria-live="polite"></div>
+            <div class="live-players-layer" id="shopLivePlayersLayer" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="shop-counter-bar" data-shop="bar" hidden>
+          <span class="shop-thumb" data-shop="bar-thumb" aria-hidden="true"></span>
+          <span class="shop-bar-copy"><strong data-shop="bar-name"></strong><small data-shop="bar-blurb"></small></span>
+          <button type="button" data-shop="bar-action"></button>
+        </div>
+        <p class="shop-status room-movement-help" role="status" data-shop="status">Walk up to a shelf to see what is on it.</p>
+      </section>
+
       <aside class="invite-dock" id="inviteDock" aria-label="Your pending Donut invitations">
         <button class="dock-handle" id="dockHandle" aria-expanded="false">
           <span>My invitations</span>
@@ -159,6 +194,12 @@
         <p class="house-status" role="status" data-house="status">Opening the door…</p>
       </div>
       <div class="house-room">
+        <div class="room-shell" aria-hidden="true">
+          <div class="room-back"></div>
+          <div class="room-left"></div>
+          <div class="room-right"></div>
+          <div class="room-floor-plane"></div>
+        </div>
         <div class="house-floor" data-house="floor"></div>
         <div class="house-resident" data-house="resident" aria-hidden="true"></div>
       </div>
@@ -168,21 +209,6 @@
         <small>Drag onto the floor · drag off the floor to put it away · arrow keys move the selected piece</small>
       </div>
     </section>
-
-    <div class="shop-scrim" id="shopScrim" hidden></div>
-    <aside class="shop-drawer" id="shopDrawer" aria-hidden="true" aria-labelledby="shopTitle">
-      <button class="close-button" id="closeShop" aria-label="Leave the shop">Close</button>
-      <div class="shop-heading">
-        <div class="mini-donut" aria-hidden="true"></div>
-        <div>
-          <span>Donut fountain</span>
-          <h2 id="shopTitle">Shop</h2>
-        </div>
-        <strong class="shop-wallet" data-shop="wallet">—</strong>
-      </div>
-      <ul class="shop-shelf" data-shop="shelf"></ul>
-      <p class="shop-status" role="status" data-shop="status">Opening the shop…</p>
-    </aside>
 
     <div class="profile-scrim" id="profileScrim" hidden></div>
     <aside class="profile-drawer" id="profileDrawer" aria-hidden="true" aria-labelledby="profileName">
@@ -239,6 +265,6 @@
     <script src="town-collision.js?v=3"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=3"></script>
-    <script src="app.js?v=44"></script>
+    <script src="app.js?v=46"></script>
   </body>
 </html>

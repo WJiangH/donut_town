@@ -1,4 +1,4 @@
-const ALLOWED_SCENES = new Set(["town", "chemPod"]);
+const ALLOWED_SCENES = new Set(["town", "chemPod", "donutShop"]);
 const ALLOWED_DIRECTIONS = new Set(["up", "down", "left", "right"]);
 const ALLOWED_ACTIONS = new Set(["sitChair", "sitGrass", "garden", "lookout", "read", "coffee", "experiment", "dance", "fish"]);
 // A pet id is only ever relayed, never trusted as proof of ownership: the

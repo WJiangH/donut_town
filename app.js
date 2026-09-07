@@ -75,7 +75,8 @@ let invitesOpen = true;
 const player = { id: 11, name: "You", x: 50, y: 59 };
 const scenePlayerPositions = {
   town: { x: player.x, y: player.y },
-  chemPod: { x: 50, y: 86 }
+  chemPod: { x: 50, y: 86 },
+  donutShop: { x: 50, y: 84 }
 };
 let currentScene = "town";
 let sceneTransitioning = false;
@@ -389,7 +390,7 @@ function renderResidents() {
     layer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
   }
   document.querySelector("#mapEmpty").hidden = layer.querySelectorAll(".resident-pin:not(.hidden)").length > 0;
-  paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
+  paintResidentCharacters(sceneLayer("residents") || layer);
   updatePlayerElement(false);
   renderLivePlayers(0);
 }
@@ -410,18 +411,45 @@ function renderChemPod() {
     roomLayer.querySelectorAll(".resident-pin").forEach(pin => pin.addEventListener("click", () => openResident(Number(pin.dataset.id))));
   }
   renderChemPodTeamWall();
-  paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
+  paintResidentCharacters(sceneLayer("residents") || layer);
+  updatePlayerElement(false);
+  renderLivePlayers(0);
+}
+
+let shopRoom = null;
+function renderShopRoom() {
+  const layer = document.querySelector("#shopResidentsLayer");
+  if (!layer) return;
+  if (!layer.querySelector("#shopPlayerPin")) {
+    layer.innerHTML = `<div class="player-pin ${currentUser?.status || "open"}" id="shopPlayerPin" style="left:${player.x}%;top:${player.y}%;z-index:${Math.round(player.y * 10)}">
+      ${playerMarkup()}
+    </div>`;
+  }
+  if (!shopRoom) {
+    shopRoom = import("./shop-room.mjs")
+      .then(module => module.mountShopRoom(document.querySelector("#shopView"), {
+        onOwnedChange: owned => { ownedShopItems = owned; },
+        onPetChange: setEquippedPet
+      }))
+      .catch(() => {
+        document.querySelector('#shopView [data-shop="status"]').textContent = "Shop unavailable. Step outside and back in.";
+        shopRoom = null;
+        return null;
+      });
+  }
+  shopRoom?.then(room => room?.load());
   updatePlayerElement(false);
   renderLivePlayers(0);
 }
 
 function renderCurrentScene() {
   if (currentScene === "chemPod") renderChemPod();
+  else if (currentScene === "donutShop") renderShopRoom();
   else renderResidents();
 }
 
-function liveLayerFor(scene) {
-  return document.querySelector(scene === "chemPod" ? "#chemPodLivePlayersLayer" : "#townLivePlayersLayer");
+function liveLayerFor(name) {
+  return sceneLayer("players", name);
 }
 
 function removeRemotePlayer(userId) {
@@ -720,14 +748,23 @@ function isChemPodWalkable(x, y) {
   return insideFloor && !blocked;
 }
 
+// The shop floor: inside the four walls, and not through the counter.
+const SHOP_COUNTER = { left: 37, right: 63, top: 50, bottom: 64 };
+function isShopWalkable(x, y) {
+  const bounds = SCENES.donutShop.bounds;
+  const inside = x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
+  const counter = x >= SHOP_COUNTER.left && x <= SHOP_COUNTER.right && y >= SHOP_COUNTER.top && y <= SHOP_COUNTER.bottom;
+  return inside && !counter;
+}
+
 function isWalkable(x, y) {
-  return currentScene === "chemPod" ? isChemPodWalkable(x, y) : isTownWalkable(x, y);
+  if (currentScene === "chemPod") return isChemPodWalkable(x, y);
+  if (currentScene === "donutShop") return isShopWalkable(x, y);
+  return isTownWalkable(x, y);
 }
 
 function activeSceneBounds() {
-  return currentScene === "chemPod"
-    ? { minX: 8, maxX: 92, minY: 30, maxY: 92 }
-    : { minX: 5, maxX: 95, minY: 5, maxY: 94 };
+  return scene().bounds;
 }
 
 function refreshTownCameraMetrics() {
@@ -792,8 +829,54 @@ function actionSpotOccupants() {
   return occupants;
 }
 
+// Every scene the town can be in, and what each one is made of. A new room is
+// a row here plus its markup, not a ternary in a dozen places.
+const SCENES = {
+  town: {
+    title: "Town",
+    view: "#townView",
+    residents: "#residentsLayer",
+    players: "#townLivePlayersLayer",
+    pets: "#townPetsLayer",
+    pin: "#townPlayerPin",
+    facing: "down",
+    bounds: { minX: 5, maxX: 95, minY: 5, maxY: 94 },
+    collision: () => window.TownCollision
+  },
+  chemPod: {
+    title: "Chem Pod",
+    view: "#chemPodView",
+    residents: "#chemPodResidentsLayer",
+    players: "#chemPodLivePlayersLayer",
+    pets: "#chemPodPetsLayer",
+    pin: "#chemPodPlayerPin",
+    facing: "up",
+    bounds: { minX: 8, maxX: 92, minY: 30, maxY: 92 },
+    collision: () => window.ChemPodCollision
+  },
+  donutShop: {
+    title: "Donut Shop",
+    view: "#shopView",
+    residents: "#shopResidentsLayer",
+    players: "#shopLivePlayersLayer",
+    pets: "#shopPetsLayer",
+    pin: "#shopPlayerPin",
+    facing: "up",
+    bounds: { minX: 10, maxX: 90, minY: 42, maxY: 88 },
+    collision: () => null
+  }
+};
+
+function scene(name = currentScene) {
+  return SCENES[name] || SCENES.town;
+}
+
+function sceneLayer(part, name = currentScene) {
+  return document.querySelector(scene(name)[part]);
+}
+
 function sceneCollision() {
-  return currentScene === "chemPod" ? window.ChemPodCollision : window.TownCollision;
+  return scene().collision();
 }
 
 function nearestWalkable(x, y) {
@@ -865,7 +948,7 @@ function findWalkPath(start, goal) {
 }
 
 function updatePlayerElement(isMoving) {
-  const pin = document.querySelector(currentScene === "chemPod" ? "#chemPodPlayerPin" : "#townPlayerPin");
+  const pin = sceneLayer("pin");
   if (!pin) return;
   pin.style.left = `${player.x}%`;
   pin.style.top = `${player.y}%`;
@@ -898,14 +981,16 @@ function setScene(nextScene) {
   scenePlayerPositions[currentScene] = { x: player.x, y: player.y };
   currentScene = nextScene;
   Object.assign(player, scenePlayerPositions[currentScene]);
-  playerDirection = currentScene === "chemPod" ? "up" : "down";
+  playerDirection = scene().facing;
   playerFrame = 1;
   playerAction = null;
   clickPath = [];
-  document.querySelector("#townView").hidden = currentScene !== "town";
-  document.querySelector("#chemPodView").hidden = currentScene !== "chemPod";
-  document.querySelector("#sceneTitle").textContent = currentScene === "chemPod" ? "Chem Pod" : "Town";
-  if (currentScene === "chemPod") renderChemPod();
+  for (const [name, definition] of Object.entries(SCENES)) {
+    const view = document.querySelector(definition.view);
+    if (view) view.hidden = name !== currentScene;
+  }
+  document.querySelector("#sceneTitle").textContent = scene().title;
+  if (currentScene !== "town") renderCurrentScene();
   else {
     renderResidents();
     townCameraMetrics = null;
@@ -1009,7 +1094,7 @@ function gameLoop(timestamp) {
   if (isMoving) rememberPosition();
   updatePlayerElement(isMoving);
   // Only worth a frame of work when somebody's pose actually moves.
-  if (residentPosesAnimate) paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
+  if (residentPosesAnimate) paintResidentCharacters(sceneLayer("residents") || layer);
   updateTownCamera(deltaSeconds);
   updatePetFollowers(deltaSeconds, isMoving);
   publishPresence(false, isMoving);
@@ -1213,7 +1298,7 @@ async function syncSlackResidents() {
     layoutBookedPairs();
     updateAvailabilityControl();
     renderResidents();
-    if (currentScene === "chemPod") renderChemPod();
+    renderCurrentScene();
     renderInvitationDock();
     connectRealtime();
     return true;
@@ -1252,7 +1337,7 @@ async function syncWardrobeOutfits() {
       person.character = loaded; changed = true;
       if (person === currentUser) document.querySelector("#profileWardrobe").dispatchEvent(new CustomEvent("wardrobe-outfit", {detail: next.outfit}));
     }
-    if (changed) { renderResidents(); if (currentScene === "chemPod") renderChemPod(); }
+    if (changed) { renderResidents(); renderCurrentScene(); }
   } catch { /* Keep last confirmed outfit until the next sync. */ }
   finally { outfitSyncRunning = false; }
 }
@@ -1270,7 +1355,7 @@ async function syncInvitationStates() {
     layoutBookedPairs();
     updateAvailabilityControl();
     renderResidents();
-    if (currentScene === "chemPod") renderChemPod();
+    renderCurrentScene();
     renderInvitationDock();
     if (drawer.classList.contains("open") && selectedResident) openResident(selectedResident.id);
   } catch {
@@ -1327,7 +1412,7 @@ function openProfile() {
       wardrobeRevision++;
       currentUser.character = loaded;
       renderResidents();
-      if (currentScene === "chemPod") renderChemPod();
+      renderCurrentScene();
     } })).catch(() => {
       wardrobe.querySelector('[role="status"]').textContent = "Wardrobe unavailable. Reopen to retry.";
       wardrobeMount = null;
@@ -1460,39 +1545,14 @@ function movePlayerFromMapClick(event) {
 
 document.querySelector("#mapWorld").addEventListener("click", movePlayerFromMapClick);
 document.querySelector("#chemPodWorld").addEventListener("click", movePlayerFromMapClick);
-// The donut fountain is the shop counter: walk over, then the shelves open.
-let shopPanel = null;
+// The donut in the middle of the plaza is the shop's front door.
 let ownedShopItems = [];
-function openShop() {
-  const drawer = document.querySelector("#shopDrawer");
-  drawer.classList.add("open");
-  drawer.setAttribute("aria-hidden", "false");
-  document.querySelector("#shopScrim").hidden = false;
-  if (!shopPanel) {
-    shopPanel = import("./shop-panel.mjs")
-      .then(module => module.mountShop(drawer, {
-        onOwnedChange: owned => { ownedShopItems = owned; },
-        onPetChange: setEquippedPet
-      }))
-      .catch(() => {
-        drawer.querySelector('[data-shop="status"]').textContent = "Shop unavailable. Close and try again.";
-        shopPanel = null;
-        return null;
-      });
-  }
-  shopPanel?.then(panel => panel?.load());
-}
-function closeShop() {
-  const drawer = document.querySelector("#shopDrawer");
-  drawer.classList.remove("open");
-  drawer.setAttribute("aria-hidden", "true");
-  document.querySelector("#shopScrim").hidden = true;
-}
 document.querySelector("#shopEntrance").addEventListener("click", event => {
   event.stopPropagation();
-  if (currentScene === "town") clickPath = findWalkPath(player, { x: 51, y: 47 });
-  openShop();
+  transitionToScene("donutShop");
 });
+document.querySelector("#leaveShop").addEventListener("click", () => transitionToScene("town"));
+
 let petsModule = null;
 function setEquippedPet(petId) {
   equippedPet = petId || null;
@@ -1513,7 +1573,7 @@ function updatePetFollowers(deltaSeconds, ownerMoving) {
   }
   petsApi.updatePets(owners, {
     deltaSeconds,
-    layerFor: scene => document.querySelector(scene === "chemPod" ? "#chemPodPetsLayer" : "#townPetsLayer"),
+    layerFor: name => sceneLayer("pets", name),
     isWalkable: (x, y) => isWalkable(x, y)
   });
 }
@@ -1592,8 +1652,6 @@ function closeHouse() {
 }
 document.querySelector("#openHouse").addEventListener("click", openHouse);
 document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
-document.querySelector("#closeShop").addEventListener("click", closeShop);
-document.querySelector("#shopScrim").addEventListener("click", closeShop);
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));
 document.querySelector("#chemPodExit").addEventListener("click", () => transitionToScene("town"));
 document.querySelector("#leaveChemPod").addEventListener("click", () => transitionToScene("town"));

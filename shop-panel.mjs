@@ -1,6 +1,6 @@
 // The donut fountain's shop: what the town sells, and what you have already
 // bought. Purchases are spent from the donuts a member has earned.
-const MESSAGES = {
+export const SHOP_MESSAGES = {
   slack_login_required: 'Open the town from Slack to shop.',
   member_not_found: 'Only channel members can shop.',
   shop_store_unavailable: 'The shop till is not connected yet.',
@@ -12,6 +12,19 @@ const MESSAGES = {
   pet_not_owned: 'You do not own that pet yet.',
   invalid_pet: 'That is not a pet.'
 };
+
+// One place that talks to the till, for both the drawer and the room.
+export async function shopRequest(path, body) {
+  const response = await fetch(path, body
+    ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) }
+    : { signal: AbortSignal.timeout(15000) });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    console.warn("Donut Town shop refused:", response.status, payload.error || "(no code)");
+    throw Object.assign(new Error(payload.error || "shop_error"), { code: payload.error, status: response.status });
+  }
+  return payload;
+}
 
 const KIND_LABEL = { pet: 'Pet', decoration: 'Decoration', wardrobe: 'Wardrobe' };
 
@@ -55,7 +68,7 @@ export function mountShop(root, { onOwnedChange = () => {}, onPetChange = () => 
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
         console.warn('Donut Town shop is closed:', response.status, payload.error || '(no code)');
-        status.textContent = MESSAGES[payload.error] || 'The shop is closed right now.';
+        status.textContent = SHOP_MESSAGES[payload.error] || 'The shop is closed right now.';
         return;
       }
       state = { items: payload.items || [], owned: payload.owned || [], wallet: payload.wallet, pet: payload.pet || null };
@@ -82,7 +95,7 @@ export function mountShop(root, { onOwnedChange = () => {}, onPetChange = () => 
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
         console.warn('Donut Town purchase refused:', response.status, payload.error || '(no code)');
-        status.textContent = MESSAGES[payload.error] || 'Could not buy that. Try again.';
+        status.textContent = SHOP_MESSAGES[payload.error] || 'Could not buy that. Try again.';
         return;
       }
       state = { ...state, owned: payload.owned, wallet: payload.wallet, pet: payload.pet ?? state.pet };
@@ -113,7 +126,7 @@ export function mountShop(root, { onOwnedChange = () => {}, onPetChange = () => 
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
         console.warn('Donut Town pet refused:', response.status, payload.error || '(no code)');
-        status.textContent = MESSAGES[payload.error] || 'That pet is staying put.';
+        status.textContent = SHOP_MESSAGES[payload.error] || 'That pet is staying put.';
         return;
       }
       state = { ...state, pet: payload.pet || null, owned: payload.owned || state.owned };

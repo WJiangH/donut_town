@@ -145,8 +145,10 @@ Open the town with `?zones=1` to see every tag drawn over the map.
 
 ### The shop at the fountain
 
-The donut in the middle of the plaza is the shop. Clicking it walks you over
-and opens the shelves. Donuts earned from pairings are the currency, so a
+The donut in the middle of the plaza is the shop's front door: click it and you
+walk inside, the way you walk into the Chem Pod. The stock stands on shelves
+along the back wall - pets on the left, decorations on the right - and clicking
+one brings up what it is and what it costs. Donuts earned from pairings are the currency, so a
 wallet is what a member has earned less what they have already spent, and a
 purchase is recorded with the price that was paid - a later price change never
 rewrites what somebody spent.
@@ -194,6 +196,15 @@ it wherever they stand - fishing on dry land if that is the joke they want -
 and other members see it through presence. "Let the place decide" hands the
 choice back to the map. The choice is a display preference, so it is kept in
 that browser rather than on the server.
+
+### Rooms are drawn as rooms
+
+The house and the shop are dollhouse interiors like the Chem Pod: a back wall,
+two walls angling towards the viewer, and a floor running away from you, with
+furniture drawn smaller towards the back. It is CSS rather than art - the
+`.room-shell` block in `styles.css` - so both rooms exist before their interior
+art does, and real art replaces the shell without touching the grid or the
+collision underneath.
 
 ### A member's own donut house
 

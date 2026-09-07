@@ -83,7 +83,7 @@ test('the shop refuses to touch the store without a member key', async () => {
 
 test('every shop refusal the server can send has words for the member', () => {
   const client = readFileSync(new URL('../shop-panel.mjs', import.meta.url), 'utf8');
-  const messages = client.slice(client.indexOf('const MESSAGES'), client.indexOf('};', client.indexOf('const MESSAGES')));
+  const messages = client.slice(client.indexOf('SHOP_MESSAGES = {'), client.indexOf('};', client.indexOf('SHOP_MESSAGES = {')));
   const server = readFileSync(new URL('../server.mjs', import.meta.url), 'utf8');
   const route = routeSource(server, '/api/shop') + routeSource(server, '/api/shop/purchase');
   const codes = new Set([...route.matchAll(/error: "(\w+)"/g)].map(match => match[1]));

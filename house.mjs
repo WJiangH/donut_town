@@ -30,7 +30,7 @@ export function mountHouse(root, { paintCharacter = null } = {}) {
   function tileMarkup(item, { x, y } = {}) {
     const style = x === undefined
       ? ''
-      : `style="--swatch:${escapeHtml(item.swatch || '#c9a227')};grid-column:${x + 1};grid-row:${y + 1};z-index:${y + 1}"`;
+      : `style="--swatch:${escapeHtml(item.swatch || '#c9a227')};grid-column:${x + 1};grid-row:${y + 1};z-index:${y + 1};--depth:${((y + 1) / grid.rows).toFixed(3)}"`;
     return `<button class="house-tile" data-item="${escapeHtml(item.id)}" ${style || `style="--swatch:${escapeHtml(item.swatch || '#c9a227')}"`}
       title="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)}"><span>${escapeHtml(item.name.split(' ').map(word => word[0]).join('').slice(0, 2))}</span></button>`;
   }

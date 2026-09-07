@@ -97,3 +97,10 @@ test('a pet is relayed when it looks like one, and dropped when it does not', ()
     assert.equal(normalizePresenceState({ ...base, pet: forged }).pet, null);
   }
 });
+
+test('a member can be seen in the shop as well as the town and the pod', () => {
+  for (const scene of ['town', 'chemPod', 'donutShop']) {
+    assert.equal(normalizePresenceState({ type: 'state', scene, x: 5, y: 5 })?.scene, scene);
+  }
+  assert.equal(normalizePresenceState({ type: 'state', scene: 'somewhere-else', x: 5, y: 5 }), null);
+});

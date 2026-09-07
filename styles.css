@@ -158,25 +158,86 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 }
 .pet-art.mirrored { transform: translateX(-50%) scaleX(-1); }
 
-/* A member's own room: a grid of floorboards you can drop things onto. */
+/* The shop is a room you walk into: shelves on the back wall, counter in the
+   middle, door at the bottom. Drawn here until the interior art lands. */
+.shop-world { width: min(106%, calc((100dvh - 72px) * 1.59)); background: #241a12; border-radius: 8px; overflow: hidden; }
+.shop-counter { position: absolute; left: 39%; right: 39%; top: 52%; height: 11%; display: grid; place-items: center; background: linear-gradient(180deg, #f3b6c8, #dd8ba4); border: 5px solid #6b4a2f; border-radius: 10px; box-shadow: 0 6px 0 rgba(80, 45, 30, .35); }
+.shop-counter span { color: #4a2b1e; font: 800 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: .04em; }
+.shop-door { position: absolute; left: 46%; width: 8%; bottom: 2%; height: 6%; background: #8a5a34; border: 4px solid #4a2b1e; border-radius: 4px 4px 0 0; }
+.shop-shelves { position: absolute; inset: 0; }
+.shop-slot {
+  position: absolute; width: 46px; height: 58px;
+  display: grid; grid-template-rows: 1fr auto; gap: 2px; place-items: center;
+  transform: translate(-50%, -100%);
+  padding: 4px 3px 3px;
+  background: #f6ecd8; border: 3px solid var(--ink); border-radius: 6px;
+  box-shadow: 3px 3px 0 rgba(74, 43, 30, .35);
+  cursor: pointer;
+}
+.shop-slot.owned { opacity: .55; }
+.shop-slot.selected { outline: 3px solid var(--accent); outline-offset: 2px; }
+.shop-slot i { width: 30px; height: 30px; background: var(--swatch) center / cover no-repeat; border: 2px solid var(--ink); image-rendering: pixelated; }
+.shop-slot small { color: #4a2b1e; font: 800 8px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.shop-counter-bar { position: absolute; z-index: 9; left: 50%; bottom: 58px; transform: translateX(-50%); display: grid; grid-template-columns: 34px 1fr auto; gap: 11px; align-items: center; min-width: 260px; padding: 10px 12px; background: var(--surface-solid); border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink); }
+.shop-bar-copy { display: grid; gap: 3px; }
+.shop-bar-copy strong { font-size: 11px; }
+.shop-bar-copy small { color: var(--muted); font-size: 8px; }
+.shop-counter-bar button { border: 2px solid var(--ink); border-radius: 8px; padding: 7px 11px; background: var(--accent); color: #fffaf2; font: 800 9px/1 inherit; cursor: pointer; white-space: nowrap; }
+.shop-counter-bar button[disabled] { background: var(--surface-solid); color: var(--muted); border-color: var(--line); cursor: default; }
+.shop-stage .shop-status { position: absolute; z-index: 8; left: 50%; bottom: 18px; transform: translateX(-50%); margin: 0; }
+.shop-stage .resident-pin, .shop-stage .player-pin, .shop-stage .remote-player {
+  transform: translate(-50%, -100%) scale(var(--pod-figure, .68));
+  transform-origin: bottom center;
+}
+
+/* Rooms are drawn like the Chem Pod: a back wall, two walls angling towards
+   the viewer, and a floor that runs away from you - not a flat backdrop. */
+.room-shell { position: absolute; inset: 0; overflow: hidden; border-radius: 6px; background: #241a12; }
+.room-back {
+  position: absolute; left: 12%; right: 12%; top: 0; height: 42%;
+  background: linear-gradient(180deg, #efdcc0 0%, #e3cba6 62%, #caa87d 100%);
+  box-shadow: inset 0 -9px 0 rgba(88, 56, 32, .5);
+}
+.room-back::after {
+  content: ""; position: absolute; inset: 8% 6% 14%;
+  background: repeating-linear-gradient(90deg, rgba(120, 82, 48, .16) 0 2px, transparent 2px 9%),
+              repeating-linear-gradient(0deg, rgba(120, 82, 48, .12) 0 2px, transparent 2px 22%);
+}
+/* The side walls run from the back corners down to the front of the floor, so
+   they meet the floor's edge instead of leaving a gap. */
+.room-left, .room-right { position: absolute; top: 0; height: 100%; width: 14%; }
+.room-left { left: 0; background: linear-gradient(90deg, #8f6f4c, #cdae83); clip-path: polygon(0 0, 100% 0, 86% 40%, 0 100%); }
+.room-right { right: 0; background: linear-gradient(270deg, #8f6f4c, #cdae83); clip-path: polygon(0 0, 100% 0, 100% 100%, 14% 40%); }
+.room-floor-plane {
+  position: absolute; left: 0; right: 0; top: 40%; bottom: 0;
+  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+  background:
+    repeating-linear-gradient(0deg, rgba(92, 58, 30, .22) 0 2px, transparent 2px 9%),
+    linear-gradient(180deg, #c49a68 0%, #d9b183 55%, #e6c298 100%);
+}
+.room-floor-plane::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(94deg, rgba(92, 58, 30, .16) 0 2px, transparent 2px 7%);
+}
+
+/* A member's own room: things stand on the floor plane, smaller towards the back. */
 .house-view { position: fixed; z-index: 65; inset: 0; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; padding: 18px; background: #efe6d6; }
 .house-bar { display: grid; grid-template-columns: auto auto 1fr; gap: 14px; align-items: center; }
 .house-bar span { display: block; color: var(--muted); font-size: 8px; }
 .house-bar strong { font-size: 13px; }
 .house-status { margin: 0; justify-self: end; color: var(--muted); font-size: 9px; }
-.house-room { position: relative; justify-self: center; align-self: center; width: min(100%, calc((100dvh - 210px) * 1.55)); aspect-ratio: 14 / 9; border: 6px solid #6b4a2f; border-radius: 6px; box-shadow: 0 14px 40px rgba(40, 25, 12, .28); background: #b98d5b; }
+.house-room { position: relative; justify-self: center; align-self: center; width: min(100%, calc((100dvh - 210px) * 1.55)); aspect-ratio: 14 / 9; border: 6px solid #4a2b1e; border-radius: 8px; box-shadow: 0 16px 44px rgba(40, 25, 12, .34); overflow: hidden; }
+/* The grid lives on the floor plane: rows further back are inset and smaller,
+   which reads as depth without breaking the square coordinates underneath. */
 .house-floor {
-  position: absolute; inset: 0;
+  position: absolute; left: 0; right: 0; top: 40%; bottom: 0;
   display: grid;
   grid-template-columns: repeat(var(--cols, 14), 1fr);
   grid-template-rows: repeat(var(--rows, 9), 1fr);
-  background:
-    repeating-linear-gradient(90deg, rgba(90, 58, 30, .28) 0 2px, transparent 2px calc(100% / 14)),
-    repeating-linear-gradient(0deg, rgba(90, 58, 30, .18) 0 2px, transparent 2px calc(100% / 9)),
-    linear-gradient(180deg, #d3a874, #c1935f);
-  image-rendering: pixelated;
+  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
 }
 .house-floor.drop-ok { box-shadow: inset 0 0 0 3px var(--green); }
+.house-floor .house-tile { transform: scale(calc(.72 + var(--depth, 1) * .28)); transform-origin: bottom center; }
 .house-tile {
   display: grid; place-items: center;
   margin: 6%;
