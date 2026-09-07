@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "mode": "built-in imagegen",
+  "assets": [
+    {
+      "id": "starter-chair",
+      "subject": "A cozy reading armchair with honey oak frame, sage-green upholstered back and seat, four short visible wooden legs. One single chair, no other objects.",
+      "file": "/assets/shop/starter-chair-v1.png",
+      "sha256": "5b50faae3d134a95c00822eda0cabffadda3fc900507fff90717336e57f9dcf3",
+      "frame": {
+        "x": 176,
+        "y": 116,
+        "w": 899,
+        "h": 1031,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "starter-lamp",
+      "subject": "A simple small floor reading lamp: turned honey oak stand, cream linen shade, round wood base. Entire lamp visible.",
+      "file": "/assets/shop/starter-lamp-v1.png",
+      "sha256": "082060b47475cf6818589aff0393f5d534668dc7cc1a2604414bc77696150560",
+      "frame": {
+        "x": 408,
+        "y": 63,
+        "w": 438,
+        "h": 1112,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "starter-rug",
+      "subject": "One flat rectangular cream and sage woven welcome rug, subtle diamond border and short cream fringe. Low flat floor object shown from elevated front view, no text.",
+      "file": "/assets/shop/starter-rug-v1.png",
+      "sha256": "57a64a4dc47e0f63fcf0d5989bb6691f3939632ea3f881e1c3448404167ec6e3",
+      "frame": {
+        "x": 14,
+        "y": 367,
+        "w": 1225,
+        "h": 524,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-christmas-tree",
+      "subject": "A small full evergreen Christmas tree, layered dark sage pine branches, restrained red and gold baubles, golden star topper, little wood trunk and terracotta pot. Cozy compact tree.",
+      "file": "/assets/shop/deco-christmas-tree-v1.png",
+      "sha256": "d03b2aa2d451f449bc7b154ff19094520be4c0a9f0d9688a4870ef8ff67990ac",
+      "frame": {
+        "x": 257,
+        "y": 12,
+        "w": 739,
+        "h": 1212,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-fern",
+      "subject": "One lush potted fern with several delicate arching fronds in a chunky terracotta pot.",
+      "file": "/assets/shop/deco-fern-v1.png",
+      "sha256": "4478cdcc4655edab68acaf6ff6b49becd7559e59e7f405d93d69bd1163b48721",
+      "frame": {
+        "x": 62,
+        "y": 15,
+        "w": 1174,
+        "h": 1165,
+        "canvasW": 1278,
+        "canvasH": 1230
+      }
+    },
+    {
+      "id": "deco-rug",
+      "subject": "One flat red terracotta woven rug with cream geometric diamond border and short tassels. Flat horizontal floor furnishing, viewed from elevated front angle.",
+      "file": "/assets/shop/deco-rug-v1.png",
+      "sha256": "25c770cdd389a9378b6263c9636a4942bf06bb7b8f965b0d017aa3d4a56c1da1",
+      "frame": {
+        "x": 12,
+        "y": 354,
+        "w": 1230,
+        "h": 546,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-lamp",
+      "subject": "One elegant standing brass floor lamp, slender gold post, large deep forest green dome shade with cream underside, circular brass base.",
+      "file": "/assets/shop/deco-lamp-v1.png",
+      "sha256": "23643cd1a49bd4c54498ded9368e54f40b2e017a7f60ab52d7a7687d72465deb",
+      "frame": {
+        "x": 409,
+        "y": 9,
+        "w": 437,
+        "h": 1211,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-shelf",
+      "subject": "One small freestanding honey oak bookcase with two shelves of muted red, sage and cream books, solid cabinet sides and four short feet. Entire object visible, no text on spines.",
+      "file": "/assets/shop/deco-shelf-v1.png",
+      "sha256": "3ff6600d86b52ea7b961cf380fc3299b7e48c8c815093fc7ae584ba8a8c17310",
+      "frame": {
+        "x": 135,
+        "y": 118,
+        "w": 981,
+        "h": 1053,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-table",
+      "subject": "One small round honey oak pedestal coffee table. Round tabletop seen as ellipse from elevated front view, sturdy central pedestal and short feet. Only the table, no chairs or objects on it.",
+      "file": "/assets/shop/deco-table-v1.png",
+      "sha256": "76f9e2749b49d05f0c78bfa9da0ced98386dae72a763053712896af3bb3b10ae",
+      "frame": {
+        "x": 155,
+        "y": 126,
+        "w": 945,
+        "h": 1003,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-window",
+      "subject": "One freestanding decorative wooden framed window display with blue panes and cream curtains, broad wooden support feet clearly visible. A floor-standing room divider ornament, not a wall or building.",
+      "file": "/assets/shop/deco-window-v1.png",
+      "sha256": "0500accca8ff4b89f952aa083784f58b967ede428df255a780e798504222d700",
+      "frame": {
+        "x": 178,
+        "y": 72,
+        "w": 898,
+        "h": 1117,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-donut-sign",
+      "subject": "One freestanding pink-frosted donut ornament on a small brass sign stand and sturdy round wood base. Circular donut with central hole, pink icing and restrained sprinkles. No words or letters.",
+      "file": "/assets/shop/deco-donut-sign-v1.png",
+      "sha256": "ea06e997584fae3b2334df7ff329bb82dc2804949e5ddbefa9ae225cd2655d48",
+      "frame": {
+        "x": 221,
+        "y": 61,
+        "w": 818,
+        "h": 1127,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-pumpkin",
+      "subject": "One friendly Halloween pumpkin lantern, deep orange pixel ridges, short green stem, triangular eyes and small warm glowing smile. No glow or shadow outside silhouette.",
+      "file": "/assets/shop/deco-pumpkin-v1.png",
+      "sha256": "3885577a64d2ba49bf33e86bf8b1df70360229f013e159f5258b229a4bb7e041",
+      "frame": {
+        "x": 176,
+        "y": 146,
+        "w": 903,
+        "h": 964,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-gift",
+      "subject": "A compact single stack of two beautifully wrapped Christmas gift boxes, one terracotta-red and one sage green, cream ribbons and small gold bows.",
+      "file": "/assets/shop/deco-gift-v1.png",
+      "sha256": "bfe054054e75ef9854264791f23d13b859f255c1e6ecbe48ebba35394770a7ca",
+      "frame": {
+        "x": 179,
+        "y": 92,
+        "w": 896,
+        "h": 1099,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "deco-pet-bed",
+      "subject": "One small oval pet bed, thick woven honey tan basket rim and plush sage-green cushion, three-quarter overhead angle. No animal, food, toys or extra objects.",
+      "file": "/assets/shop/deco-pet-bed-v1.png",
+      "sha256": "df7cd16f0a1e98f596f54735753558fe36b49c61c16514a0c5363c603b02699f",
+      "frame": {
+        "x": 52,
+        "y": 203,
+        "w": 1150,
+        "h": 869,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "wear-shades",
+      "subject": "One pair of black-framed sunglasses with amber-tinted lenses and folded temples, isolated inventory product icon.",
+      "file": "/assets/shop/wear-shades-v1.png",
+      "sha256": "8eaa3a1f69f0bf124461eaf1100bb8df5cb498b151348d5a18239d3f7e8bf4d9",
+      "frame": {
+        "x": 71,
+        "y": 290,
+        "w": 1121,
+        "h": 672,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    },
+    {
+      "id": "wear-hat",
+      "subject": "One cozy dark sage-green bucket hat with a narrow cream band, isolated inventory product icon.",
+      "file": "/assets/shop/wear-hat-v1.png",
+      "sha256": "347064429c0d44c6ec5c81429b3b533e2f2d73943d81d5ecc3047d2045f70e0c",
+      "frame": {
+        "x": 70,
+        "y": 190,
+        "w": 1121,
+        "h": 877,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
+    }
+  ]
+}

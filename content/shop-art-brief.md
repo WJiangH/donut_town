@@ -1,12 +1,12 @@
 # Donut Shop art handoff
 
-The current shop keeps existing pet art. New stock uses deliberately simple 24×24 pixel placeholders from `shop/item-art.mjs`; these are functional stand-ins, not final generated art.
+The shop now contains 16 generated transparent pixel-art assets: 14 Home decorations and two wardrobe product previews. Existing pet art is retained. Production PNGs live under `assets/shop/`; the code-drawn placeholder remains only as a fallback for future stock.
 
 ## Replace art without changing ownership
 
-Keep each item's `id` unchanged in `content/shop.json`. Purchases and room placements refer to that ID. Add `thumb: "/assets/shop/<id>-thumb-v1.png"` for the shop card and `art: "/assets/shop/<id>-v1.png"` for the home object. The room prefers `art`; the shop can share it until a separate thumbnail is ready. No raw Slack IDs, source photos or member names belong in the art files.
+Keep each item's `id` unchanged in `content/shop.json`. Purchases and room placements refer to that ID. Add `thumb: "/assets/shop/<id>-thumb-v1.png"` for the shop card and `art: "/assets/shop/<id>-v1.png"` for the home object. The room prefers `art`; the shop prefers `thumb`. The current collection shares each transparent PNG between both uses. No raw Slack IDs, source photos or member names belong in the art files.
 
-Use transparent PNG, crisp pixel clusters, a warm 16-bit palette and the town's top-down three-quarter view. Keep the entire object visible, with a bottom-centred floor contact point and transparent padding. No people, text, scene background, UI or baked grid. Provide a small native sprite (for example 48×64) and use nearest-neighbour scaling; do not bake a checkerboard. Align related assets to the same pixel density. Item dimensions can differ; the logical `footprint` is measured in the 14×9 floor grid, not image pixels.
+Use transparent PNG, crisp pixel clusters, a warm 16-bit palette and the town's top-down three-quarter view. Keep the entire object visible, with a bottom-centred floor contact point and transparent padding. No people, text, scene background, UI or baked grid. Use deliberate pixel clusters readable at 48–96 display pixels and nearest-neighbour rendering; do not bake a checkerboard. The current generated PNG exports retain their original resolution. Align related assets to the same pixel density. Item dimensions can differ; the logical `footprint` is measured in the 14×9 floor grid, not image pixels.
 
 | IDs | Brief | Footprint |
 | --- | --- | --- |
@@ -44,3 +44,11 @@ The Home floor grid occupies x=12–88%, y=39–78% of its image. Its 14×9 logi
 A new member receives the same three starter decorations without a purchase. An existing saved room, including an intentionally empty one, is preserved. Each item currently has one owned copy. The API validates ownership, grid bounds and multi-cell overlap. The client serializes saves and retains unsaved edits for retry. Purchases and pet equipment use atomic Redis scripts; no new donut earning mechanism is introduced.
 
 Validation: Node unit tests; local Chrome with mocked member/shop/Home APIs for purchase → inventory → placement, keyboard movement, real pointer drag, cancelled drag, serialized saves, failed-save retry, reopening, categories, pagination and desktop/mobile framing. `scripts/verify-shop-redis.mjs` exercises the actual purchase/equip Lua against a disposable local Redis, including simultaneous purchases, insufficient balance, duplicate requests and a lost response. Browser test purchases do not debit real members.
+
+## September 6 production art pass
+
+All 16 assets have RGBA PNG data and four fully transparent corners. The fern required one transparency cleanup pass. `artFrame` records the visible bounds measured at alpha > 8/255, excluding imperceptible export noise; the Home renderer uses an SVG viewport over the unchanged PNG to align the visible bottom edge to the floor. This fixes transparent padding without redrawing or stretching furniture. The 14×9 placement grid and every existing item ID, price, footprint, starter grant and availability flag are preserved. The window item is explicitly presented as a freestanding display because wall mounting is not implemented.
+
+The production receipt is `content/shop-art-manifest.json`: item briefs, asset hashes, dimensions and measured bounds. Every asset was generated independently with the built-in imagegen tool. Shared prompt: warm handcrafted 16-bit pixel art; deliberate 96×96-scale pixel clusters; elevated front three-quarter RPG view; upper-left light; muted sage, cream, terracotta and honey oak; one isolated object; genuine transparent alpha; no scene, floor, cast shadow, checkerboard or text. Each subject is recorded in the receipt.
+
+This pass passed 70 Node tests, including validation of every production PNG, and in-app browser checks using a local simulated member and wallet: purchase-to-inventory, drag placement, keyboard movement, reload persistence, mobile Home/shop rendering and disabled wardrobe purchasing. Existing live wallets were not charged by the tests.

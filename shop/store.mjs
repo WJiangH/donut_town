@@ -40,6 +40,10 @@ export function loadCatalog(url = new URL('../content/shop.json', import.meta.ur
     if (typeof item.name !== 'string' || !item.name.trim()) throw new Error(`Invalid name for ${item.id}`);
     if (item.thumb !== undefined && !/^\/assets\/[\w./-]+\.(png|jpg)$/.test(item.thumb)) throw new Error(`Invalid thumbnail for ${item.id}`);
     if (item.art !== undefined && !/^\/assets\/[\w./-]+\.png$/.test(item.art)) throw new Error(`Invalid art for ${item.id}`);
+    if (item.artFrame) {
+      const f=item.artFrame;
+      if (!['x','y','w','h','canvasW','canvasH'].every(k=>Number.isInteger(f[k])) || f.x<0 || f.y<0 || f.w<1 || f.h<1 || f.x+f.w>f.canvasW || f.y+f.h>f.canvasH) throw new Error('Invalid art frame');
+    }
     if (item.footprint && (!Number.isInteger(item.footprint.w) || !Number.isInteger(item.footprint.h) || item.footprint.w < 1 || item.footprint.h < 1 || item.footprint.w > 4 || item.footprint.h > 4)) throw new Error('Invalid footprint');
     ids.add(item.id);
   }

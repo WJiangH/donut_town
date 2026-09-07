@@ -76,7 +76,7 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
     try {
       const payload = await shopRequest("/api/shop");
       state = { items: payload.items || [], owned: payload.owned || [], pet: payload.pet || null, wallet: payload.wallet };
-      status.textContent = "Choose a shelf item · new artwork coming soon";
+      status.textContent = "Choose something for your home.";
       render();
       onOwnedChange(state.owned);
       onPetChange(state.pet);

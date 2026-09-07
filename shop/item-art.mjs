@@ -21,3 +21,12 @@ export function itemArt(item, thumbnail = false) {
  const rects=shapes[item.placeholder] || shapes.gift;
  return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" shape-rendering="crispEdges">${rects.map(([x,y,w,h,c])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`).join('')}</svg>`).replaceAll("'",'%27');
 }
+
+// Crop transparent export padding in the renderer, without changing the PNG.
+// The visible bottom edge is the furniture's floor contact point.
+export function itemSprite(item) {
+ const src=itemArt(item).replaceAll('&','&amp;').replaceAll('"','&quot;');
+ const frame=item.artFrame;
+ if(!frame) return `<img src="${src}" alt="" draggable="false">`;
+ return `<svg class="item-sprite" viewBox="${frame.x} ${frame.y} ${frame.w} ${frame.h}" style="aspect-ratio:${frame.w}/${frame.h}" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><image href="${src}" width="${frame.canvasW}" height="${frame.canvasH}"/></svg>`;
+}

@@ -1,4 +1,4 @@
-import { itemArt } from './shop/item-art.mjs';
+import { itemSprite } from './shop/item-art.mjs';
 const MESSAGES = {
   slack_login_required: 'Open the town from Slack to visit your home.',
   member_not_found: 'Only channel members have a home.',
@@ -23,7 +23,7 @@ export function mountHouse(root, {paintCharacter = null} = {}) {
   function tile(item,entry) {
     const {w,h}=size(item.id);
     const style=entry?`grid-column:${entry.x+1}/span ${w};grid-row:${entry.y+1}/span ${h};z-index:${entry.y+h};`:'';
-    return `<button class="house-tile${selected===item.id?' selected':''}" data-item="${escapeHtml(item.id)}" style="${style}" title="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)}" aria-pressed="${selected===item.id}"><img src="${escapeHtml(itemArt(item))}" alt="" draggable="false"></button>`;
+    return `<button class="house-tile${selected===item.id?' selected':''}" data-item="${escapeHtml(item.id)}" style="${style}" title="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)}" aria-pressed="${selected===item.id}">${itemSprite(item)}</button>`;
   }
   function render() {
     const focus=document.activeElement?.dataset.item;
@@ -69,7 +69,7 @@ export function mountHouse(root, {paintCharacter = null} = {}) {
     if(!dragging)return;
     if(!dragging.moved&&Math.hypot(event.clientX-dragging.x,event.clientY-dragging.y)<6)return;
     dragging.moved=true;
-    if(!dragging.ghost){const ghost=document.createElement('div');ghost.className='house-ghost';ghost.innerHTML=`<img src="${escapeHtml(itemArt(furniture.get(dragging.id)))}" alt="">`;document.body.append(ghost);dragging.ghost=ghost;}
+    if(!dragging.ghost){const ghost=document.createElement('div');ghost.className='house-ghost';ghost.innerHTML=itemSprite(furniture.get(dragging.id));document.body.append(ghost);dragging.ghost=ghost;}
     dragging.ghost.style.left=event.clientX+'px';dragging.ghost.style.top=event.clientY+'px';
     const pos=cell(event),target=floor.querySelector('.house-target');target.hidden=!pos;
     if(pos){const {w,h}=size(dragging.id);target.style.left=`${pos.x/grid.cols*100}%`;target.style.top=`${pos.y/grid.rows*100}%`;target.style.width=`${Math.min(w,grid.cols-pos.x)/grid.cols*100}%`;target.style.height=`${Math.min(h,grid.rows-pos.y)/grid.rows*100}%`;target.classList.toggle('invalid',!valid(dragging.id,pos.x,pos.y));}

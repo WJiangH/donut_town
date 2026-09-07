@@ -40,7 +40,16 @@
       "swatch": "#5f9e5a",
       "blurb": "A green corner for an empty room.",
       "category": "home",
-      "placeholder": "plant"
+      "art": "/assets/shop/deco-fern-v1.png",
+      "thumb": "/assets/shop/deco-fern-v1.png",
+      "artFrame": {
+        "x": 62,
+        "y": 15,
+        "w": 1174,
+        "h": 1165,
+        "canvasW": 1278,
+        "canvasH": 1230
+      }
     },
     {
       "id": "deco-rug",
@@ -50,7 +59,16 @@
       "swatch": "#b8563f",
       "blurb": "Warms up a bare floor.",
       "category": "home",
-      "placeholder": "rug"
+      "art": "/assets/shop/deco-rug-v1.png",
+      "thumb": "/assets/shop/deco-rug-v1.png",
+      "artFrame": {
+        "x": 12,
+        "y": 354,
+        "w": 1230,
+        "h": 546,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "deco-lamp",
@@ -60,7 +78,16 @@
       "swatch": "#d8a33c",
       "blurb": "Evening light for the reading chair.",
       "category": "home",
-      "placeholder": "lamp"
+      "art": "/assets/shop/deco-lamp-v1.png",
+      "thumb": "/assets/shop/deco-lamp-v1.png",
+      "artFrame": {
+        "x": 409,
+        "y": 9,
+        "w": 437,
+        "h": 1211,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "deco-shelf",
@@ -70,7 +97,16 @@
       "swatch": "#8a5a34",
       "blurb": "Somewhere to keep the good ones.",
       "category": "home",
-      "placeholder": "shelf"
+      "art": "/assets/shop/deco-shelf-v1.png",
+      "thumb": "/assets/shop/deco-shelf-v1.png",
+      "artFrame": {
+        "x": 135,
+        "y": 118,
+        "w": 981,
+        "h": 1053,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "deco-table",
@@ -78,19 +114,37 @@
       "name": "Round table",
       "price": 3,
       "swatch": "#c08a4a",
-      "blurb": "Two chairs, one pot of coffee.",
+      "blurb": "A small oak table for your coffee corner.",
       "category": "home",
-      "placeholder": "table"
+      "art": "/assets/shop/deco-table-v1.png",
+      "thumb": "/assets/shop/deco-table-v1.png",
+      "artFrame": {
+        "x": 155,
+        "y": 126,
+        "w": 945,
+        "h": 1003,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "deco-window",
       "kind": "decoration",
-      "name": "Bay window",
+      "name": "Window display",
       "price": 4,
       "swatch": "#79a7c4",
-      "blurb": "A view of the town from indoors.",
+      "blurb": "A freestanding window-style room display.",
       "category": "home",
-      "placeholder": "window"
+      "art": "/assets/shop/deco-window-v1.png",
+      "thumb": "/assets/shop/deco-window-v1.png",
+      "artFrame": {
+        "x": 178,
+        "y": 72,
+        "w": 898,
+        "h": 1117,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "deco-donut-sign",
@@ -98,9 +152,18 @@
       "name": "Donut sign",
       "price": 5,
       "swatch": "#f0a0b8",
-      "blurb": "The town's own neon, in pixels.",
+      "blurb": "A pink donut ornament on a brass stand.",
       "category": "home",
-      "placeholder": "sign"
+      "art": "/assets/shop/deco-donut-sign-v1.png",
+      "thumb": "/assets/shop/deco-donut-sign-v1.png",
+      "artFrame": {
+        "x": 221,
+        "y": 61,
+        "w": 818,
+        "h": 1127,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "starter-chair",
@@ -108,12 +171,21 @@
       "kind": "decoration",
       "category": "home",
       "price": 0,
-      "placeholder": "chair",
-      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "blurb": "Your favorite reading spot.",
       "starter": true,
       "footprint": {
         "w": 2,
         "h": 2
+      },
+      "art": "/assets/shop/starter-chair-v1.png",
+      "thumb": "/assets/shop/starter-chair-v1.png",
+      "artFrame": {
+        "x": 176,
+        "y": 116,
+        "w": 899,
+        "h": 1031,
+        "canvasW": 1254,
+        "canvasH": 1254
       }
     },
     {
@@ -122,9 +194,18 @@
       "kind": "decoration",
       "category": "home",
       "price": 0,
-      "placeholder": "lamp",
-      "blurb": "Pixel placeholder \u00b7 home decoration",
-      "starter": true
+      "blurb": "A warm light for quiet evenings.",
+      "starter": true,
+      "art": "/assets/shop/starter-lamp-v1.png",
+      "thumb": "/assets/shop/starter-lamp-v1.png",
+      "artFrame": {
+        "x": 408,
+        "y": 63,
+        "w": 438,
+        "h": 1112,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "starter-rug",
@@ -132,12 +213,21 @@
       "kind": "decoration",
       "category": "home",
       "price": 0,
-      "placeholder": "rug",
-      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "blurb": "A little comfort underfoot.",
       "starter": true,
       "footprint": {
         "w": 2,
         "h": 2
+      },
+      "art": "/assets/shop/starter-rug-v1.png",
+      "thumb": "/assets/shop/starter-rug-v1.png",
+      "artFrame": {
+        "x": 14,
+        "y": 367,
+        "w": 1225,
+        "h": 524,
+        "canvasW": 1254,
+        "canvasH": 1254
       }
     },
     {
@@ -146,11 +236,20 @@
       "kind": "decoration",
       "category": "seasonal",
       "price": 3,
-      "placeholder": "tree",
-      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "blurb": "A little evergreen, ready for the holidays.",
       "footprint": {
         "w": 2,
         "h": 2
+      },
+      "art": "/assets/shop/deco-christmas-tree-v1.png",
+      "thumb": "/assets/shop/deco-christmas-tree-v1.png",
+      "artFrame": {
+        "x": 257,
+        "y": 12,
+        "w": 739,
+        "h": 1212,
+        "canvasW": 1254,
+        "canvasH": 1254
       }
     },
     {
@@ -159,8 +258,17 @@
       "kind": "decoration",
       "category": "seasonal",
       "price": 2,
-      "placeholder": "pumpkin",
-      "blurb": "Pixel placeholder \u00b7 home decoration"
+      "blurb": "A friendly glow for autumn nights.",
+      "art": "/assets/shop/deco-pumpkin-v1.png",
+      "thumb": "/assets/shop/deco-pumpkin-v1.png",
+      "artFrame": {
+        "x": 176,
+        "y": 146,
+        "w": 903,
+        "h": 964,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "deco-gift",
@@ -168,8 +276,17 @@
       "kind": "decoration",
       "category": "seasonal",
       "price": 2,
-      "placeholder": "gift",
-      "blurb": "Pixel placeholder \u00b7 home decoration"
+      "blurb": "A festive stack tied with cream ribbons.",
+      "art": "/assets/shop/deco-gift-v1.png",
+      "thumb": "/assets/shop/deco-gift-v1.png",
+      "artFrame": {
+        "x": 179,
+        "y": 92,
+        "w": 896,
+        "h": 1099,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "deco-pet-bed",
@@ -177,11 +294,20 @@
       "kind": "decoration",
       "category": "home",
       "price": 2,
-      "placeholder": "bed",
-      "blurb": "Pixel placeholder \u00b7 home decoration",
+      "blurb": "A cozy cushion for your companion.",
       "footprint": {
         "w": 2,
         "h": 2
+      },
+      "art": "/assets/shop/deco-pet-bed-v1.png",
+      "thumb": "/assets/shop/deco-pet-bed-v1.png",
+      "artFrame": {
+        "x": 52,
+        "y": 203,
+        "w": 1150,
+        "h": 869,
+        "canvasW": 1254,
+        "canvasH": 1254
       }
     },
     {
@@ -191,8 +317,17 @@
       "category": "style",
       "price": 2,
       "available": false,
-      "placeholder": "glasses",
-      "blurb": "Coming soon \u00b7 artwork and fitting pending"
+      "blurb": "Amber lenses for sunny afternoons.",
+      "art": "/assets/shop/wear-shades-v1.png",
+      "thumb": "/assets/shop/wear-shades-v1.png",
+      "artFrame": {
+        "x": 71,
+        "y": 290,
+        "w": 1121,
+        "h": 672,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     },
     {
       "id": "wear-hat",
@@ -201,8 +336,17 @@
       "category": "style",
       "price": 2,
       "available": false,
-      "placeholder": "hat",
-      "blurb": "Coming soon \u00b7 artwork and fitting pending"
+      "blurb": "A sage bucket hat for a day in town.",
+      "art": "/assets/shop/wear-hat-v1.png",
+      "thumb": "/assets/shop/wear-hat-v1.png",
+      "artFrame": {
+        "x": 70,
+        "y": 190,
+        "w": 1121,
+        "h": 877,
+        "canvasW": 1254,
+        "canvasH": 1254
+      }
     }
   ]
 }
