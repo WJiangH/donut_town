@@ -12,6 +12,7 @@ export function normalizePresenceState(input, now = Date.now()) {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
   return {
     scene: input.scene,
+    ...(input.inHome===true?{inHome:true}:{}),
     ...(input.scene === "donutFactory" ? {workshop:Number.isInteger(input.workshop) && input.workshop>=0 && input.workshop<1000 ? input.workshop : 0} : {}),
     ...(typeof input.themeId==='string' && /^[a-z][a-z0-9-]{0,39}$/.test(input.themeId) ? {themeId:input.themeId} : {}),
     x: roundCoordinate(Math.max(0, Math.min(100, x))),

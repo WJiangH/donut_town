@@ -26,3 +26,11 @@ The feature adds no raster images, asset downloads, dependencies or persistent m
 ## Local verification
 
 `npm test` runs the non-network checks. Set `TEST_CHAT_REDIS_URL` to an isolated local Redis REST fixture to include the real Lua and HTTP integration tests. These tests reject non-local URLs. The HTTP test starts two temporary app workers, supplies synthetic member sessions through `/enter`, intercepts all Slack calls and forbids external network access. It verifies both acceptance paths, duplicate rewards, conflicting acceptances, gift/purchase races, guest read-only access, DM participant isolation and cross-origin write rejection.
+
+## Online in Town
+
+Green **circles** show live Town presence; the existing **squares** still show Donut invitation status. The neighbor list has an **Online now** filter, and profiles and private conversations show the same live state. A member in Home, Shop, a Pod or another theme is still online. Presence changes update text and dots without reloading avatar images.
+
+This is Town presence, not Slack presence: a foreground Town tab with a connected WebSocket is online. Moving the tab into the background or closing it makes the member away/offline; a broken connection is removed by the existing heartbeat, normally within 30 seconds. If your own connection is unavailable, peer status is marked unavailable rather than offline. Online does not guarantee someone will answer immediately; offline members can still receive stored Town messages.
+
+Presence reuses the existing process-local WebSocket hub, with no extra polling, database reads or Slack scopes. Multiple Render instances would need shared presence distribution before this could represent all instances.

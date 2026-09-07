@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=53" />
+    <link rel="stylesheet" href="styles.css?v=54" />
     <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
@@ -69,6 +69,7 @@
           <section id="townDirectory" class="town-directory" aria-labelledby="directoryTitle">
             <div class="directory-heading"><h2 id="directoryTitle">Neighbors</h2><span id="directoryCount"></span></div>
             <input id="neighborSearch" type="search" placeholder="Find a neighbor…" aria-label="Find a neighbor" autocomplete="off" />
+            <label class="online-filter"><input type="checkbox" id="onlineNeighbors"> Online now</label>
             <div id="neighborDirectory" class="directory-list"></div>
           </section>
         </div>
@@ -100,6 +101,7 @@
         </div>
 
         <aside class="legend" aria-label="Availability legend">
+          <span><i class="presence-dot online" aria-hidden="true"></i>Online in Town</span>
           <span><i class="legend-swatch open"></i>Open</span>
           <span><i class="legend-swatch pending"></i>Invite pending</span>
           <span><i class="legend-swatch booked"></i>Booked this week</span>
@@ -200,6 +202,7 @@
       <button class="close-button" id="closeDrawer" aria-label="Close resident profile">Close</button>
       <div class="drawer-portrait" id="drawerPortrait" aria-hidden="true"></div>
       <span class="drawer-status" id="drawerStatus"></span>
+      <p class="member-presence unknown" id="residentPresence">Status unavailable</p>
       <h2 id="residentName"></h2>
       <p class="drawer-team" id="residentSummary"></p>
       <dl class="resident-facts" id="residentFacts"></dl>
@@ -257,6 +260,7 @@
 
     <aside class="messages-panel" id="messagesPanel" hidden aria-label="Private messages">
       <header><button type="button" data-messages="back" aria-label="All conversations">←</button><h2>Messages</h2><button type="button" data-messages="close" aria-label="Close messages">Close</button></header>
+      <p class="member-presence unknown" id="messagePresence" hidden></p>
       <p class="messages-note">Private Town messages · Latest 100 · Separate from Slack</p>
       <ol data-messages="list"></ol><p role="status"></p>
       <form hidden><textarea name="text" maxlength="1000" required placeholder="Say hello…" aria-label="Private message"></textarea><button type="submit">Send</button></form>
@@ -336,6 +340,7 @@
     <script src="town-collision.js?v=6"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=6"></script>
-    <script src="app.js?v=61"></script>
+    <script src="realtime/online.js?v=1"></script>
+    <script src="app.js?v=62"></script>
   </body>
 </html>

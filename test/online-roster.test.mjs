@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {normalizePresenceState} from '../realtime/presence.mjs';
+const context={window:{}};vm.runInNewContext(readFileSync(new URL('../realtime/online.js',import.meta.url),'utf8'),context);
+test('online presence survives themes and interiors, ignores movement churn and clears on disconnect',()=>{
+ const roster=new context.window.OnlineRoster();
+ assert.equal(roster.status('U1').state,'unknown');
+ roster.receive({type:'snapshot',players:[{userId:'U1',scene:'town',themeId:'halloween'}]});
+ assert.equal(roster.status('U1').state,'online');
+ assert.equal(roster.status('U2').state,'offline');
+ assert.equal(roster.receive({type:'state',userId:'U1',scene:'town',themeId:'halloween',x:12}),false,'movement must not rebuild the directory');
+ assert.equal(roster.receive({type:'state',userId:'U1',scene:'town',inHome:true}),true);
+ assert.equal(roster.status('U1').label,'Online · Home');
+ assert.equal(roster.receive({type:'state',userId:'U1',scene:'donutShop'}),true);
+ assert.equal(roster.status('U1').label,'Online · Shop');
+ roster.receive({type:'leave',userId:'U1'});assert.equal(roster.status('U1').state,'offline');
+ roster.receive({type:'snapshot',players:[{userId:'U2',scene:'chemPod'}]});
+ assert.equal(roster.status('U2').state,'online');
+ roster.reset();assert.equal(roster.status('U2').state,'unknown');
+ roster.receive({type:'snapshot',players:[]});assert.equal(roster.status('U2').state,'offline');
+ const state={type:'state',scene:'town',x:10,y:10};
+ assert.equal(normalizePresenceState({...state,inHome:true}).inHome,true);
+ assert.equal(normalizePresenceState({...state,inHome:'true'}).inHome,undefined);
+});

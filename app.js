@@ -92,6 +92,7 @@ let lastFrameChange = 0;
 
 let lastGameTime = performance.now();
 const remotePlayers = new Map();
+const onlineRoster = new window.OnlineRoster();
 const remotePlayerElements = new Map();
 let realtimeSocket = null;
 let realtimeReconnectTimer = null;
@@ -345,7 +346,7 @@ function personMarkup(person, compact = false) {
   const spriteY = rowPositions[Math.floor(atlasIndex / 4)];
   const facingClass = person.pairFacing ? ` pair-facing-${person.pairFacing}` : "";
   const custom = person.character ? personalCharacterMarkup(person.character, "pixel-person") : null;
-  return `${custom || `<div class="pixel-person${facingClass}" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>`}${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${escapeHtml(person.name.split(" ")[0])}</span>`}`;
+  return `${custom || `<div class="pixel-person${facingClass}" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%" aria-hidden="true"></div>`}${compact ? "" : `<span class="resident-state"></span><span class="resident-label">${escapeHtml(person.name.split(" ")[0])}</span><span class="roster-online-dot" aria-hidden="true"></span>`}`;
 }
 
 function playerMarkup() {
@@ -354,7 +355,7 @@ function playerMarkup() {
   const facingClass = playerDirection === "left" ? " facing-left" : "";
   const custom = currentUser?.character ? personalCharacterMarkup(currentUser.character, "player-character") : null;
   return `${custom || `<div class="player-character${facingClass}" style="--frame-x:${framePositions[playerFrame]}%;--direction-y:${directionRows[playerDirection]}%" aria-hidden="true"></div>`}
-    <span class="resident-state"></span><span class="resident-label">You</span>`;
+    <span class="resident-state"></span><span class="resident-label">You</span><span class="self-online-dot" aria-hidden="true"></span>`;
 }
 
 function residentIsVisible(person) {
@@ -367,24 +368,49 @@ let lastTownMarkup = null;
 let lastChemPodMarkup = null;
 let lastDirectoryMarkup = null;
 
+function paintPresence(element,status){
+  element.className=`member-presence ${status.state}`;
+  element.textContent=status.label;
+}
+function refreshOnlineStatus(){
+  document.body.classList.toggle('presence-connected',onlineRoster.ready);
+  renderNeighborDirectory();
+  if(selectedResident)paintPresence(document.querySelector('#residentPresence'),onlineRoster.status(selectedResident.slackId));
+  document.querySelectorAll('.resident-pin[data-id]').forEach(pin=>{
+    const person=residents.find(p=>p.id===Number(pin.dataset.id));
+    const online=onlineRoster.status(person?.slackId).state==='online';
+    pin.classList.toggle('member-online',online);
+    if(person)pin.setAttribute('aria-label',`Open ${person.name}'s profile${online?', online now':''}`);
+  });
+  window.dispatchEvent(new Event('town-presence'));
+}
+
 function renderNeighborDirectory() {
   const query=document.querySelector('#neighborSearch').value.trim().toLocaleLowerCase();
-  const matches=residents.filter(person=>residentIsVisible(person)&&`${person.name} ${person.title||''}`.toLocaleLowerCase().includes(query))
+  const onlineOnly=document.querySelector('#onlineNeighbors').checked;
+  const matches=residents.filter(person=>(!onlineOnly||onlineRoster.status(person.slackId).state==='online')&&residentIsVisible(person)&&`${person.name} ${person.title||''}`.toLocaleLowerCase().includes(query))
     .sort((a,b)=>a.name.localeCompare(b.name));
-  document.querySelector('#directoryCount').textContent=String(matches.length);
-  const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-initials" data-avatar="${escapeHtml(person.avatarUrl || '')}" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small>${person.scene==='donutFactory'?'Donut Factory':person.scene==='chemPod'?'Chem Pod':'Around town'}</small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
+  document.querySelector('#directoryCount').textContent=onlineRoster.ready?`${residents.filter(p=>onlineRoster.status(p.slackId).state==='online').length} online · ${matches.length}`:String(matches.length);
+  const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-face"><span class="directory-initials" data-avatar="${escapeHtml(person.avatarUrl || '')}" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><i class="presence-dot unknown" aria-hidden="true"></i></span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small class="directory-presence"></small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
   if(markup!==lastDirectoryMarkup){
     const directory=document.querySelector('#neighborDirectory');
     directory.innerHTML=markup;lastDirectoryMarkup=markup;
     directory.querySelectorAll('.directory-initials').forEach((avatar,index)=>setSlackAvatar(avatar,matches[index],true));
   }
+  document.querySelectorAll('#neighborDirectory .directory-person').forEach((row,index)=>{
+    const status=onlineRoster.status(matches[index].slackId);
+    const label=row.querySelector('.directory-presence'),dot=row.querySelector('.presence-dot');
+    if(label.textContent!==status.label)label.textContent=status.label;
+    dot.className='presence-dot '+status.state;
+    row.setAttribute('aria-label',`View ${matches[index].name}, ${status.label}`);
+  });
 }
 
 function renderResidents() {
   renderNeighborDirectory();
   const residentsMarkup = residents.map(person => {
     const visible = (person.scene || "town") === "town" && residentIsVisible(person) && !remotePlayers.has(person.slackId);
-    return `<button class="resident-pin ${person.status} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
+    return `<button class="resident-pin ${onlineRoster.status(person.slackId).state==='online'?'member-online':''} ${person.status} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
   }).join("");
@@ -409,7 +435,7 @@ function renderResidents() {
 
 function renderChemPod() {
   const roomLayer = document.querySelector("#chemPodResidentsLayer");
-  const residentsMarkup = residents.filter(person => person.scene === "chemPod" && !remotePlayers.has(person.slackId)).map(person => `<button class="resident-pin ${person.status} ${person.activity || "path"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)};--feet-depth:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
+  const residentsMarkup = residents.filter(person => person.scene === "chemPod" && !remotePlayers.has(person.slackId)).map(person => `<button class="resident-pin ${onlineRoster.status(person.slackId).state==='online'?'member-online':''} ${person.status} ${person.activity || "path"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)};--feet-depth:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
     ${personMarkup(person)}
   </button>`).join("");
   const playerClass = `player-pin ${currentUser?.status || "open"}`;
@@ -431,7 +457,7 @@ function renderFactory() {
   const roomLayer=document.querySelector('#factoryResidentsLayer');
   const pairs=factoryPairs.filter(pair=>pair.page===factoryPage);
   const people=pairs.flatMap(pair=>pair.members).filter(person=>!person.isPlayer && !(remotePlayers.get(person.slackId)?.scene==='donutFactory' && remotePlayers.get(person.slackId)?.workshop===factoryPage));
-  const markup=people.map(person=>`<button class="resident-pin booked" data-id="${person.id}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y*10)}" aria-label="Open ${escapeHtml(person.name)}'s profile">${personMarkup(person)}</button>`).join('')+
+  const markup=people.map(person=>`<button class="resident-pin booked ${onlineRoster.status(person.slackId).state==='online'?'member-online':''}" data-id="${person.id}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y*10)}" aria-label="Open ${escapeHtml(person.name)}'s profile">${personMarkup(person)}</button>`).join('')+
     pairs.map(pair=>`<div class="factory-pair-label" style="left:${pair.station.x}%;top:${pair.station.y+4}%">${pair.members.map(p=>escapeHtml(p.displayName||p.name)).join(' + ')}</div>`).join('')+
     `<div class="player-pin ${currentUser?.status||'open'}" id="factoryPlayerPin">${playerMarkup()}</div>`;
   if(markup!==lastFactoryMarkup){
@@ -488,6 +514,7 @@ function renderCurrentScene() {
   else if (currentScene === "donutShop") renderShopRoom();
   else if (currentScene === "donutFactory") renderFactory();
   else renderResidents();
+  refreshOnlineStatus();
 }
 
 function liveLayerFor(name) {
@@ -501,6 +528,8 @@ function removeRemotePlayer(userId) {
 }
 
 function clearRemotePlayers() {
+  onlineRoster.reset();
+  refreshOnlineStatus();
   remotePlayers.clear();
   remotePlayerElements.forEach(element => element.remove());
   remotePlayerElements.clear();
@@ -522,8 +551,10 @@ function replaceRemotePlayers(players) {
 
 function upsertRemotePlayer(state, refreshResidents = true) {
   if (!state?.userId || state.userId === currentUser?.id) return;
-  if (state.scene === 'town' && (state.themeId || 'classic') !== activeThemeId) {
+  if (state.inHome || (state.scene === 'town' && (state.themeId || 'classic') !== activeThemeId)) {
+    const wasRendered=remotePlayers.has(state.userId);
     removeRemotePlayer(state.userId);
+    if(wasRendered&&refreshResidents)renderCurrentScene();
     return;
   }
   const x = Number(state.x);
@@ -596,11 +627,12 @@ function renderLivePlayers(deltaSeconds) {
 function publishPresence(force = false, moving = false) {
   if (!realtimeSocket || realtimeSocket.readyState !== WebSocket.OPEN || !currentUser?.id) return;
   const now = performance.now();
-  const signature = `${currentScene}|${factoryPage}|${playerDirection}|${moving}|${playerAction || ""}|${equippedPet || ""}`;
+  const signature = `${Boolean(window.townHouseOpen)}|${currentScene}|${factoryPage}|${playerDirection}|${moving}|${playerAction || ""}|${equippedPet || ""}`;
   const stateChanged = signature !== lastPresenceSignature;
   if (!force && !stateChanged && (!moving || now - lastPresenceSentAt < 125)) return;
   realtimeSocket.send(JSON.stringify({
     type: "state",
+    inHome: Boolean(window.townHouseOpen),
     themeId: activeThemeId,
     scene: currentScene,
     workshop: currentScene==='donutFactory'?factoryPage:0,
@@ -643,6 +675,7 @@ function connectRealtime() {
     realtimeReconnectDelay = 1000;
   });
   socket.addEventListener("message", event => {
+    if(realtimeSocket!==socket)return;
     let message;
     try {
       message = JSON.parse(event.data);
@@ -655,6 +688,7 @@ function connectRealtime() {
     }
     if (message.type === 'invitations-changed') { void syncInvitationStates(); void refreshWallet(); return; }
     if (message.type === 'town-theme') { themeController?.check(); return; }
+    if(onlineRoster.receive(message))refreshOnlineStatus();
     if (message.type === "snapshot") {
       replaceRemotePlayers(message.players);
       return;
@@ -1183,6 +1217,7 @@ function openResident(id) {
   setSlackAvatar(document.querySelector("#drawerPortrait"), selectedResident);
   const statusLabel = selectedResident.status === "open" ? "Open to invitations" : selectedResident.status === "pending" ? "Invitation pending" : "Booked this week";
   document.querySelector("#drawerStatus").textContent = statusLabel;
+  paintPresence(document.querySelector("#residentPresence"),onlineRoster.status(selectedResident.slackId));
 
   const invitationSent = outgoingInvitations.some(invitation => invitation.inviteeId === selectedResident.slackId);
   const invitationLimitReached = outgoingInvitations.length >= 3;
@@ -1777,6 +1812,7 @@ document.querySelector('#neighborListToggle').addEventListener('click',()=>{
   if(open)document.querySelector('#neighborSearch').focus();
 });
 document.querySelector('#neighborSearch').addEventListener('input',renderNeighborDirectory);
+document.querySelector('#onlineNeighbors').onchange=renderNeighborDirectory;
 document.querySelector('#neighborSearch').addEventListener('focus',()=>{pressedKeys.clear();clickPath=[];});
 document.querySelector('#neighborDirectory').addEventListener('click',event=>{const button=event.target.closest('[data-resident]');if(button)openResident(Number(button.dataset.resident));});
 document.querySelector('#railHome').addEventListener('click',openHouse);
@@ -1989,7 +2025,7 @@ document.querySelector('#visitNeighborHome').onclick=e=>{e.preventDefault();if(s
 let messagesMount;
 async function openMessages(peer=null){
   pressedKeys.clear();clickPath=[];
-  try{messagesMount ||= import('./social-client.mjs').then(m=>m.mountMessages(document.querySelector('#messagesPanel')));(await messagesMount).open(peer);}
+  try{messagesMount ||= import('./social-client.mjs').then(m=>m.mountMessages(document.querySelector('#messagesPanel'),{presenceFor:key=>{const person=residents.find(p=>p.characterKey===key);return onlineRoster.status(person?.slackId);}}));(await messagesMount).open(peer);}
   catch{messagesMount=null;showToast('Messages unavailable. Try again.');}
 }
 document.querySelector('#messageNeighbor').onclick=()=>openMessages(selectedResident?.characterKey);

@@ -38,22 +38,24 @@ export function mountHomeSocial(root,{onVisit=()=>{}}={}){
  return {load(key){owner=key;self=null;epoch++;pending=null;status.textContent='';form.reset();form.querySelector('button').disabled=false;form.elements.text.disabled=false;gifts.querySelectorAll('button').forEach(b=>b.disabled=false);form.hidden=gifts.hidden=true;visitors.innerHTML=notes.innerHTML='<li class="social-empty">Opening guestbook…</li>';void refresh();},pause(){epoch++;owner=null;}};
 }
 
-export function mountMessages(root){
+export function mountMessages(root,{presenceFor=()=>({state:'unknown',label:'Status unavailable'})}={}){
  const list=root.querySelector('[data-messages="list"]'),title=root.querySelector('h2'),form=root.querySelector('form'),status=root.querySelector('[role="status"]');
  let peer=null,self=null,epoch=0,busy=false,pending=null,returnFocus=null;
+ function updatePresence(){const el=root.querySelector('#messagePresence');el.hidden=!peer;if(peer){const value=presenceFor(peer);el.className='member-presence '+value.state;el.textContent=value.label;}}
+ window.addEventListener('town-presence',()=>{if(!root.hidden)updatePresence();});
  function close(){root.hidden=true;epoch++;returnFocus?.focus();}
  root.querySelector('[data-messages="close"]').onclick=close;
  root.querySelector('[data-messages="back"]').onclick=()=>open();
  root.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();close();}});
  async function refresh(version=epoch){
   try{const data=await request('/api/messages'+(peer?`?peer=${peer}`:''));if(version!==epoch)return;self=data.self;
-   title.textContent=data.peer?data.peer.name:'Messages';
+   title.textContent=data.peer?data.peer.name:'Messages';updatePresence();
    const bottom=list.scrollHeight-list.scrollTop-list.clientHeight<60;
    const html=peer?data.messages.map(m=>`<li class="message-bubble ${m.from===self?'mine':''}"><p>${esc(m.text)}</p><small>${esc(date(m.at))}</small></li>`).join(''):data.messages.map(m=>{const other=m.from===self?m.recipient:m.sender;return `<li><button class="message-thread" data-peer="${esc(other.key||'')}">${face(other)}<span><strong>${esc(other.name)}</strong><small>${esc(m.text.slice(0,80))}</small></span></button></li>`;}).join('');
    const changed=list.innerHTML!==html;replace(list,html||`<li class="social-empty">${peer?'Say hello.':'Choose a neighbor’s profile to start a conversation.'}</li>`);if(peer&&bottom&&changed)list.scrollTop=list.scrollHeight;
   }catch(error){if(version===epoch)status.textContent=error.message;}
  }
- function open(key=null){if(busy)return;returnFocus=root.hidden?document.activeElement:returnFocus;peer=typeof key==='string'?key:null;epoch++;pending=null;root.hidden=false;form.hidden=!peer;form.reset();status.textContent='';title.textContent=peer?'Conversation':'Messages';list.innerHTML='';root.querySelector('[data-messages="back"]').hidden=!peer;void refresh();root.querySelector(peer?'textarea':'[data-messages="close"]').focus();}
+ function open(key=null){if(busy)return;returnFocus=root.hidden?document.activeElement:returnFocus;peer=typeof key==='string'?key:null;epoch++;pending=null;root.hidden=false;form.hidden=!peer;form.reset();status.textContent='';title.textContent=peer?'Conversation':'Messages';updatePresence();list.innerHTML='';root.querySelector('[data-messages="back"]').hidden=!peer;void refresh();root.querySelector(peer?'textarea':'[data-messages="close"]').focus();}
  list.onclick=e=>{const b=e.target.closest('[data-peer]');if(b?.dataset.peer)open(b.dataset.peer);};
  form.onsubmit=async e=>{
   e.preventDefault();if(busy||!peer)return;busy=true;const version=epoch,target=peer,text=form.elements.text.value.trim();

@@ -1014,3 +1014,18 @@ body.town-sidebar-layout .resident-drawer { background:var(--rail-paper);border:
  .messages-panel { right:12px;bottom:12px; }
  .pair-board { max-width:260px; }.pair-board[open]{z-index:150;}
 }
+
+/* Circles are live presence; squares retain Donut invitation status. */
+.presence-dot,.member-presence::before { display:inline-block;width:9px;height:9px;flex:none;border-radius:50%;background:#8a9087;border:1px solid #f5f0db;box-shadow:0 0 0 1px #66715e; }
+.presence-dot.online,.member-presence.online::before { background:#27bd6c;box-shadow:0 0 0 1px #276e45; }
+.presence-dot.unknown,.member-presence.unknown::before { background:transparent; }
+.member-presence { display:flex;align-items:center;gap:7px;font-size:12px;margin:10px 0;color:var(--muted,#66715e); }
+.member-presence::before { content:''; }
+.member-presence.online { color:#287b4b; }
+.directory-face { position:relative;flex:none; }.directory-face>.presence-dot { position:absolute;right:-2px;bottom:-2px;width:10px;height:10px; }
+.online-filter { display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);cursor:pointer; }.online-filter input{accent-color:#358758;margin:0;}
+.roster-online-dot { display:none; }.resident-pin.member-online:not(.remote-player) .roster-online-dot { display:block;position:absolute;right:-4px;top:-5px;width:10px;height:10px;border:2px solid var(--surface-solid);border-radius:50%;background:#27bd6c;box-shadow:0 0 0 2px var(--ink); }
+#townView.overview-side-controls .legend { flex-wrap:wrap;height:auto;min-height:48px;gap:7px; }
+.messages-panel .member-presence { font-size:11px;margin:0 0 10px; }
+.online-badge,.resident-pin.member-online:not(.remote-player) .roster-online-dot { left:2px;right:auto;top:4px; }
+.self-online-dot { display:none; }.presence-connected .player-pin .self-online-dot { display:block;position:absolute;left:2px;top:4px;width:10px;height:10px;border:2px solid var(--surface-solid);border-radius:50%;background:#27bd6c;box-shadow:0 0 0 2px var(--ink); }
