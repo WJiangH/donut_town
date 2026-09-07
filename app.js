@@ -1103,6 +1103,7 @@ function gameLoop(timestamp) {
   // Only worth a frame of work when somebody's pose actually moves.
   if (residentPosesAnimate) paintResidentCharacters(sceneLayer("residents") || layer);
   updateTownCamera(deltaSeconds);
+  if(currentScene === "chemPod" && isMoving)chemRoomCamera?.follow(player.x/100,player.y/100);
   updatePetFollowers(deltaSeconds, isMoving);
   publishPresence(false, isMoving);
   renderLivePlayers(deltaSeconds);
@@ -1775,10 +1776,15 @@ document.addEventListener("keydown", event => {
 
 document.addEventListener("keyup", event => pressedKeys.delete(event.key.toLowerCase()));
 window.addEventListener("blur", () => { pressedKeys.clear(); finishMapDrag(); });
-// Match an 88px painted resident to 22% of the room height on every screen.
+let chemRoomCamera=null;
+import('./interior-camera.mjs').then(({mountInteriorCamera})=>{
+  const world=document.querySelector('#chemPodWorld');
+  chemRoomCamera=mountInteriorCamera(world.parentElement,world,document.querySelector('#chemRoomOverview'));
+});
+// Match an 88px painted resident to about 13% of the room height.
 // Observe the scene itself so entering a previously hidden room also sizes it.
 new ResizeObserver(([entry]) => {
-  if (entry.contentRect.width > 0) entry.target.style.setProperty("--pod-figure", entry.contentRect.width / 600);
+  if (entry.contentRect.width > 0) entry.target.style.setProperty("--pod-figure", entry.contentRect.width / 1000);
 }).observe(document.querySelector("#chemPodWorld"));
 
 window.addEventListener("resize", () => {

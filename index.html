@@ -95,6 +95,7 @@
             <span>Inside</span>
             <strong>Chem Pod</strong>
           </div>
+          <button class="room-camera-button" id="chemRoomOverview" aria-pressed="false">Room overview</button>
         </div>
 
         <div class="map-wrap">
@@ -192,12 +193,14 @@
         </div>
         <p class="house-status" role="status" data-house="status">Opening the door…</p>
         <label class="house-room-choice">Room <select data-house="room" aria-label="Room style"></select></label>
-        <div class="house-mode"><button type="button" data-house="mode" aria-pressed="false">Decorate</button><span data-house="help">Click the floor or use WASD / arrows to walk</span></div>
+        <div class="house-mode"><button type="button" data-house="mode" aria-pressed="false">Decorate</button><button class="room-camera-button" data-house="overview" aria-pressed="false">Room overview</button><span data-house="help">Click the floor or use WASD / arrows to walk</span></div>
       </div>
+      <div class="house-viewport">
       <div class="house-room">
         <img class="room-art" src="/assets/donut-home-interior-v1.png" alt="" draggable="false" />
         <div class="house-floor" data-house="floor" tabindex="0" role="group" aria-label="Home floor"></div>
         <div class="house-resident" data-house="resident" aria-hidden="true"></div>
+      </div>
       </div>
       <div class="house-shelf-wrap" data-house="editor" hidden>
         <div class="house-tools"><strong data-house="selected">Select a decoration</strong><button data-house="remove" disabled>Put away</button><button data-house="retry" hidden>Retry save</button><button id="houseShop">Visit shop</button></div>

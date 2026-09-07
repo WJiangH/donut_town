@@ -1,5 +1,6 @@
 import { itemArt, itemSprite } from './shop/item-art.mjs';
 import { decorationLuxury, houseLuxury, LUXURY_TIERS } from './house/luxury.mjs';
+import { mountInteriorCamera } from './interior-camera.mjs';
 import { homeNavigation } from './house/navigation.mjs';
 const MESSAGES = {
   slack_login_required: 'Open the town from Slack to visit your home.',
@@ -30,6 +31,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     catch{roomSelect.value=roomId;status.textContent='Room could not load. Try again.';}
     finally{roomSelect.disabled=false;}
   };
+  const camera=mountInteriorCamera(root.querySelector('.house-viewport'),root.querySelector('.house-room'),root.querySelector('[data-house="overview"]'));
   const keys=new Set();
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   let decorating=false, position={x:7.5,y:8.5}, route=[], direction='down', animation=null, lastTime=0, painted='';
@@ -116,6 +118,8 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     if(!dragging)return;
     if(!dragging.moved&&Math.hypot(event.clientX-dragging.x,event.clientY-dragging.y)<6)return;
     dragging.moved=true;
+    const viewport=root.querySelector('.house-viewport').getBoundingClientRect();
+    camera.pan(event.clientX<viewport.left+45?8:event.clientX>viewport.right-45?-8:0,event.clientY<viewport.top+60?8:event.clientY>viewport.bottom-60?-8:0);
     if(!dragging.ghost){const ghost=document.createElement('div');ghost.className='house-ghost';ghost.innerHTML=itemSprite(furniture.get(dragging.id));document.body.append(ghost);dragging.ghost=ghost;}
     dragging.ghost.style.left=event.clientX+'px';dragging.ghost.style.top=event.clientY+'px';
     const pos=cell(event),target=floor.querySelector('.house-target');target.hidden=!pos;
@@ -148,7 +152,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     root.querySelector('[data-house="editor"]').hidden=!decorating;
     root.querySelector('[data-house="mode"]').setAttribute('aria-pressed',String(decorating));
     root.querySelector('[data-house="mode"]').textContent=decorating?'Done decorating':'Decorate';
-    root.querySelector('[data-house="help"]').textContent=decorating?'Drag decorations onto the floor':'Click the floor or use WASD / arrows to walk';
+    root.querySelector('[data-house="help"]').textContent=decorating?'Drag items to decorate · drag empty floor to pan':'Click to walk · drag to look around';
     render();
     if(!decorating)void flush();
   }
@@ -180,6 +184,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
         if(!navigation.blocked(position.x,ny))position.y=ny;
       }
     }
+    if(dx||dy)camera.follow((12+position.x/grid.cols*76)/100,(34+position.y/grid.rows*46)/100);
     paintResident(Boolean(dx||dy),time);animation=requestAnimationFrame(tick);
   }
   document.addEventListener('keydown',event=>{
@@ -202,7 +207,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     if(!(await flush()))return;
     status.textContent='Opening your home…';
     try{const response=await fetch('/api/house',{signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw Error(MESSAGES[data.error]||'Home unavailable.');
-      Object.assign(grid,data.grid);furniture=new Map(data.furniture.map(item=>[item.id,item]));owned=data.owned;layout=data.layout.items;rooms=data.rooms;roomSelect.innerHTML=rooms.map(room=>`<option value="${escapeHtml(room.id)}">${escapeHtml(room.name)}</option>`).join('');await applyRoom(data.layout.roomId||'room-cottage');selected=null;loaded=true;status.textContent='Make yourself at home.';setDecorating(false);
+      Object.assign(grid,data.grid);furniture=new Map(data.furniture.map(item=>[item.id,item]));owned=data.owned;layout=data.layout.items;rooms=data.rooms;roomSelect.innerHTML=rooms.map(room=>`<option value="${escapeHtml(room.id)}">${escapeHtml(room.name)}</option>`).join('');await applyRoom(data.layout.roomId||'room-cottage');selected=null;loaded=true;status.textContent='Make yourself at home.';setDecorating(false);camera.render();
       if(!root.hidden&&animation===null)animation=requestAnimationFrame(tick);
     }catch(error){status.textContent=error.message;}
   }

@@ -901,3 +901,40 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
  .house-mode { margin-left:0; }
  .house-room,.house-view:not(.decorating) .house-room { width:100%; }
 }
+/* Immersive interiors: camera plane below compact, fixed edge controls. */
+.house-view { display:block;padding:0;overflow:hidden;background:#151c17; }
+.house-viewport { position:absolute;inset:0;overflow:hidden;touch-action:none; }
+.house-view .house-room,.house-view:not(.decorating) .house-room {
+  position:absolute;left:0;top:0;max-width:none;min-width:0;margin:0;border:0;border-radius:0;box-shadow:none;transform-origin:0 0;will-change:transform;
+}
+.house-bar { position:absolute;z-index:120;top:14px;left:16px;right:16px;display:flex;gap:8px;pointer-events:none; }
+.house-bar>* { pointer-events:auto; }
+.house-bar>div:nth-child(2),.house-room-choice { background:#f5eddaed;padding:8px 12px;border:2px solid #756448;border-radius:4px; }
+.house-bar .house-luxury { margin-left:auto;width:205px; }
+.house-bar .house-status { position:fixed;right:18px;bottom:12px;background:#f5eddaed;padding:6px 10px;max-width:280px; }
+.house-room-choice { position:fixed;left:16px;top:70px;font-size:12px; }
+.house-room-choice select { padding:4px; }
+.house-mode { position:fixed;left:16px;bottom:16px;margin:0;display:flex;gap:8px; }
+.house-mode span { display:none; }
+.house-mode button,.room-camera-button { padding:9px 12px;border:2px solid #756448;background:#f5edda;color:#273e2d;font:inherit;font-size:11px;cursor:pointer; }
+.house-shelf-wrap { position:absolute;z-index:110;bottom:65px;left:16px;right:16px;max-height:180px;overflow:auto;background:#efe5cfed;border:2px solid #756448;padding:10px; }
+.house-shelf { min-height:40px;max-height:80px; }
+.house-floor .house-resident { transform:translate(-50%,-100%) scale(var(--home-figure,1));transform-origin:bottom center; }
+#chemPodWorld { left:0;top:0;max-width:none;transform-origin:0 0;will-change:transform; }
+#chemPodView .map-wrap { touch-action:none; }
+#chemPodView .room-toolbar { z-index:120; }
+@media(max-width:760px){
+ .house-bar { top:10px;left:10px;right:10px;gap:6px; }
+ .house-bar>div:nth-child(2) { display:none; }
+ .house-bar .house-luxury { width:160px;padding:8px; }
+ .house-luxury progress,.house-luxury [data-house="luxury-next"] { display:none; }
+ .house-room-choice { left:10px;top:66px;padding:5px 8px; }
+ .house-mode { left:10px;bottom:12px; }
+ .house-bar .house-status { bottom:56px;right:10px;font-size:8px;max-width:180px; }
+ .house-shelf-wrap { left:10px;right:10px;bottom:88px;max-height:150px; }
+ #chemPodView .room-toolbar { top:10px;left:10px;gap:7px; }
+ #chemPodView .room-toolbar>div { display:none; }
+ #chemPodView .room-movement-help { display:none; }
+}
+.house-view.decorating .house-viewport { bottom:200px; }
+@media(max-width:760px){.house-view.decorating .house-viewport { bottom:240px; }}
