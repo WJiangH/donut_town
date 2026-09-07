@@ -41,12 +41,19 @@ def mean_color(pixels: list[tuple[int, int, int]]) -> tuple[int, int, int]:
     return tuple(round(sum(channel) / count) for channel in zip(*pixels))
 
 
+def is_black_backdrop(pixel: tuple[int, int, int], max_channel: int = 20) -> bool:
+    return max(pixel) <= max_channel
+
+
 def detect_mode(rgb: Image.Image) -> str:
     pixels = rgb.load()
     width, height = rgb.size
-    samples = [pixels[x, y] for x, y in border_pixels(width, height) if near_gray(pixels[x, y], 20)]
+    border = [pixels[x, y] for x, y in border_pixels(width, height)]
+    if sum(1 for pixel in border if is_black_backdrop(pixel, 22)) >= max(32, len(border) // 2):
+        return "black"
+    samples = [pixel for pixel in border if near_gray(pixel, 20)]
     if len(samples) < 32:
-        raise ValueError("Border is not a flat or checkerboard backdrop.")
+        raise ValueError("Border is not a flat, black, or checkerboard backdrop.")
     dark = [pixel for pixel in samples if luminance(pixel) < 140]
     light = [pixel for pixel in samples if luminance(pixel) >= 140]
     if dark and light and len(dark) > 20 and len(light) > 20:
@@ -89,6 +96,56 @@ def extract_light(rgb: Image.Image, columns: int = 1, rows: int = 1) -> Image.Im
                 marked[nx, ny] = 1
                 queue.append((nx, ny))
     return matte_from_background(rgb, background)
+
+
+def extract_black(rgb: Image.Image, columns: int = 1, rows: int = 1, max_channel: int = 20) -> Image.Image:
+    width, height = rgb.size
+    pixels = rgb.load()
+    background = Image.new("1", (width, height), 0)
+    marked = background.load()
+    queue = deque()
+    seeds = list(border_pixels(width, height))
+    if columns > 1 or rows > 1:
+        seeds.extend(grid_seeds(width, height, columns, rows))
+    for x, y in seeds:
+        if is_black_backdrop(pixels[x, y], max_channel) and marked[x, y] == 0:
+            marked[x, y] = 1
+            queue.append((x, y))
+    while queue:
+        x, y = queue.popleft()
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if 0 <= nx < width and 0 <= ny < height and marked[nx, ny] == 0 and is_black_backdrop(pixels[nx, ny], max_channel):
+                marked[nx, ny] = 1
+                queue.append((nx, ny))
+    keep = Image.new("L", (width, height), 0)
+    keep_px = keep.load()
+    for y in range(height):
+        for x in range(width):
+            if marked[x, y] == 0:
+                keep_px[x, y] = 255
+    # Peel only the near-black JPEG fringe at the silhouette edge.
+    for _ in range(2):
+        remove = []
+        for y in range(height):
+            for x in range(width):
+                if keep_px[x, y] == 0 or max(pixels[x, y]) > max_channel + 8:
+                    continue
+                if any(
+                    not (0 <= nx < width and 0 <= ny < height) or keep_px[nx, ny] == 0
+                    for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1))
+                ):
+                    remove.append((x, y))
+        if not remove:
+            break
+        for x, y in remove:
+            keep_px[x, y] = 0
+    out = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    dest = out.load()
+    for y in range(height):
+        for x in range(width):
+            if keep_px[x, y]:
+                dest[x, y] = (*pixels[x, y], 255)
+    return out
 
 
 def extract_checker(rgb: Image.Image) -> Image.Image:
@@ -162,10 +219,16 @@ def matte_from_background(rgb: Image.Image, background: Image.Image) -> Image.Im
     return out
 
 
-def extract(source: Image.Image, columns: int = 1, rows: int = 1) -> Image.Image:
+def extract(source: Image.Image, columns: int = 1, rows: int = 1, mode: str = "auto") -> Image.Image:
     rgb = source.convert("RGB")
-    mode = detect_mode(rgb)
-    return extract_light(rgb, columns, rows) if mode == "light" else extract_checker(rgb)
+    resolved = detect_mode(rgb) if mode == "auto" else mode
+    if resolved == "black":
+        return extract_black(rgb, columns, rows)
+    if resolved == "light":
+        return extract_light(rgb, columns, rows)
+    if resolved == "checker":
+        return extract_checker(rgb)
+    raise ValueError(f"Unknown extract mode {resolved}")
 
 
 def main() -> None:
@@ -173,9 +236,10 @@ def main() -> None:
     parser.add_argument("source")
     parser.add_argument("--out", required=True)
     parser.add_argument("--grid", nargs=2, type=int, metavar=("COLUMNS", "ROWS"), default=[1, 1])
+    parser.add_argument("--mode", choices=("auto", "black", "light", "checker"), default="auto")
     args = parser.parse_args()
     source = Image.open(args.source)
-    result = extract(source, *args.grid)
+    result = extract(source, *args.grid, args.mode)
     corners = [result.getpixel(point)[3] for point in ((0, 0), (result.width - 1, 0), (0, result.height - 1), (result.width - 1, result.height - 1))]
     if any(corners):
         raise SystemExit(f"Extraction left opaque corners: {corners}")

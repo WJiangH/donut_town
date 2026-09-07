@@ -32,7 +32,10 @@ function validActions(actions) {
   if (!actions || typeof actions !== 'object' || Array.isArray(actions)) return false;
   return Object.entries(actions).every(([id, action]) => /^[a-zA-Z]+$/.test(id)
     && validAtlas(action, 1)
-    && (!action.facing || ['down', 'right', 'left', 'up'].includes(action.facing)));
+    && (!action.facing || ['down', 'right', 'left', 'up'].includes(action.facing))
+    && (!action.loop || (Array.isArray(action.loop) && action.loop.length >= 1
+      && action.loop.every(index => Number.isInteger(index) && index >= 0 && index < action.frames.length)))
+    && (action.frameMs === undefined || (Number.isFinite(action.frameMs) && action.frameMs > 0)));
 }
 
 export function createCharacterResolver(bindings, characters) {

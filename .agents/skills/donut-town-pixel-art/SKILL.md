@@ -1,6 +1,6 @@
 ---
 name: donut-town-pixel-art
-description: Generate, validate, and integrate Donut Town pixel residents, directional walk cycles, and cosmetic Donut rewards from approved character or town artwork. Use for Slack-avatar personalization, new resident sprites, animation atlases, art consistency fixes, or the related asset workflow; do not use for Slack messaging logic or general frontend changes without pixel-art work.
+description: Generate, validate, and integrate Donut Town pixel residents, directional walk cycles, interaction poses, and cosmetic Donut rewards from approved character or town artwork. Use for Slack-avatar personalization, new resident sprites, sit/garden/coffee/read/lookout/lab actions, animation atlases, art consistency fixes, or the related asset workflow; do not use for Slack messaging logic or general frontend changes without pixel-art work.
 ---
 
 # Donut Town Pixel Art
@@ -20,6 +20,12 @@ For one named channel member, or a batch of members, read only [references/membe
 Keep the shared default atlas for default Slack avatars, non-human custom images, and likenesses that fail after one identity attempt. For a batch, spawn one agent per remaining member, pre-assign unique `r-` ids, and have agents write assets only. The parent binds and deploys once.
 
 For unusual cases (preview-only, walk-cycle repair, or a non-casual silhouette) read [references/avatar-personalization.md](references/avatar-personalization.md). Start with a member name; no uploaded PNG is required.
+
+## Interaction poses
+
+When asked to add sit, garden, coffee, read, lookout, or lab poses to an existing resident, read only [references/action-pipeline.md](references/action-pipeline.md). That is the token-cheap path: two sheets, local extraction, compose scripts. Do not load the other reference files unless a gate fails.
+
+For a batch, spawn one agent per assigned character that is missing the seven action ids. Agents write that id's action assets only. The parent validates and deploys once.
 
 ## Production animation
 

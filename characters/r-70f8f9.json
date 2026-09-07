@@ -61,5 +61,143 @@
   ],
   "version": 1,
   "designApproved": true,
-  "animationStatus": "preview-repeated-stride"
+  "animationStatus": "preview-repeated-stride",
+  "actions": {
+    "sitChair": {
+      "url": "/assets/residents/r-70f8f9/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          59,
+          8,
+          162,
+          348
+        ]
+      ],
+      "facing": "down"
+    },
+    "sitGrass": {
+      "url": "/assets/residents/r-70f8f9/action-loops-v1.png",
+      "imageWidth": 960,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          507,
+          8,
+          186,
+          348
+        ],
+        [
+          744,
+          8,
+          192,
+          348
+        ]
+      ],
+      "loop": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "frameMs": 280,
+      "facing": "down"
+    },
+    "garden": {
+      "url": "/assets/residents/r-70f8f9/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          331,
+          8,
+          178,
+          348
+        ]
+      ],
+      "facing": "down"
+    },
+    "lookout": {
+      "url": "/assets/residents/r-70f8f9/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          625,
+          8,
+          148,
+          348
+        ]
+      ],
+      "facing": "right"
+    },
+    "read": {
+      "url": "/assets/residents/r-70f8f9/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          899,
+          9,
+          160,
+          347
+        ]
+      ],
+      "facing": "down"
+    },
+    "coffee": {
+      "url": "/assets/residents/r-70f8f9/action-loops-v1.png",
+      "imageWidth": 960,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          39,
+          8,
+          162,
+          348
+        ],
+        [
+          279,
+          8,
+          161,
+          348
+        ]
+      ],
+      "loop": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "frameMs": 240,
+      "facing": "down"
+    },
+    "experiment": {
+      "url": "/assets/residents/r-70f8f9/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          1171,
+          8,
+          178,
+          348
+        ]
+      ],
+      "facing": "up"
+    }
+  }
 }

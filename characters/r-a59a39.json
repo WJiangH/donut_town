@@ -4,17 +4,200 @@
   "imageHeight": 1024,
   "frameHeight": 315,
   "frames": [
-    [111, 37, 173, 314],
-    [443, 37, 138, 315],
-    [753, 37, 174, 314],
-    [129, 378, 153, 285],
-    [456, 378, 113, 284],
-    [749, 378, 153, 285],
-    [123, 689, 179, 299],
-    [443, 689, 138, 299],
-    [727, 689, 179, 299]
+    [
+      111,
+      37,
+      173,
+      314
+    ],
+    [
+      443,
+      37,
+      138,
+      315
+    ],
+    [
+      753,
+      37,
+      174,
+      314
+    ],
+    [
+      129,
+      378,
+      153,
+      285
+    ],
+    [
+      456,
+      378,
+      113,
+      284
+    ],
+    [
+      749,
+      378,
+      153,
+      285
+    ],
+    [
+      123,
+      689,
+      179,
+      299
+    ],
+    [
+      443,
+      689,
+      138,
+      299
+    ],
+    [
+      727,
+      689,
+      179,
+      299
+    ]
   ],
   "version": 1,
   "designApproved": true,
-  "animationStatus": "preview-side-step-B-faces-left"
+  "animationStatus": "preview-side-step-B-faces-left",
+  "actions": {
+    "sitChair": {
+      "url": "/assets/residents/r-a59a39/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          67,
+          8,
+          146,
+          348
+        ]
+      ],
+      "facing": "down"
+    },
+    "sitGrass": {
+      "url": "/assets/residents/r-a59a39/action-loops-v1.png",
+      "imageWidth": 960,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          515,
+          8,
+          169,
+          348
+        ],
+        [
+          753,
+          8,
+          173,
+          348
+        ]
+      ],
+      "loop": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "frameMs": 280,
+      "facing": "down"
+    },
+    "garden": {
+      "url": "/assets/residents/r-a59a39/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          350,
+          8,
+          139,
+          348
+        ]
+      ],
+      "facing": "down"
+    },
+    "lookout": {
+      "url": "/assets/residents/r-a59a39/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          644,
+          8,
+          111,
+          348
+        ]
+      ],
+      "facing": "right"
+    },
+    "read": {
+      "url": "/assets/residents/r-a59a39/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          907,
+          8,
+          146,
+          348
+        ]
+      ],
+      "facing": "down"
+    },
+    "coffee": {
+      "url": "/assets/residents/r-a59a39/action-loops-v1.png",
+      "imageWidth": 960,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          45,
+          8,
+          149,
+          348
+        ],
+        [
+          283,
+          8,
+          153,
+          348
+        ]
+      ],
+      "loop": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "frameMs": 240,
+      "facing": "down"
+    },
+    "experiment": {
+      "url": "/assets/residents/r-a59a39/actions-v1.png",
+      "imageWidth": 1400,
+      "imageHeight": 360,
+      "frameHeight": 348,
+      "frames": [
+        [
+          1176,
+          8,
+          168,
+          348
+        ]
+      ],
+      "facing": "up"
+    }
+  }
 }

@@ -16,7 +16,7 @@ Do not invent a human body from a cat, logo, or default silhouette. Already-boun
 
 ## 1. Fetch and inspect
 
-For a batch, the coordinator may first run `node .agents/skills/donut-town-pixel-art/scripts/list-roster.mjs` to drop default avatars and already-bound members.
+For a batch, the coordinator may first run `node .agents/skills/donut-town-pixel-art/scripts/list-roster.mjs` to drop default avatars and already-bound members. For interaction poses on existing residents, use `--missing-actions` and [action-pipeline.md](action-pipeline.md).
 
 ```bash
 node .agents/skills/donut-town-pixel-art/scripts/fetch-render-avatar.mjs "Member name"
