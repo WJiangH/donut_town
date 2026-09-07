@@ -166,6 +166,24 @@ Still to build on top of this: pets as followers that walk behind their owner,
 and a member's own donut house, entered from the profile, where bought
 decorations are dragged into place. Both read the same ownership records.
 
+### A member's own donut house
+
+The profile has a door to a member's own room. It starts bare; decorations
+bought at the fountain appear on the shelf below it and are dragged onto a
+fourteen by nine floor, where each one keeps its square. Dragging a piece off
+the floor puts it back on the shelf, arrow keys nudge whatever is selected, and
+every change is saved a moment later.
+
+- `GET /api/house` returns the grid, the layout, and which decorations the
+  member owns; `POST /api/house` takes `{ layout: { items: [{id, x, y}] } }`.
+- A layout is only accepted if every piece is a decoration the member owns, is
+  placed once, sits on the floor, and shares its square with nothing else.
+- Anything sold or unknown quietly leaves the room rather than breaking it.
+- Layouts live in Upstash under `donut-town:house:v1`.
+
+The room itself is drawn in CSS for now - floorboards and four walls - so the
+engine does not wait on art. Real interior art drops in over the same grid.
+
 ### Changing how you look
 
 The profile drawer previews a look and only equips it when **Save look** is

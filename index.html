@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=30" />
+    <link rel="stylesheet" href="styles.css?v=31" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -149,6 +149,26 @@
       <button class="invite-button" id="inviteButton"></button>
     </aside>
 
+    <section class="house-view" id="houseView" hidden aria-label="Your donut house">
+      <div class="house-bar">
+        <button class="room-back-button" id="leaveHouse">Back to town</button>
+        <div>
+          <span>Your place</span>
+          <strong>Donut house</strong>
+        </div>
+        <p class="house-status" role="status" data-house="status">Opening the door…</p>
+      </div>
+      <div class="house-room">
+        <div class="house-floor" data-house="floor"></div>
+        <div class="house-resident" data-house="resident" aria-hidden="true"></div>
+      </div>
+      <div class="house-shelf-wrap">
+        <span>Not placed yet</span>
+        <div class="house-shelf" data-house="shelf"></div>
+        <small>Drag onto the floor · drag off the floor to put it away · arrow keys move the selected piece</small>
+      </div>
+    </section>
+
     <div class="shop-scrim" id="shopScrim" hidden></div>
     <aside class="shop-drawer" id="shopDrawer" aria-hidden="true" aria-labelledby="shopTitle">
       <button class="close-button" id="closeShop" aria-label="Leave the shop">Close</button>
@@ -177,6 +197,11 @@
 
       <dl class="resident-facts own-profile-facts" id="currentProfileFacts"></dl>
       <p class="profile-sync-note">This information comes from Slack. Update your Slack profile to change it here.</p>
+
+      <button class="house-entrance" id="openHouse" type="button">
+        <span class="house-entrance-mark" aria-hidden="true"></span>
+        <span><strong>My donut house</strong><small>Arrange what you have bought</small></span>
+      </button>
 
       <section class="my-donuts" aria-labelledby="myDonutsTitle">
         <div class="my-donuts-copy">
@@ -208,6 +233,6 @@
     <script src="town-collision.js?v=3"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=3"></script>
-    <script src="app.js?v=37"></script>
+    <script src="app.js?v=38"></script>
   </body>
 </html>

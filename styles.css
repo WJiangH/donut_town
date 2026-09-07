@@ -163,6 +163,49 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 
 /* The whole room should be in view, and the people in it read as people in a
    room rather than furniture: hold the pod to the stage and stand them down. */
+/* A member's own room: a grid of floorboards you can drop things onto. */
+.house-view { position: fixed; z-index: 65; inset: 0; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; padding: 18px; background: #efe6d6; }
+.house-bar { display: grid; grid-template-columns: auto auto 1fr; gap: 14px; align-items: center; }
+.house-bar span { display: block; color: var(--muted); font-size: 8px; }
+.house-bar strong { font-size: 13px; }
+.house-status { margin: 0; justify-self: end; color: var(--muted); font-size: 9px; }
+.house-room { position: relative; justify-self: center; align-self: center; width: min(100%, calc((100dvh - 210px) * 1.55)); aspect-ratio: 14 / 9; border: 6px solid #6b4a2f; border-radius: 6px; box-shadow: 0 14px 40px rgba(40, 25, 12, .28); background: #b98d5b; }
+.house-floor {
+  position: absolute; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 14), 1fr);
+  grid-template-rows: repeat(var(--rows, 9), 1fr);
+  background:
+    repeating-linear-gradient(90deg, rgba(90, 58, 30, .28) 0 2px, transparent 2px calc(100% / 14)),
+    repeating-linear-gradient(0deg, rgba(90, 58, 30, .18) 0 2px, transparent 2px calc(100% / 9)),
+    linear-gradient(180deg, #d3a874, #c1935f);
+  image-rendering: pixelated;
+}
+.house-floor.drop-ok { box-shadow: inset 0 0 0 3px var(--green); }
+.house-tile {
+  display: grid; place-items: center;
+  margin: 6%;
+  background: var(--swatch); color: #2a1c0f;
+  border: 3px solid var(--ink); border-radius: 4px;
+  box-shadow: inset -4px -4px 0 rgba(0, 0, 0, .2), 2px 2px 0 rgba(0, 0, 0, .25);
+  font: 800 9px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: grab; touch-action: none;
+}
+.house-tile.selected { outline: 3px solid var(--accent); outline-offset: 2px; }
+.house-ghost { position: fixed; z-index: 90; width: 46px; height: 46px; margin: 0; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; }
+.house-character { width: 100%; height: 100%; }
+.house-resident { position: absolute; left: 50%; bottom: 4%; width: 62px; height: 90px; transform: translateX(-50%); pointer-events: none; }
+.house-shelf-wrap { display: grid; gap: 6px; justify-items: center; }
+.house-shelf-wrap span { color: var(--muted); font-size: 9px; }
+.house-shelf-wrap small { color: var(--muted); font-size: 8px; }
+.house-shelf { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 52px; padding: 8px; background: #e5d9c3; border: 2px solid var(--line); border-radius: 10px; }
+.house-shelf .house-tile { width: 44px; height: 44px; margin: 0; }
+.house-empty { margin: 0; align-self: center; color: var(--muted); font-size: 9px; }
+.house-entrance { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; width: 100%; margin-top: 22px; padding: 11px; background: #e5efdf; border: 2px solid var(--line); border-radius: 10px; text-align: left; cursor: pointer; }
+.house-entrance-mark { width: 26px; height: 26px; background: #b98d5b; border: 2px solid var(--ink); box-shadow: inset -4px -4px 0 rgba(0, 0, 0, .2); }
+.house-entrance strong { display: block; font-size: 11px; }
+.house-entrance small { color: var(--muted); font-size: 8px; }
+
 /* The fountain doubles as the shop counter. */
 .shop-entrance {
   position: absolute; left: 51%; top: 41.5%; z-index: 6;

@@ -1502,6 +1502,34 @@ document.querySelector("#shopEntrance").addEventListener("click", event => {
   if (currentScene === "town") clickPath = findWalkPath(player, { x: 51, y: 47 });
   openShop();
 });
+// A member's own room, entered from their profile.
+let housePanel = null;
+function openHouse() {
+  const view = document.querySelector("#houseView");
+  view.hidden = false;
+  closeProfile();
+  if (!housePanel) {
+    housePanel = import("./house.mjs")
+      .then(module => module.mountHouse(view, {
+        paintCharacter: element => {
+          if (!currentUser?.character) return;
+          element.innerHTML = personalCharacterMarkup(currentUser.character, "house-character");
+          paintPersonalCharacter(element.firstElementChild, currentUser.character, "down");
+        }
+      }))
+      .catch(() => {
+        view.querySelector('[data-house="status"]').textContent = "House unavailable. Close and try again.";
+        housePanel = null;
+        return null;
+      });
+  }
+  housePanel?.then(panel => panel?.load());
+}
+function closeHouse() {
+  document.querySelector("#houseView").hidden = true;
+}
+document.querySelector("#openHouse").addEventListener("click", openHouse);
+document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
 document.querySelector("#closeShop").addEventListener("click", closeShop);
 document.querySelector("#shopScrim").addEventListener("click", closeShop);
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));

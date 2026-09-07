@@ -41,7 +41,7 @@ test('every wardrobe refusal the server can send has words for the member', () =
   const client = readFileSync(new URL('../profile-wardrobe.mjs', import.meta.url), 'utf8');
   const messages = client.slice(client.indexOf('const SAVE_MESSAGES'), client.indexOf('};', client.indexOf('const SAVE_MESSAGES')));
   const server = readFileSync(new URL('../server.mjs', import.meta.url), 'utf8');
-  const wardrobeRoute = server.slice(server.indexOf('/api/wardrobe'), server.indexOf('/api/shop'));
+  const wardrobeRoute = routeSource(server, '/api/wardrobe');
   const codes = [...wardrobeRoute.matchAll(/error: "(\w+)"/g)].map(match => match[1]);
   assert.ok(codes.length >= 4);
   for (const code of codes) {
@@ -71,3 +71,10 @@ test('the donut icon is pixel art with transparency, not a css circle', () => {
     assert.equal(bytes[25], 6, 'the icon needs an alpha channel');
   }
 });
+
+// The handler for one route, from its first line to wherever the next route begins.
+function routeSource(server, path) {
+  const start = server.indexOf(`url.pathname === "${path}"`);
+  const next = server.indexOf('url.pathname === "/api/', server.indexOf('\n', start));
+  return server.slice(start, next > start ? next : undefined);
+}

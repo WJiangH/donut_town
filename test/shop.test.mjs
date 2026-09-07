@@ -7,6 +7,14 @@ import { loadCatalog, walletFor, ownedIds, checkPurchase, ShopStore } from '../s
 
 const catalog = loadCatalog();
 
+// The handler for one route, from its first line to wherever the next route begins.
+function routeSource(server, path) {
+  const start = server.indexOf(`url.pathname === "${path}"`);
+  const next = server.indexOf('url.pathname === "/api/', server.indexOf('\n', start));
+  return server.slice(start, next > start ? next : undefined);
+}
+
+
 test('the shelves are a valid catalogue', () => {
   assert.ok(catalog.items.length >= 6);
   assert.ok(catalog.items.some(item => item.kind === 'pet'));
@@ -77,7 +85,7 @@ test('every shop refusal the server can send has words for the member', () => {
   const client = readFileSync(new URL('../shop-panel.mjs', import.meta.url), 'utf8');
   const messages = client.slice(client.indexOf('const MESSAGES'), client.indexOf('};', client.indexOf('const MESSAGES')));
   const server = readFileSync(new URL('../server.mjs', import.meta.url), 'utf8');
-  const route = server.slice(server.indexOf('/api/shop'), server.indexOf('/api/profile'));
+  const route = routeSource(server, '/api/shop') + routeSource(server, '/api/shop/purchase');
   const codes = new Set([...route.matchAll(/error: "(\w+)"/g)].map(match => match[1]));
   codes.add('not_enough_donuts');
   codes.add('already_owned');

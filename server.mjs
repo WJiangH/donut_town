@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { OutfitStore, equippedCharacter, validateOutfit, wardrobeSupported, wardrobeCharacters } from "./characters/wardrobe/store.mjs";
 import { ShopStore, loadCatalog, walletFor, ownedIds, checkPurchase } from "./shop/store.mjs";
+import { HouseStore, HOUSE_GRID, validateLayout } from "./house/store.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
@@ -52,6 +53,7 @@ const invitationStore = new UpstashInvitationStore({ url: config.upstashUrl, tok
 const outfitStore = new OutfitStore({ url: config.upstashUrl, token: config.upstashToken });
 const shopStore = new ShopStore({ url: config.upstashUrl, token: config.upstashToken });
 const shopCatalog = loadCatalog();
+const houseStore = new HouseStore({ url: config.upstashUrl, token: config.upstashToken });
 let memberCache = null;
 let memberCacheExpiresAt = 0;
 let memberSyncPromise = null;
@@ -74,7 +76,7 @@ const server = createServer(async (request, response) => {
     if (request.method === "GET" && url.pathname === "/api/health") {
       // `storage` says whether Upstash is wired up, so wardrobe and shop
       // failures can be diagnosed without signing in. No secret is exposed.
-      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true, navigationV2: true, freeOverview: true, personalCharacters: "hmac-v1", storage: outfitStore.configured && shopStore.configured });
+      return sendJson(response, 200, { ok: true, realtime: true, largeWorld: true, navigationV2: true, freeOverview: true, personalCharacters: "hmac-v1", storage: outfitStore.configured && shopStore.configured && houseStore.configured });
     }
 
     if (request.method === "GET" && url.pathname === "/enter") {
@@ -224,6 +226,36 @@ const server = createServer(async (request, response) => {
       let next;
       try { next = await shopStore.buy(key, item, purse); } catch { return sendJson(response, 503, { error: "shop_purchase_failed" }); }
       return sendJson(response, 200, { item, owned: ownedIds(next), wallet: walletFor({ earned, purse: next }) });
+    }
+
+    // A member's own room: the decorations they own, and where they put them.
+    if (url.pathname === "/api/house") {
+      response.setHeader("cache-control", "private, no-store");
+      const session = getSlackSession(request);
+      if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
+      const members = await getCachedChannelMembers();
+      if (!members.some(entry => entry.id === session.sub)) return sendJson(response, 403, { error: "member_not_found" });
+      if (!houseStore.configured) return sendJson(response, 503, { error: "house_store_unavailable" });
+      const key = memberCharacterKey(session.sub, config.signingSecret);
+      let owned;
+      try { owned = ownedIds(await shopStore.purse(key, shopCatalog)); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
+      const furniture = shopCatalog.items.filter(item => item.kind === "decoration");
+
+      if (request.method === "GET") {
+        let layout;
+        try { layout = await houseStore.load(key, { ownedIds: owned, catalog: shopCatalog }); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
+        return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture });
+      }
+      if (request.method !== "POST") return sendJson(response, 405, { error: "method_not_allowed" });
+
+      let layout;
+      try {
+        const body = JSON.parse(await readBody(request));
+        if (Object.keys(body).length !== 1 || !body.layout) throw new Error("invalid_layout");
+        layout = validateLayout(body.layout, { ownedIds: owned, catalog: shopCatalog });
+      } catch { return sendJson(response, 400, { error: "invalid_layout" }); }
+      try { await houseStore.save(key, layout); } catch { return sendJson(response, 503, { error: "house_save_failed" }); }
+      return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture });
     }
 
     if (request.method === "POST" && url.pathname === "/api/profile") {
