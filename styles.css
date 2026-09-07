@@ -950,3 +950,45 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
 #townView.overview-side-controls .movement-help { bottom:90px; }
 #townView.overview-side-controls .legend { flex-wrap:wrap;gap:8px; }
 body:has(#townView.overview-side-controls:not([hidden])) .invite-dock { width:256px; }
+
+/* The town's natural wide-screen margins become its navigation and profile rails. */
+.town-shortcuts { display:none; }
+#townView.overview-side-controls .town-shortcuts { display:grid;width:100%;gap:8px;margin-top:16px;padding-top:18px;border-top:1px solid #f2ead933; }
+.rail-label { color:#d3dece;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px; }
+.town-shortcuts button { display:grid;grid-template-columns:24px 1fr 16px;align-items:center;gap:12px;width:100%;padding:13px 14px;text-align:left;border:2px solid #83967c;border-radius:8px;background:var(--surface-solid);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;box-shadow:3px 3px 0 #09190f; }
+.town-shortcuts button:hover { background:#e3efda;color:#173126; }
+.town-shortcuts .house-entrance-mark { width:24px;height:24px; }
+.town-sidebar-layout .profile-drawer.docked { right:12px;top:84px;bottom:112px;width:var(--town-rail-width);padding:18px;transform:none;transition:none;box-shadow:none;border:2px solid #83967c;border-radius:10px;scrollbar-width:thin;display:flex;flex-direction:column;gap:0; }
+.profile-drawer.docked>#closeProfile { display:none; }
+.profile-drawer.docked .profile-heading { grid-template-columns:54px minmax(0,1fr);gap:12px;margin:0 0 18px;flex-shrink:0; }
+.profile-drawer.docked .profile-avatar { width:52px;height:52px;border-width:2px;box-shadow:2px 2px 0 #173126; }
+.profile-drawer.docked .profile-heading h2 { font-size:22px;overflow-wrap:anywhere; }
+.profile-drawer.docked .profile-heading span { font-size:9px; }
+.profile-drawer.docked .own-profile-facts { flex-shrink:0;padding:14px 0;margin:0 0 14px; }
+.profile-drawer.docked .resident-facts>div { grid-template-columns:1fr;gap:4px; }
+.profile-drawer.docked .resident-facts dd { font-size:11px;line-height:1.5;overflow-wrap:anywhere; }
+.profile-drawer.docked .profile-sync-note,.profile-drawer.docked .poses-help { display:none; }
+.profile-drawer.docked .house-entrance { order:1;margin:0;flex-shrink:0; }
+.profile-drawer.docked .my-donuts { order:2;margin-top:18px;padding-top:16px;gap:8px;flex-shrink:0; }
+.profile-drawer.docked .my-donuts h3 { font-size:20px; }
+.profile-drawer.docked .my-donuts-copy>span { display:none; }
+.profile-drawer.docked .donut-total { padding:8px;gap:6px; }
+.profile-drawer.docked .mini-donut { width:24px;height:24px; }
+.profile-drawer.docked .profile-chats { order:3;flex-shrink:0;margin-top:18px;padding-top:16px; }
+.profile-drawer.docked .profile-poses { order:4;flex-shrink:0; }
+.profile-drawer.docked .profile-wardrobe { order:5;flex-shrink:0; }
+.profile-drawer.docked h3 { font-size:18px; }
+.profile-drawer.docked .wardrobe-body { grid-template-columns:1fr; }
+.profile-drawer.docked .wardrobe-preview canvas { width:90px;height:132px; }
+.profile-drawer.docked .chat-stats { flex-wrap:wrap; }
+body.town-sidebar-layout .invite-dock { right:12px;bottom:12px;width:var(--town-rail-width);border:2px solid #83967c;box-shadow:none;border-radius:10px;max-height:50dvh;overflow:auto; }
+body.town-sidebar-layout .dock-handle { gap:10px;font-size:12px;padding:16px; }
+body.town-sidebar-layout .resident-drawer { right:12px;top:84px;bottom:112px;width:var(--town-rail-width); }
+
+.town-places>summary { list-style:none;min-height:44px;padding:12px;border:3px solid var(--ink);border-radius:10px;background:var(--surface-solid);color:var(--ink);font-size:10px;font-weight:900;cursor:pointer; }
+.town-places>summary::-webkit-details-marker { display:none; }
+#townView.overview-side-controls .town-places { width:100%; }
+#townView.overview-side-controls .town-places>summary { display:none; }
+#townView:not(.overview-side-controls) .town-places[open] .town-shortcuts { position:absolute;display:grid;gap:8px;padding:12px;width:250px;max-width:calc(100vw - 24px);background:#17281e;border:2px solid #83967c;border-radius:10px;box-shadow:4px 4px 0 #09190f; }
+.town-shortcuts .mini-donut { width:24px;height:24px; }
+@media(max-width:760px){ .town-places { margin-top:8px;width:max-content; } }

@@ -765,7 +765,11 @@ function refreshTownCameraMetrics() {
   const gutter=Math.max(0,(viewportWidth-worldWidth*fit)/2);
   const stage=document.querySelector('#townView');
   stage.style.setProperty('--overview-gutter',`${gutter}px`);
-  stage.classList.toggle('overview-side-controls',cameraMode==='overview'&&gutter>=280);
+  const sideControls=cameraMode==='overview'&&gutter>=280;
+  stage.classList.toggle('overview-side-controls',sideControls);
+  document.querySelector('#townPlaces').open=sideControls;
+  document.documentElement.style.setProperty('--town-rail-width',`${Math.min(390,gutter-24)}px`);
+  updateTownSidebar();
 }
 
 function updateTownCamera(deltaSeconds = 0, immediate = false) {
@@ -981,6 +985,7 @@ function setScene(nextScene) {
     if (view) view.hidden = name !== currentScene;
   }
   document.querySelector("#sceneTitle").textContent = scene().title;
+  updateTownSidebar();
   if (currentScene !== "town") {
     renderCurrentScene();
     if (currentScene === "donutShop") shopRoom?.then(room => room?.load());
@@ -1409,17 +1414,39 @@ function renderCurrentProfile() {
   document.querySelector("#myDonutNote").textContent = Number.isInteger(donutCount)
     ? "Completed pairings recorded in the Donut Bot sheet."
     : "Lottery donut rewards are not connected yet.";
+  updateTownSidebar();
 }
 
 let wardrobeMount = null;
 let profileChatsMount = null;
+let sidebarPanelsLoaded = false;
+function updateTownSidebar() {
+  const profile=document.querySelector('#profileDrawer');
+  const docked=Boolean(currentUser && currentScene==='town' && !window.townHouseOpen && document.querySelector('#townView').classList.contains('overview-side-controls'));
+  if(profile.classList.contains('docked')===docked)return;
+  profile.classList.toggle('docked',docked);
+  document.body.classList.toggle('town-sidebar-layout',docked);
+  // Reuse the same profile node and state; a docked profile never blocks walking.
+  profile.classList.remove('open');
+  profile.setAttribute('aria-hidden',String(!docked));
+  document.querySelector('#profileScrim').hidden=true;
+  document.querySelector('#profileButton').setAttribute('aria-expanded',String(docked));
+  if(docked && !sidebarPanelsLoaded){sidebarPanelsLoaded=true;loadProfilePanels();}
+  if(!docked)document.querySelector('#profileWardrobe').dispatchEvent(new Event('wardrobe-close'));
+}
 function openProfile() {
   closeDrawer();
-  const profileDrawer = document.querySelector("#profileDrawer");
-  profileDrawer.classList.add("open");
-  profileDrawer.setAttribute("aria-hidden", "false");
-  document.querySelector("#profileScrim").hidden = false;
-  document.querySelector("#profileButton").setAttribute("aria-expanded", "true");
+  const profileDrawer = document.querySelector('#profileDrawer');
+  const docked=profileDrawer.classList.contains('docked');
+  profileDrawer.classList.toggle('open',!docked);
+  profileDrawer.setAttribute('aria-hidden','false');
+  document.querySelector('#profileScrim').hidden=docked;
+  document.querySelector('#profileButton').setAttribute('aria-expanded','true');
+  if(docked)profileDrawer.scrollTo({top:0});
+  loadProfilePanels();
+}
+function loadProfilePanels() {
+  const profileDrawer = document.querySelector('#profileDrawer');
   if (!profileChatsMount) profileChatsMount = import("./profile-chats.mjs").then(module => module.mountProfileChats(document.querySelector("#profileChats"))).catch(() => {
     profileChatsMount = null;
     document.querySelector('[data-chats="status"]').textContent = "Chat history unavailable. Reopen to retry.";
@@ -1448,9 +1475,10 @@ function closeProfile() {
   document.querySelector("#profileWardrobe").dispatchEvent(new Event("wardrobe-close"));
   const profileDrawer = document.querySelector("#profileDrawer");
   profileDrawer.classList.remove("open");
-  profileDrawer.setAttribute("aria-hidden", "true");
+  const docked=profileDrawer.classList.contains("docked");
+  profileDrawer.setAttribute("aria-hidden", String(!docked));
   document.querySelector("#profileScrim").hidden = true;
-  document.querySelector("#profileButton").setAttribute("aria-expanded", "false");
+  document.querySelector("#profileButton").setAttribute("aria-expanded", String(docked));
 }
 
 function closeDrawer() {
@@ -1620,6 +1648,7 @@ function openHouse() {
   const view = document.querySelector("#houseView");
   view.hidden = false;
   window.townHouseOpen = true;
+  updateTownSidebar();
   pressedKeys.clear(); clickPath = [];
   closeProfile();
   if (!housePanel) {
@@ -1654,6 +1683,7 @@ async function closeHouse(returnToTown = true) {
   if (panel && !(await panel.flush())) return false;
   document.querySelector("#houseView").hidden = true;
   window.townHouseOpen = false;
+  updateTownSidebar();
   panel?.pause();
   void themeController?.check();
   if (returnToTown && currentScene !== "town") transitionToScene("town");
@@ -1663,6 +1693,9 @@ document.querySelector("#houseShop").addEventListener("click", async () => {
   if (await closeHouse(false)) transitionToScene("donutShop");
 });
 document.querySelector("#openHouse").addEventListener("click", openHouse);
+document.querySelector('#railHome').addEventListener('click',openHouse);
+document.querySelector('#railShop').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('donutShop');});
+document.querySelector('#railChem').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('chemPod');});
 document.querySelector("#shopHome").addEventListener("click", openHouse);
 document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));

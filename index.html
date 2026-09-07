@@ -54,6 +54,15 @@
             <button class="camera-toggle" data-camera-mode="overview" type="button" aria-pressed="true">Town overview</button>
             <button class="camera-toggle" data-camera-mode="follow" type="button" aria-pressed="false">Follow me</button>
           </div>
+          <details class="town-places" id="townPlaces">
+            <summary>Places</summary>
+            <nav class="town-shortcuts" aria-label="Town places">
+            <span class="rail-label">Explore</span>
+            <button type="button" id="railShop"><span class="mini-donut" aria-hidden="true"></span> Shop <span aria-hidden="true">→</span></button>
+            <button type="button" id="railHome"><span class="house-entrance-mark" aria-hidden="true"></span> My Home <span aria-hidden="true">→</span></button>
+            <button type="button" id="railChem"><span aria-hidden="true">⚗</span> Chem Pod <span aria-hidden="true">→</span></button>
+            </nav>
+          </details>
         </div>
 
         <div class="map-wrap" id="mapWrap" data-camera-mode="overview">
