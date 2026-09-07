@@ -347,6 +347,138 @@
         "canvasW": 260,
         "canvasH": 204
       }
+    },
+    {
+      "id": "deco-sofa",
+      "name": "Sage sofa",
+      "kind": "decoration",
+      "category": "home",
+      "price": 4,
+      "blurb": "A soft spot for slow afternoons.",
+      "footprint": {
+        "w": 3,
+        "h": 2
+      },
+      "art": "/assets/shop/deco-sofa-art-9c8ea0bdc490.png",
+      "artFrame": {
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 194,
+        "canvasW": 260,
+        "canvasH": 198
+      },
+      "thumb": "/assets/shop/deco-sofa-thumb-9c6dc62ae310.png"
+    },
+    {
+      "id": "deco-bed",
+      "name": "Patchwork bed",
+      "kind": "decoration",
+      "category": "home",
+      "price": 5,
+      "blurb": "Oak, linen, and a quilt to curl up under.",
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
+      "art": "/assets/shop/deco-bed-art-8a920199e2cc.png",
+      "artFrame": {
+        "x": 2,
+        "y": 2,
+        "w": 234,
+        "h": 256,
+        "canvasW": 238,
+        "canvasH": 260
+      },
+      "thumb": "/assets/shop/deco-bed-thumb-e5d908c7dcb5.png"
+    },
+    {
+      "id": "deco-coffee-cart",
+      "name": "Coffee cart",
+      "kind": "decoration",
+      "category": "home",
+      "price": 3,
+      "blurb": "Your morning brew, all in one corner.",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "art": "/assets/shop/deco-coffee-cart-art-0fd0f50bcc51.png",
+      "artFrame": {
+        "x": 2,
+        "y": 2,
+        "w": 202,
+        "h": 256,
+        "canvasW": 206,
+        "canvasH": 260
+      },
+      "thumb": "/assets/shop/deco-coffee-cart-thumb-80312a6f5cc1.png"
+    },
+    {
+      "id": "deco-aquarium",
+      "name": "Aquarium cabinet",
+      "kind": "decoration",
+      "category": "home",
+      "price": 4,
+      "blurb": "A quiet little underwater world.",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "art": "/assets/shop/deco-aquarium-art-71d15fecfe50.png",
+      "artFrame": {
+        "x": 2,
+        "y": 2,
+        "w": 228,
+        "h": 256,
+        "canvasW": 232,
+        "canvasH": 260
+      },
+      "thumb": "/assets/shop/deco-aquarium-thumb-ee8c76582213.png"
+    },
+    {
+      "id": "deco-record-cabinet",
+      "name": "Record cabinet",
+      "kind": "decoration",
+      "category": "home",
+      "price": 3,
+      "blurb": "A favorite record for a rainy afternoon.",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "art": "/assets/shop/deco-record-cabinet-art-734ef5626248.png",
+      "artFrame": {
+        "x": 2,
+        "y": 2,
+        "w": 216,
+        "h": 256,
+        "canvasW": 220,
+        "canvasH": 260
+      },
+      "thumb": "/assets/shop/deco-record-cabinet-thumb-62af2aaa641d.png"
+    },
+    {
+      "id": "deco-paper-lamp",
+      "name": "Paper floor lamp",
+      "kind": "decoration",
+      "category": "home",
+      "price": 2,
+      "blurb": "A warm paper glow beside your favorite chair.",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "art": "/assets/shop/deco-paper-lamp-art-9ef59cf7e658.png",
+      "artFrame": {
+        "x": 2,
+        "y": 2,
+        "w": 99,
+        "h": 256,
+        "canvasW": 103,
+        "canvasH": 260
+      },
+      "thumb": "/assets/shop/deco-paper-lamp-thumb-e56c0826fce4.png"
     }
   ]
 }

@@ -77,3 +77,14 @@ test('furniture footprint rejects overlap and clipping at room edges',()=>{
   assert.throws(()=>validateLayout({items:[{id:'deco-christmas-tree',x:2,y:2},{id:'deco-pumpkin',x:3,y:3}]},opts));
   assert.equal(validateLayout({items:[{id:'deco-christmas-tree',x:2,y:2},{id:'deco-pumpkin',x:4,y:3}]},opts).items.length,2);
 });
+
+test('larger home furniture retains its footprint after save and rejects partial overlap',()=>{
+  for(const id of ['deco-sofa','deco-bed','deco-coffee-cart','deco-aquarium','deco-record-cabinet']) {
+    const {w,h}=catalog.items.find(item=>item.id===id).footprint;
+    const opts={ownedIds:[id,'deco-fern'],catalog};
+    const layout={items:[{id,x:HOUSE_GRID.cols-w,y:HOUSE_GRID.rows-h}]};
+    assert.deepEqual(readLayout(JSON.stringify(layout),opts),layout);
+    assert.throws(()=>validateLayout({items:[{...layout.items[0],x:HOUSE_GRID.cols-w+1}]},opts));
+    assert.throws(()=>validateLayout({items:[...layout.items,{id:'deco-fern',x:13,y:8}]},opts));
+  }
+});

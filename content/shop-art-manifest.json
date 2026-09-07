@@ -513,6 +513,204 @@
           "height": 79
         }
       }
+    },
+    {
+      "id": "deco-sofa",
+      "subject": "A compact two-seat sage green upholstered sofa, warm honey oak frame and short wooden feet, one cream leaf-pattern cushion and a folded rust throw. Wide welcoming silhouette.",
+      "prompt": "Use case: stylized-concept. Asset type: one production furniture sprite for Donut Town, a cozy 16-bit pixel-art home decorating game. Subject: A compact two-seat sage green upholstered sofa, warm honey oak frame and short wooden feet, one cream leaf-pattern cushion and a folded rust throw. Wide welcoming silhouette. Style: carefully hand-pixelled SNES-era furniture, distinct square pixel clusters, hard stepped edges, restrained sage/cream/honey oak/rust palette, dark warm brown outlines and small golden highlights; no smooth vector edges, no photorealism, no excessive microtexture. Camera: elevated three-quarter front view, front and right side visible, horizontal front edge, like a cozy top-down RPG interior. Entire isolated object centered with generous transparent padding, bottom-centred floor contact point. TRUE TRANSPARENT RGBA background, including gaps around legs. No floor, room, people, text, watermark, checkerboard, ground shadow or ambient halo. Square canvas. This is one object, not a scene or sheet.",
+      "source": "art-source/shop/deco-sofa-v1.png",
+      "file": "/assets/shop/deco-sofa-art-9c8ea0bdc490.png",
+      "sha256": "9c8ea0bdc49087a99cf4adeaf44ae289caffaec308b387b6dc1a2d11effcd32c",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 256,
+        "h": 194,
+        "canvasW": 260,
+        "canvasH": 198
+      },
+      "sourceSha256": "6954b46d35b6fbc2ab2929a5318f2b225b75896bad07db1137176dbd735d5b6e",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-sofa-art-9c8ea0bdc490.png",
+          "sha256": "9c8ea0bdc49087a99cf4adeaf44ae289caffaec308b387b6dc1a2d11effcd32c",
+          "bytes": 68239,
+          "width": 260,
+          "height": 198
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-sofa-thumb-9c6dc62ae310.png",
+          "sha256": "9c6dc62ae310a8ee917821b10bc6ada330aa397b3646de456472c55c95adc6de",
+          "bytes": 14200,
+          "width": 100,
+          "height": 77
+        }
+      }
+    },
+    {
+      "id": "deco-bed",
+      "subject": "A cozy single bed with a honey oak headboard and footboard, cream pillow, neatly tucked muted teal quilt with a few warm ochre patchwork squares. Entire bed from headboard to feet.",
+      "prompt": "Use case: stylized-concept. Asset type: one production furniture sprite for Donut Town, a cozy 16-bit pixel-art home decorating game. Subject: A cozy single bed with a honey oak headboard and footboard, cream pillow, neatly tucked muted teal quilt with a few warm ochre patchwork squares. Entire bed from headboard to feet. Style: carefully hand-pixelled SNES-era furniture, distinct square pixel clusters, hard stepped edges, restrained sage/cream/honey oak/rust palette, dark warm brown outlines and small golden highlights; no smooth vector edges, no photorealism, no excessive microtexture. Camera: elevated three-quarter front view, front and right side visible, horizontal front edge, like a cozy top-down RPG interior. Entire isolated object centered with generous transparent padding, bottom-centred floor contact point. TRUE TRANSPARENT RGBA background, including gaps around legs. No floor, room, people, text, watermark, checkerboard, ground shadow or ambient halo. Square canvas. This is one object, not a scene or sheet.",
+      "source": "art-source/shop/deco-bed-v1.png",
+      "file": "/assets/shop/deco-bed-art-8a920199e2cc.png",
+      "sha256": "8a920199e2ccebeadccd1efba77dc6bb2240a16fc52555feff75c421c0095e4d",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 234,
+        "h": 256,
+        "canvasW": 238,
+        "canvasH": 260
+      },
+      "sourceSha256": "48aab5630a6289746889cd6d7910d6215d75c2c4c97296e63f47b9d195f86a8d",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-bed-art-8a920199e2cc.png",
+          "sha256": "8a920199e2ccebeadccd1efba77dc6bb2240a16fc52555feff75c421c0095e4d",
+          "bytes": 74570,
+          "width": 238,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-bed-thumb-e5d908c7dcb5.png",
+          "sha256": "e5d908c7dcb5ab97ce97ea75596bb445b10ede0d123e91f945acb21ba6586cb6",
+          "bytes": 14826,
+          "width": 92,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "deco-coffee-cart",
+      "subject": "A compact two-tier honey oak coffee cart on four tiny caster wheels, a cream espresso machine with brass details and one small red mug on top, coffee jars neatly inside its lower shelf.",
+      "prompt": "Use case: stylized-concept. Asset type: one production furniture sprite for Donut Town, a cozy 16-bit pixel-art home decorating game. Subject: A compact two-tier honey oak coffee cart on four tiny caster wheels, a cream espresso machine with brass details and one small red mug on top, coffee jars neatly inside its lower shelf. Style: carefully hand-pixelled SNES-era furniture, distinct square pixel clusters, hard stepped edges, restrained sage/cream/honey oak/rust palette, dark warm brown outlines and small golden highlights; no smooth vector edges, no photorealism, no excessive microtexture. Camera: elevated three-quarter front view, front and right side visible, horizontal front edge, like a cozy top-down RPG interior. Entire isolated object centered with generous transparent padding, bottom-centred floor contact point. TRUE TRANSPARENT RGBA background, including gaps around legs. No floor, room, people, text, watermark, checkerboard, ground shadow or ambient halo. Square canvas. This is one object, not a scene or sheet.",
+      "source": "art-source/shop/deco-coffee-cart-v1.png",
+      "file": "/assets/shop/deco-coffee-cart-art-0fd0f50bcc51.png",
+      "sha256": "0fd0f50bcc51a2b5cf7fd62ae602632f41ec659f7821ada0a90581fc552508a8",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 202,
+        "h": 256,
+        "canvasW": 206,
+        "canvasH": 260
+      },
+      "sourceSha256": "4deeb3a5a8cfe95df4e01ce3427dfa32d7479ff0e8cb00ae7ed81ddc45bdff1b",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-coffee-cart-art-0fd0f50bcc51.png",
+          "sha256": "0fd0f50bcc51a2b5cf7fd62ae602632f41ec659f7821ada0a90581fc552508a8",
+          "bytes": 86376,
+          "width": 206,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-coffee-cart-thumb-80312a6f5cc1.png",
+          "sha256": "80312a6f5cc16ad68e44833bed70804ed6b1b70c59d75914602a2b352d2fda55",
+          "bytes": 15701,
+          "width": 80,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "deco-aquarium",
+      "subject": "A rectangular aquarium on a low honey oak cabinet, two small orange fish in muted turquoise water, pebbles and aquatic plants. A self-contained freestanding furniture piece, opaque painted glass interior and transparent outer background.",
+      "prompt": "Use case: stylized-concept. Asset type: one production furniture sprite for Donut Town, a cozy 16-bit pixel-art home decorating game. Subject: A rectangular aquarium on a low honey oak cabinet, two small orange fish in muted turquoise water, pebbles and aquatic plants. A self-contained freestanding furniture piece, opaque painted glass interior and transparent outer background. Style: carefully hand-pixelled SNES-era furniture, distinct square pixel clusters, hard stepped edges, restrained sage/cream/honey oak/rust palette, dark warm brown outlines and small golden highlights; no smooth vector edges, no photorealism, no excessive microtexture. Camera: elevated three-quarter front view, front and right side visible, horizontal front edge, like a cozy top-down RPG interior. Entire isolated object centered with generous transparent padding, bottom-centred floor contact point. TRUE TRANSPARENT RGBA background, including gaps around legs. No floor, room, people, text, watermark, checkerboard, ground shadow or ambient halo. Square canvas. This is one object, not a scene or sheet.",
+      "source": "art-source/shop/deco-aquarium-v1.png",
+      "file": "/assets/shop/deco-aquarium-art-71d15fecfe50.png",
+      "sha256": "71d15fecfe501d32a935fb131e7388c75efdedac23ee5773b402ac33ba922fba",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 228,
+        "h": 256,
+        "canvasW": 232,
+        "canvasH": 260
+      },
+      "sourceSha256": "434539301e0e140708d32ba08eea0f3e61b3694009b2e10ec38b440fc4e19b0a",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-aquarium-art-71d15fecfe50.png",
+          "sha256": "71d15fecfe501d32a935fb131e7388c75efdedac23ee5773b402ac33ba922fba",
+          "bytes": 99231,
+          "width": 232,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-aquarium-thumb-ee8c76582213.png",
+          "sha256": "ee8c765822134d4ec208e1591419ef41b5c12f166a561c64ec1f8dd0fb52a400",
+          "bytes": 18767,
+          "width": 90,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "deco-record-cabinet",
+      "subject": "A compact mid-century honey oak record cabinet with a small dark green turntable and vinyl record on top, tidy upright record sleeves in muted rust and cream beneath, four short tapered wooden legs.",
+      "prompt": "Use case: stylized-concept. Asset type: one production furniture sprite for Donut Town, a cozy 16-bit pixel-art home decorating game. Subject: A compact mid-century honey oak record cabinet with a small dark green turntable and vinyl record on top, tidy upright record sleeves in muted rust and cream beneath, four short tapered wooden legs. Style: carefully hand-pixelled SNES-era furniture, distinct square pixel clusters, hard stepped edges, restrained sage/cream/honey oak/rust palette, dark warm brown outlines and small golden highlights; no smooth vector edges, no photorealism, no excessive microtexture. Camera: elevated three-quarter front view, front and right side visible, horizontal front edge, like a cozy top-down RPG interior. Entire isolated object centered with generous transparent padding, bottom-centred floor contact point. TRUE TRANSPARENT RGBA background, including gaps around legs. No floor, room, people, text, watermark, checkerboard, ground shadow or ambient halo. Square canvas. This is one object, not a scene or sheet.",
+      "source": "art-source/shop/deco-record-cabinet-v1.png",
+      "file": "/assets/shop/deco-record-cabinet-art-734ef5626248.png",
+      "sha256": "734ef56262486f761100ecc985032dcb1865fdeefa95d4aa1daa5fe2eba7f048",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 216,
+        "h": 256,
+        "canvasW": 220,
+        "canvasH": 260
+      },
+      "sourceSha256": "57c4e60094e7cf7fc01183b88e8b1ab159704a81cc5abec9eb8f9320c8663214",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-record-cabinet-art-734ef5626248.png",
+          "sha256": "734ef56262486f761100ecc985032dcb1865fdeefa95d4aa1daa5fe2eba7f048",
+          "bytes": 79962,
+          "width": 220,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-record-cabinet-thumb-62af2aaa641d.png",
+          "sha256": "62af2aaa641deb5206b6721a5361439e319084b4ff981b8d0e064eb2ee637d96",
+          "bytes": 15811,
+          "width": 85,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "deco-paper-lamp",
+      "subject": "A tall cozy cream ribbed paper floor lantern on a dark honey oak tripod stand, soft warm golden interior shading, a graceful oval lampshade. No light cast outside its silhouette.",
+      "prompt": "Use case: stylized-concept. Asset type: one production furniture sprite for Donut Town, a cozy 16-bit pixel-art home decorating game. Subject: A tall cozy cream ribbed paper floor lantern on a dark honey oak tripod stand, soft warm golden interior shading, a graceful oval lampshade. No light cast outside its silhouette. Style: carefully hand-pixelled SNES-era furniture, distinct square pixel clusters, hard stepped edges, restrained sage/cream/honey oak/rust palette, dark warm brown outlines and small golden highlights; no smooth vector edges, no photorealism, no excessive microtexture. Camera: elevated three-quarter front view, front and right side visible, horizontal front edge, like a cozy top-down RPG interior. Entire isolated object centered with generous transparent padding, bottom-centred floor contact point. TRUE TRANSPARENT RGBA background, including gaps around legs. No floor, room, people, text, watermark, checkerboard, ground shadow or ambient halo. Square canvas. This is one object, not a scene or sheet.",
+      "source": "art-source/shop/deco-paper-lamp-v1.png",
+      "file": "/assets/shop/deco-paper-lamp-art-9ef59cf7e658.png",
+      "sha256": "9ef59cf7e6580f300680e3a94738e34ecfbb1002759f54c1712d9a10674e900a",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 99,
+        "h": 256,
+        "canvasW": 103,
+        "canvasH": 260
+      },
+      "sourceSha256": "be2f710bee803dd77fdc15696e5756d4c89100f16e64a2a4c49ff9d85b9a0d64",
+      "outputs": {
+        "art": {
+          "file": "/assets/shop/deco-paper-lamp-art-9ef59cf7e658.png",
+          "sha256": "9ef59cf7e6580f300680e3a94738e34ecfbb1002759f54c1712d9a10674e900a",
+          "bytes": 32873,
+          "width": 103,
+          "height": 260
+        },
+        "thumb": {
+          "file": "/assets/shop/deco-paper-lamp-thumb-e56c0826fce4.png",
+          "sha256": "e56c0826fce4d4269f1aaf5336d9f08d3d4b9908f7c0085b593278ad66577dce",
+          "bytes": 6325,
+          "width": 41,
+          "height": 100
+        }
+      }
     }
   ],
   "runtime": {

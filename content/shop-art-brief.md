@@ -1,6 +1,6 @@
 # Donut Shop art handoff
 
-The shop now contains 16 generated transparent pixel-art assets: 14 Home decorations and two wardrobe product previews. Existing pet art is retained. Production PNGs live under `assets/shop/`; the code-drawn placeholder remains only as a fallback for future stock.
+The shop now contains 22 generated transparent pixel-art assets: 20 Home decorations (including three starter pieces) and two wardrobe product previews. Existing pet art is retained. Production PNGs live under `assets/shop/`; the code-drawn placeholder remains only as a fallback for future stock.
 
 ## Replace art without changing ownership
 
@@ -62,3 +62,18 @@ This pass passed 70 Node tests, including validation of every production PNG, an
 - Rebuilding retires only old outputs identified by the previous manifest, preserving unrelated files. New items retain stable ownership IDs while their image URLs change.
 
 This collection's combined runtime art and thumbnails total 1,180,166 bytes, compared with 11,800,390 bytes of original PNGs. This measures asset bytes, not server RSS or production latency. Larger room backgrounds and resident atlases are outside this optimization pass.
+
+## Home furniture expansion
+
+Six additional pieces use the same built-in imagegen workflow, palette, transparent alpha, measured frames and local asset bake. Exact prompts are recorded on their entries in `shop-art-manifest.json`. These are decorative furniture; the aquarium and record player do not add animation or audio.
+
+| Item | Price in donuts | Floor footprint |
+|---|---:|---|
+| Sage sofa | 4 | 3×2 |
+| Patchwork bed | 5 | 3×3 |
+| Coffee cart | 3 | 2×2 |
+| Aquarium cabinet | 4 | 2×2 |
+| Record cabinet | 3 | 2×2 |
+| Paper floor lamp | 2 | 1×1 |
+
+These add 526,881 bytes across six runtime PNGs and six thumbnails, bringing the collection to 1,707,047 bytes. They use the existing purchase, inventory, drag, overlap and save contracts. Existing item IDs, prices, starter grants and saved room layouts are unchanged. The expanded shop has 22 non-starter products over two pages; each page remains capped at 16 thumbnails.
