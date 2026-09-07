@@ -13,7 +13,7 @@ import { activeInvitations, activeRoundId, answerInvitation, appearanceIndexFor,
 import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "./slack/ledger.mjs";
 import { UpstashInvitationStore } from "./slack/upstash-store.mjs";
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
-import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "./slack/session.mjs";
+import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken, shouldRenewSession, SESSION_TTL_SECONDS } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
 import { normalizeProfile, SheetProfileStore } from "./profile-store.mjs";
 
@@ -25,6 +25,7 @@ const config = {
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   channelId: process.env.SLACK_CHANNEL_ID || "",
   ledgerChannelId: process.env.SLACK_LEDGER_CHANNEL_ID || "",
+  sessionTtlSeconds: Math.max(3600, Number(process.env.SESSION_DAYS || 30) * 24 * 60 * 60) || SESSION_TTL_SECONDS,
   upstashUrl: process.env.UPSTASH_REDIS_REST_URL || "",
   upstashToken: process.env.UPSTASH_REDIS_REST_TOKEN || "",
   clientId: process.env.SLACK_CLIENT_ID || "",
@@ -96,6 +97,8 @@ const server = createServer(async (request, response) => {
       response.end("Donut Town testing access required.");
       return;
     }
+
+    renewSessionCookie(request, response);
 
     if (request.method === "GET" && url.pathname === "/api/slack/status") {
       const session = getSlackSession(request);
@@ -377,7 +380,8 @@ function enterTown(url, response) {
   const session = createSessionToken({
     userId: launch.sub,
     channelId: launch.channel,
-    signingSecret: config.signingSecret
+    signingSecret: config.signingSecret,
+    ttlSeconds: config.sessionTtlSeconds
   });
   response.writeHead(302, {
     location: "/",
@@ -608,7 +612,7 @@ async function finishSlackLogin(request, url, response) {
 
     usedOAuthStates.set(statePayload.jti, statePayload.exp);
     pruneUsedTokens(usedOAuthStates);
-    const session = createSessionToken({ userId, channelId: config.channelId, signingSecret: config.signingSecret });
+    const session = createSessionToken({ userId, channelId: config.channelId, signingSecret: config.signingSecret, ttlSeconds: config.sessionTtlSeconds });
     response.writeHead(302, {
       location: "/",
       "cache-control": "no-store",
@@ -754,7 +758,20 @@ function oauthStateCookie(value, maxAge = 10 * 60) {
 
 function sessionCookie(value) {
   const secure = getPublicBaseUrl().startsWith("https:") ? "; Secure" : "";
-  return `donut_town_session=${value}; Path=/; HttpOnly${secure}; SameSite=Lax; Max-Age=28800`;
+  return `donut_town_session=${value}; Path=/; HttpOnly${secure}; SameSite=Lax; Max-Age=${config.sessionTtlSeconds}`;
+}
+
+// Keep an active member signed in: once their session is past halfway, hand
+// back a fresh one on the way through.
+function renewSessionCookie(request, response) {
+  const session = getSlackSession(request);
+  if (!session || !shouldRenewSession(session, { ttlSeconds: config.sessionTtlSeconds })) return;
+  response.setHeader("set-cookie", sessionCookie(createSessionToken({
+    userId: session.sub,
+    channelId: config.channelId,
+    signingSecret: config.signingSecret,
+    ttlSeconds: config.sessionTtlSeconds
+  })));
 }
 
 function safeEqualText(left, right) {

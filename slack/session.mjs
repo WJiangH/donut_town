@@ -13,7 +13,18 @@ export function createLaunchToken({ userId, channelId, signingSecret, now = Date
   }, signingSecret);
 }
 
-export function createSessionToken({ userId, channelId, signingSecret, now = Date.now(), ttlSeconds = 8 * 60 * 60 }) {
+// A town session is a long stay, not a working day: members should not have to
+// re-authorise every morning. It slides forward while somebody keeps visiting.
+export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+
+// Renew once a session is past its halfway point, so an active member's cookie
+// never runs out and a quiet one still expires on time.
+export function shouldRenewSession(session, { now = Date.now(), ttlSeconds = SESSION_TTL_SECONDS } = {}) {
+  if (!session?.exp) return false;
+  return session.exp - Math.floor(now / 1000) < ttlSeconds / 2;
+}
+
+export function createSessionToken({ userId, channelId, signingSecret, now = Date.now(), ttlSeconds = SESSION_TTL_SECONDS }) {
   return createToken({
     type: "session",
     sub: userId,

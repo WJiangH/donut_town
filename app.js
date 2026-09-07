@@ -244,6 +244,26 @@ function paintPersonalCharacter(element, character, direction = "down", frame = 
   element.classList.toggle("facing-left", facing === "left");
 }
 
+// One shared clock makes every seated neighbour turn their head at the same
+// moment, which reads as a glitch rather than as a town. Each character gets
+// its own phase and a slightly different tempo, fixed to who they are.
+const characterPhases = new Map();
+function characterPhase(id) {
+  const key = String(id ?? "anon");
+  if (!characterPhases.has(key)) {
+    const seed = [...key].reduce((total, letter) => (total * 31 + letter.charCodeAt(0)) >>> 0, 7);
+    characterPhases.set(key, { offset: seed % 4000, tempo: 0.8 + (seed % 45) / 100 });
+  }
+  return characterPhases.get(key);
+}
+
+function actionFrame(action, id) {
+  const loop = action?.loop;
+  if (!loop || loop.length < 2) return 1;
+  const { offset, tempo } = characterPhase(id);
+  return loop[Math.floor((performance.now() + offset) / ((action.frameMs || 240) * tempo)) % loop.length];
+}
+
 // A neighbour standing on a tagged spot takes up what that spot is for. The
 // choice is fixed per person, so the same neighbour always reads the same way.
 function residentPose(person) {
@@ -272,9 +292,7 @@ function paintResidentCharacters(container) {
     const person = residents.find(item => item.id === Number(pin.dataset.id));
     if (!person?.character) return;
     const action = person.pose ? person.character.actions?.[person.pose] : null;
-    const frame = action
-      ? (action.loop || [0])[Math.floor(performance.now() / (action.frameMs || 240)) % (action.loop || [0]).length]
-      : 1;
+    const frame = actionFrame(action, person.slackId || person.id);
     paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, person.pairFacing || "down", frame, person.pose || null);
   });
 }
@@ -459,7 +477,7 @@ function renderLivePlayers(deltaSeconds) {
       const action = !remote.moving && remote.action ? person.character.actions?.[remote.action] : null;
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const movingFrame = action
-        ? (action.loop || [0])[Math.floor(performance.now() / (action.frameMs || 240)) % (action.loop || [0]).length]
+        ? actionFrame(action, remote.userId)
         : remote.moving && !reduced ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
       paintPersonalCharacter(pin.querySelector(".personal-character"), person.character, remote.direction, movingFrame, action ? remote.action : null);
     }
@@ -863,7 +881,7 @@ function updatePlayerElement(isMoving) {
     const action = !isMoving && playerAction ? currentUser.character.actions?.[playerAction] : null;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const frame = action
-      ? (action.loop || [0])[Math.floor(performance.now() / (action.frameMs || 240)) % (action.loop || [0]).length]
+      ? actionFrame(action, currentUser.id || "you")
       : isMoving && !reduced ? [0, 1, 2, 1][Math.floor(performance.now() / 135) % 4] : 1;
     paintPersonalCharacter(sprite, currentUser.character, playerDirection, frame, action ? playerAction : null);
     return;

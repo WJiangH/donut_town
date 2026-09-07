@@ -5,7 +5,7 @@ import { SlackClient } from "../slack/client.mjs";
 import { activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "../slack/invitations.mjs";
 import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "../slack/ledger.mjs";
 import { buildSlackAuthorizeUrl, verifySlackIdToken } from "../slack/oidc.mjs";
-import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken } from "../slack/session.mjs";
+import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken, shouldRenewSession, SESSION_TTL_SECONDS } from "../slack/session.mjs";
 import { verifySlackRequest } from "../slack/signature.mjs";
 import { keyForRound, UpstashInvitationStore } from "../slack/upstash-store.mjs";
 
@@ -265,3 +265,18 @@ function createTestIdToken(claims, privateKey, kid) {
   const signature = rsaSign("RSA-SHA256", Buffer.from(signingInput), privateKey).toString("base64url");
   return `${signingInput}.${signature}`;
 }
+
+test('a town session lasts a month and slides while somebody keeps visiting', () => {
+  const now = Date.UTC(2026, 0, 1);
+  const token = createSessionToken({ userId: 'U1', channelId: 'C1', signingSecret: 'secret', now });
+  const session = verifyTownToken(token, { signingSecret: 'secret', expectedType: 'session', expectedChannelId: 'C1', now });
+  assert.equal(session.sub, 'U1');
+  assert.equal(session.exp - Math.floor(now / 1000), SESSION_TTL_SECONDS);
+  // Fresh sessions are left alone; past halfway they are handed a new one.
+  assert.equal(shouldRenewSession(session, { now }), false);
+  assert.equal(shouldRenewSession(session, { now: now + 10 * 86400e3 }), false);
+  assert.equal(shouldRenewSession(session, { now: now + 20 * 86400e3 }), true);
+  assert.equal(shouldRenewSession(null, { now }), false);
+  // A month of silence still ends the session.
+  assert.equal(verifyTownToken(token, { signingSecret: 'secret', expectedType: 'session', expectedChannelId: 'C1', now: now + 31 * 86400e3 }), null);
+});
