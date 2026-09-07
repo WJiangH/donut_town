@@ -5,7 +5,7 @@ import {pipeline} from 'node:stream/promises';
 export async function sendStaticFile(request,response,filePath,contentType) {
   const metadata=await stat(filePath);
   if(!metadata.isFile())throw Object.assign(new Error('not_file'),{code:'ENOENT'});
-  const fingerprinted=/\/assets\/(?:shop|themes)\/[\w-]+-[a-f0-9]{12}\.(?:png|webp)$/.test(filePath);
+  const fingerprinted=/\/assets\/(?:shop|themes|homes)\/[\w-]+-[a-f0-9]{12}\.(?:png|webp)$/.test(filePath);
   const etag=`W/"${metadata.size.toString(16)}-${metadata.mtimeMs.toString(16)}"`;
   const headers={
     'content-type':contentType,

@@ -13,12 +13,12 @@ caching. Image generation and geometry baking happen locally, not on Render.
 ## Administrator setup
 
 By default, a Slack workspace admin/owner who belongs to the configured channel
-can change the map. Channel membership by itself grants no admin rights.
+can change the map. The repository also supports explicitly designated Town admins in `town-themes/admins.json`: an array of existing 64-character `characterKey` hashes, never raw Slack IDs. The current town owner is listed there. Forks can start with `[]`. Channel membership by itself grants no admin rights.
 
 To designate specific Town admins, set **`TOWN_ADMIN_KEYS`** on Render to their
 comma-separated `characterKey` values from the authenticated
 `/api/slack/members` response. These are the same server-derived HMACs used for
-character binding. This explicit list overrides Slack workspace admin roles.
+character binding. This environment list overrides both Slack workspace admin roles and the repository list.
 Keep the setting in Render or ignored `.env.local`, not in Git; do not substitute
 a plain SHA of an ID. A staging password alone cannot change themes: the person
 must enter through Slack so the server can verify their identity and membership.

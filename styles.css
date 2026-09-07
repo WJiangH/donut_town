@@ -879,3 +879,25 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
 .house-view:not(.decorating) .house-room { width:min(100%,calc((100dvh - 220px)*1.5)); }
 @media(max-width:760px) { #shopView .shop-wall-heading { top:0; }.house-mode { flex-wrap:wrap;gap:8px; }.house-floor .house-resident { transform:translate(-50%,-100%) scale(.65);transform-origin:bottom center; } }
 .house-resident .resident-label, .house-resident .resident-state { display:none; }
+
+/* One floor coordinate system across all room styles. */
+.house-floor { top:34%;bottom:20%; }
+.house-floor .house-tile { position:absolute; }
+.shop-destinations { display:flex;gap:8px;flex-wrap:wrap; }
+.house-room-choice { display:flex;align-items:center;gap:8px; }
+.house-room-choice select { max-width:190px;padding:8px;background:#f6edd8;color:#24392d;border:2px solid #867557;font:inherit; }
+/* Let controls take their actual height; the room must never cover its exits. */
+.house-view { display:flex;flex-direction:column;overflow-y:auto; }
+.house-bar { display:flex;flex-wrap:wrap;gap:10px 16px;flex-shrink:0; }
+.house-bar .house-luxury { margin-left:auto; }
+.house-bar .house-status { flex-basis:100%;max-width:none;text-align:right; }
+.house-mode { margin-left:auto; }
+.house-room { flex-shrink:0;align-self:center;width:min(100%,max(300px,calc((100dvh - 350px)*1.5))); }
+.house-view:not(.decorating) .house-room { width:min(100%,max(300px,calc((100dvh - 230px)*1.5))); }
+.house-shelf-wrap { flex-shrink:0;max-height:none; }
+@media(max-width:760px){
+ .house-bar .house-luxury { width:100%; }
+ .house-bar .house-status { text-align:left; }
+ .house-mode { margin-left:0; }
+ .house-room,.house-view:not(.decorating) .house-room { width:100%; }
+}

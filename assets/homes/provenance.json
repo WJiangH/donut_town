@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "mode": "reference-guided image generation",
+  "reference": "assets/donut-home-interior-v1.png",
+  "canvas": {
+    "width": 1536,
+    "height": 1024
+  },
+  "floor": {
+    "left": 12,
+    "right": 88,
+    "top": 34,
+    "bottom": 80
+  },
+  "roomGrid": {
+    "cols": 14,
+    "rows": 9,
+    "placementStep": 0.25
+  },
+  "notes": "Empty architecture only. Live furniture and resident remain separate. Both room styles share geometry; paid ownership is checked on save.",
+  "prompts": {
+    "modernLoft": "Create a production pixel-art Donut Town purchasable home room background, NEW 'Modern Loft' interior. 1536x1024 landscape 3:2, crisp cozy detailed 16-bit pixel art, top-down three-quarter view. One COMPLETE rectangular room seen from same game camera as reference: upper back wall, short left and right walls receding toward it, low front wall and a wide bottom-center open doorway. Reference is geometry/camera guide only. Preserve approximate floor footprint: back wall meets floor at y=33%, front interior floor ends y=80%, interior floor left/right x=10%/90%. Keep ALL room boundaries inside canvas with narrow dark margin. Entire floor empty so players can place their own furniture. Upscale modern loft: warm ivory plaster, slim black metal window frames, two large back-wall windows with soft evening sky, pale oak broad floor planks, warm recessed linear wall lighting, subtle exposed brick accent on one back wall bay, clean premium architectural finish. Cozy and sophisticated, not photorealistic. Absolutely no furniture, rugs, plants, people, characters, pets, text, signs, portraits, UI, watermark, grids, or perspective distortion. Leave clear usable floor immediately below the back wall. Use pixelated craftsmanship and readable material textures, enough contrast for small character sprites.",
+    "moonlightSuite": "Create a production pixel-art Donut Town purchasable home room background, NEW 'Moonlight Suite' premium architectural interior. 1536x1024 landscape 3:2, crisp cozy detailed 16-bit pixel art, top-down three-quarter view. Same complete rectangular room geometry as reference: back wall at top, short side walls receding toward it, low front wall with wide bottom-center open doorway, dark narrow margin around all room boundaries. Floor footprint: back wall joins floor near y=33%, interior floor ends at y=80%, left/right floor borders about x=10% and90%. Entire room floor EMPTY for user-placed furniture. Theme: elegant midnight teal wall panels with warm brass trim, pale cream herringbone wood floor, two tall art-deco arched windows on upper wall with twilight sky, warm small built-in brass wall sconces, tasteful clean boutique suite, cozy premium character. Distinct from rustic cottage and modern loft. Keep central floor unobstructed and uniform; walls do not jut into floor. No furniture, rugs, plants, people, characters, pets, personal photos, portraits, text, signs, UI, watermarks, grids, glossy photorealism. Preserve small legible pixels and complete framing. Reference image only establishes camera and room boundaries; change architectural materials entirely."
+  }
+}

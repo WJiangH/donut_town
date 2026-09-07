@@ -1577,10 +1577,11 @@ function setEquippedPet(petId) {
 }
 
 let petsApi = null;
+let petsRetryAt = 0;
 function updatePetFollowers(deltaSeconds, ownerMoving) {
   if (!petsApi) {
-    if (petsModule || (!equippedPet && !remotePlayerHasPet())) return;
-    petsModule = import("./pets.mjs").then(async module => { await module.loadPetSprites(); petsApi = module; }).catch(() => null);
+    if (petsModule || Date.now()<petsRetryAt || (!equippedPet && !remotePlayerHasPet())) return;
+    petsModule = import("./pets.mjs").then(async module => { await module.loadPetSprites(); petsApi = module; }).catch(() => {petsModule=null;petsRetryAt=Date.now()+10000;});
     return;
   }
   const owners = [];
@@ -1591,7 +1592,7 @@ function updatePetFollowers(deltaSeconds, ownerMoving) {
   petsApi.updatePets(owners, {
     deltaSeconds,
     layerFor: name => sceneLayer("pets", name),
-    isWalkable: (x, y) => isWalkable(x, y)
+    isWalkable: (x, y, name) => name === "chemPod" ? isChemPodWalkable(x,y) : name === "donutShop" ? isShopWalkable(x,y) : isTownWalkable(x,y)
   });
 }
 
@@ -1689,6 +1690,7 @@ document.querySelector("#houseShop").addEventListener("click", async () => {
   if (await closeHouse(false)) transitionToScene("donutShop");
 });
 document.querySelector("#openHouse").addEventListener("click", openHouse);
+document.querySelector("#shopHome").addEventListener("click", openHouse);
 document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));
 document.querySelector("#chemPodExit").addEventListener("click", () => transitionToScene("town"));
@@ -1837,6 +1839,11 @@ async function startTown() {
     document.querySelector(".app-shell").inert = false;
     if (new URLSearchParams(location.search).get("profile") === "1") openProfile();
     syncInvitationStates();
+    // Restore the equipped pet without requiring a visit to the shop.
+    const previousPet=equippedPet;
+    void fetch('/api/shop',{signal:AbortSignal.timeout(20000)}).then(async response=>{
+      if(response.ok){const data=await response.json();if(equippedPet===previousPet)setEquippedPet(data.pet);}
+    }).catch(()=>{});
   } else {
     message.textContent = "Could not load the town. Please try again.";
     retry.hidden = false;

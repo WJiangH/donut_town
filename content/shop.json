@@ -499,6 +499,26 @@
       },
       "thumb": "/assets/shop/deco-paper-lamp-thumb-e56c0826fce4.png",
       "luxury": 20
+    },
+    {
+      "id": "room-modern-loft",
+      "name": "Modern Loft",
+      "kind": "room",
+      "category": "rooms",
+      "price": 12,
+      "art": "/assets/homes/modern-loft-5ca8d62aa9a5.png",
+      "thumb": "/assets/homes/modern-loft-thumb-5ca8d62aa9a5.png",
+      "blurb": "A new room. Keep your furniture."
+    },
+    {
+      "id": "room-moonlight-suite",
+      "name": "Moonlight Suite",
+      "kind": "room",
+      "category": "rooms",
+      "price": 18,
+      "art": "/assets/homes/moonlight-suite-3098f5cb0fee.png",
+      "thumb": "/assets/homes/moonlight-suite-thumb-3098f5cb0fee.png",
+      "blurb": "A new room. Keep your furniture."
     }
   ]
 }

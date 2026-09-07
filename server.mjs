@@ -94,6 +94,7 @@ const themeService = new ThemeService({
   memberFor:async id=>(await getCachedChannelMembers()).find(member=>member.id===id),
   keyFor:id=>memberCharacterKey(id,config.signingSecret),
   adminKeys:process.env.TOWN_ADMIN_KEYS || '',
+  designatedKeys:JSON.parse(await readFile(join(root,'town-themes/admins.json'),'utf8')),
   onChanged:current=>presenceHub.broadcast({type:'town-theme',...current})
 });
 
@@ -299,11 +300,12 @@ const server = createServer(async (request, response) => {
       try { owned = ownedIds(await shopStore.purse(key, shopCatalog)); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
       owned = homeOwned(owned, shopCatalog);
       const furniture = shopCatalog.items.filter(item => item.kind === "decoration");
+      const rooms = [{id:'room-cottage',name:'Cozy Cottage',art:'/assets/donut-home-interior-v1.png'}, ...shopCatalog.items.filter(item => item.kind === 'room' && owned.includes(item.id))];
 
       if (request.method === "GET") {
         let layout;
         try { layout = await houseStore.load(key, { ownedIds: owned, catalog: shopCatalog }); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
-        return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
+        return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, rooms, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
       }
       if (request.method !== "POST") return sendJson(response, 405, { error: "method_not_allowed" });
 
@@ -314,7 +316,7 @@ const server = createServer(async (request, response) => {
         layout = validateLayout(body.layout, { ownedIds: owned, catalog: shopCatalog });
       } catch { return sendJson(response, 400, { error: "invalid_layout" }); }
       try { await houseStore.save(key, layout); } catch { return sendJson(response, 503, { error: "house_save_failed" }); }
-      return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
+      return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, rooms, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
     }
 
     if (url.pathname === "/api/profile/chats" || url.pathname === "/api/profile/chats/confirm") {

@@ -40,6 +40,12 @@ Do not claim that generated furniture automatically supplies collision, that a v
 - Add occupants only from real application state. Empty rooms are preferable to fake presence.
 - Reuse scene and collision code before adding another frontend framework or map engine.
 
+## Purchasable Donut Home backgrounds
+
+For player homes, generate empty architecture rather than a furnished Pod. Follow [the shared room contract](../../../docs/home-rooms.md) and inspect `assets/homes/provenance.json` for the current prompts and floor geometry. Keep the existing 14 × 9 coordinate system with quarter-cell placement, 1536 × 1024 canvas, and floor x12–88%, y34–80%. Do not bake furniture, residents, portraits, or collision markers into the art.
+
+Publish an immutable full PNG and a small thumbnail under `assets/homes/`, add a `kind: "room"` catalog entry, and retain furniture positions and Luxury when switching. The server must reject unowned rooms. Verify purchase → My Home → Room selection → reload, rear-floor placement, walking, and unobstructed exit buttons on desktop and mobile. Large backgrounds load only when selected.
+
 ## Completion report
 
 Report the production asset path, final generation prompt, generation mode, collision assumptions, observable QA performed, and any behavior that remains simulated.

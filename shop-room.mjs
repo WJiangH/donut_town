@@ -5,7 +5,7 @@ import { decorationLuxury } from "./house/luxury.mjs";
 
 const PAGE_SIZE = 16;
 const escapeHtml = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-const CATEGORIES = {all:'All',home:'Home',seasonal:'Seasonal',pets:'Pets',style:'Style'};
+const CATEGORIES = {all:'All',home:'Home',rooms:'Rooms',seasonal:'Seasonal',pets:'Pets',style:'Style'};
 
 export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = () => {} } = {}) {
   const shelves = root.querySelector('[data-shop="shelves"]');

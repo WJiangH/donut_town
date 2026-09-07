@@ -10,7 +10,7 @@ test('home route goes around furniture, walks over rugs and stays inside floor',
  assert(nav.blocked(5.5,3.5));assert(!nav.blocked(2.5,2.5));assert(nav.blocked(-.1,4));assert(nav.blocked(14,4));
  const path=nav.path({x:3.5,y:3.5},{x:10.5,y:3.5});assert(path.length>8);
  assert(path.every(p=>!nav.blocked(p.x,p.y)));assert.deepEqual(path.at(-1),{x:10.5,y:3.5});
- for(let i=1;i<path.length;i++)assert.equal(Math.abs(path[i].x-path[i-1].x)+Math.abs(path[i].y-path[i-1].y),1);
+ for(let i=1;i<path.length;i++)assert(Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y)<=.26);
  assert.deepEqual(nav.path({x:3.5,y:3.5},{x:6.5,y:3.5}),[]);
  assert(!nav.blocked(...Object.values(nav.nearest({x:6.5,y:3.5}))));
 });

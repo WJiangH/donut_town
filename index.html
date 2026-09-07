@@ -125,7 +125,8 @@
       <section class="interior-stage shop-stage shop-wall-stage" id="shopView" aria-label="Donut Shop" hidden>
         <div class="shop-wall">
           <header class="shop-wall-heading">
-            <button class="room-back-button" id="leaveShop">Back to town</button>
+            <div class="shop-destinations"><button class="room-back-button" id="leaveShop">Back to town</button>
+            <button class="room-back-button" id="shopHome">My Home</button></div>
             <h1>Donut Shop</h1>
             <div class="shop-wall-balance"><span>Your donuts</span><strong class="shop-wallet" data-shop="wallet">—</strong></div>
           </header>
@@ -190,6 +191,7 @@
           <small data-house="luxury-next">Place decorations to add Luxury</small>
         </div>
         <p class="house-status" role="status" data-house="status">Opening the door…</p>
+        <label class="house-room-choice">Room <select data-house="room" aria-label="Room style"></select></label>
         <div class="house-mode"><button type="button" data-house="mode" aria-pressed="false">Decorate</button><span data-house="help">Click the floor or use WASD / arrows to walk</span></div>
       </div>
       <div class="house-room">

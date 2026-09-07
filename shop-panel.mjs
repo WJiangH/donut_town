@@ -28,7 +28,7 @@ export async function shopRequest(path, body) {
   return payload;
 }
 
-const KIND_LABEL = { pet: 'Pet', decoration: 'Decoration', wardrobe: 'Wardrobe' };
+const KIND_LABEL = { room: 'Room', pet: 'Pet', decoration: 'Decoration', wardrobe: 'Wardrobe' };
 
 function escapeHtml(value) {
   return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');

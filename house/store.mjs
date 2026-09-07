@@ -16,24 +16,25 @@ export function validateLayout(input, { ownedIds = [], catalog }) {
   const placeable = new Set(catalog.items.filter(item => item.kind === 'decoration' && ownedIds.includes(item.id)).map(item => item.id));
   const items = [];
   const seenIds = new Set();
-  const seenCells = new Set();
+  const occupied = [];
   for (const entry of input.items) {
     if (!entry || typeof entry !== 'object') throw new Error('invalid_layout');
     const { id, x, y } = entry;
     // You can only put down what you own, once, on a cell of your own floor.
     if (!placeable.has(id) || seenIds.has(id)) throw new Error('invalid_layout');
-    if (!Number.isInteger(x) || !Number.isInteger(y)) throw new Error('invalid_layout');
+    if (typeof x !== 'number' || typeof y !== 'number' || !Number.isInteger(x*4) || !Number.isInteger(y*4)) throw new Error('invalid_layout');
     if (x < 0 || y < 0 || x >= HOUSE_GRID.cols || y >= HOUSE_GRID.rows) throw new Error('invalid_layout');
     const item = catalog.items.find(item => item.id === id);
     const {w = 1, h = 1} = item.footprint || {};
     if (x+w > HOUSE_GRID.cols || y+h > HOUSE_GRID.rows) throw new Error('invalid_layout');
-    for (let dx=0;dx<w;dx++) for (let dy=0;dy<h;dy++) {
-      const cell = `${x+dx},${y+dy}`;
-      if (seenCells.has(cell)) throw new Error('invalid_layout');
-      seenCells.add(cell);
-    }
+    if (occupied.some(b => x<b.x+b.w && x+w>b.x && y<b.y+b.h && y+h>b.y)) throw new Error('invalid_layout');
+    occupied.push({x,y,w,h});
     seenIds.add(id);
     items.push({ id, x, y });
+  }
+  if (input.roomId !== undefined) {
+    if (input.roomId !== 'room-cottage' && !catalog.items.some(item => item.kind === 'room' && item.id === input.roomId && ownedIds.includes(item.id))) throw new Error('invalid_layout');
+    return {items, roomId:input.roomId};
   }
   return { items };
 }
@@ -43,8 +44,9 @@ export function validateLayout(input, { ownedIds = [], catalog }) {
 export function readLayout(raw, { ownedIds = [], catalog }) {
   let parsed;
   try { parsed = JSON.parse(raw); } catch { return { items: [] }; }
-  const kept = (parsed?.items || []).filter(entry => ownedIds.includes(entry?.id));
-  try { return validateLayout({ items: kept }, { ownedIds, catalog }); } catch { return { items: [] }; }
+  const kept = (Array.isArray(parsed?.items) ? parsed.items : []).filter(entry => ownedIds.includes(entry?.id));
+  const roomId = parsed?.roomId === undefined ? undefined : catalog.items.some(item=>item.kind==='room' && item.id===parsed.roomId && ownedIds.includes(item.id)) ? parsed.roomId : 'room-cottage';
+  try { return validateLayout({ items: kept, ...(roomId ? {roomId} : {}) }, { ownedIds, catalog }); } catch { return { items: [] }; }
 }
 
 export class HouseStore {

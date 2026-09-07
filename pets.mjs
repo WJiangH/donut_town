@@ -3,9 +3,9 @@
 // Pet art: one index, then a manifest per pet with measured frame rectangles.
 // Walk sheets are three rows - down, right, up - and three columns; the left
 // facing is the right row mirrored. Sit sheets hold one frame per direction.
-const FOLLOW_GAP = 2.0;     // how far behind, in map percent
+const FOLLOW_GAP = 2.8;     // how far behind, in map percent
 const CATCH_UP = 3.2;       // beyond this the pet hurries
-const HEEL_GAP = 1.3;       // where it waits once its owner stops
+const HEEL_GAP = 2.2;       // where it waits once its owner stops
 const SETTLE = 0.35;        // close enough to stop fussing
 
 // One entry per owner who has a pet out.
@@ -13,20 +13,34 @@ const pets = new Map();
 const ROWS = { down: 0, right: 1, left: 1, up: 2 };
 let catalogue = null;
 
-export async function loadPetSprites(fetchImpl = fetch) {
-  if (catalogue) return catalogue;
-  catalogue = new Map();
-  try {
-    const index = await (await fetchImpl("/pets/index.json", { signal: AbortSignal.timeout(10000) })).json();
+let cataloguePromise;
+const artLoads = new Map();
+export function loadPetSprites(fetchImpl = fetch) {
+  if (cataloguePromise) return cataloguePromise;
+  cataloguePromise = (async () => {
+    const index = await (await fetchImpl('/pets/index.json', {signal:AbortSignal.timeout(10000)})).json();
     const loaded = await Promise.all((index.items || []).map(async entry => {
-      const manifest = await (await fetchImpl(entry.manifest, { signal: AbortSignal.timeout(10000) })).json();
-      return [entry.id, { ...manifest, walkUrl: entry.walk, sitUrl: entry.sit, portrait: entry.portrait }];
+      const manifest = await (await fetchImpl(entry.manifest, {signal:AbortSignal.timeout(10000)})).json();
+      return [entry.id, {...manifest,walkUrl:entry.walk,sitUrl:entry.sit,portrait:entry.portrait}];
     }));
-    for (const [id, manifest] of loaded) if (manifest?.walk?.frames?.length === 9) catalogue.set(id, manifest);
-  } catch {
-    // A missing manifest simply means that pet cannot be drawn yet.
+    catalogue = new Map(loaded.filter(([,manifest])=>manifest?.walk?.frames?.length===9));
+    return catalogue;
+  })().catch(error=>{cataloguePromise=null;throw error;});
+  return cataloguePromise;
+}
+// Warm both states only for visible pets. Switching pose never exposes an unloaded sheet.
+function petArtReady(id) {
+  const manifest=catalogue?.get(id);if(!manifest)return false;
+  if(typeof Image==='undefined')return true;
+  let entry=artLoads.get(id);
+  if(!entry){
+    entry={ready:false};artLoads.set(id,entry);
+    entry.promise=Promise.all([...new Set([manifest.walkUrl,manifest.sitUrl].filter(Boolean))].map(async url=>{
+      const image=new Image();image.src=url;await image.decode();return image;
+    })).then(images=>{entry.images=images;entry.ready=true;}).catch(()=>{entry.failedAt=Date.now();});
   }
-  return catalogue;
+  if(entry.failedAt && Date.now()-entry.failedAt>10000)artLoads.delete(id);
+  return entry.ready;
 }
 
 // Which rectangle of which sheet this pet is showing, and how big to draw it.
@@ -37,7 +51,7 @@ function poseFor(petId, { direction, moving }) {
   const sheet = moving || !manifest.sit ? manifest.walk : manifest.sit;
   const url = moving || !manifest.sit ? manifest.walkUrl : manifest.sitUrl;
   const loop = manifest.walk.loop || [0, 1, 2, 1];
-  const step = moving
+  const step = moving && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     ? loop[Math.floor(performance.now() / (manifest.walk.frameMs || 150)) % loop.length]
     : 0;
   const index = moving ? row * 3 + step : Math.min(row, sheet.frames.length - 1);
@@ -68,7 +82,7 @@ function paintPin(pin, petId, state) {
   art.dataset.pose = signature;
   art.style.width = `${width * pose.scale}px`;
   art.style.height = `${height * pose.scale}px`;
-  art.style.backgroundImage = `url("${pose.url}")`;
+  if (art.dataset.sheet !== pose.url) {art.style.backgroundImage = `url("${pose.url}")`;art.dataset.sheet=pose.url;}
   art.style.backgroundSize = `${pose.sheet.imageWidth * pose.scale}px ${pose.sheet.imageHeight * pose.scale}px`;
   art.style.backgroundPosition = `${-x * pose.scale}px ${-y * pose.scale}px`;
   art.classList.toggle("mirrored", pose.mirrored);
@@ -77,7 +91,8 @@ function paintPin(pin, petId, state) {
 // One owner's pet: a short memory of where its owner has been, and a walk
 // along it. Keeping the trail means the pet rounds corners rather than
 // cutting across the flowerbeds.
-function updatePet(state, owner, deltaSeconds, isWalkable) {
+export function updatePet(state, owner, deltaSeconds, isWalkable) {
+  deltaSeconds=Math.min(.05,Math.max(0,deltaSeconds));
   const head = state.trail[state.trail.length - 1];
   if (!head || Math.hypot(owner.x - head.x, owner.y - head.y) > 0.5) {
     state.trail.push({ x: owner.x, y: owner.y });
@@ -94,38 +109,56 @@ function updatePet(state, owner, deltaSeconds, isWalkable) {
   }
   // Once its owner has stood still for a moment, a pet closes in and waits at
   // their heel rather than loitering a walk behind.
-  state.stillFor = owner.moving === false || Math.hypot(owner.x - state.lastOwnerX ?? 0, owner.y - state.lastOwnerY ?? 0) < 0.05
+  state.stillFor = owner.moving === false || Math.hypot(owner.x - (state.lastOwnerX ?? owner.x), owner.y - (state.lastOwnerY ?? owner.y)) < 0.05
     ? (state.stillFor || 0) + deltaSeconds
     : 0;
   state.lastOwnerX = owner.x;
   state.lastOwnerY = owner.y;
-  if (state.stillFor > 0.6) {
-    const away = Math.hypot(state.x - owner.x, state.y - owner.y) || 1;
-    target = {
-      x: owner.x + ((state.x - owner.x) / away) * HEEL_GAP,
-      y: owner.y + ((state.y - owner.y) / away) * HEEL_GAP
-    };
+  const separation=Math.hypot(state.x-owner.x,state.y-owner.y);
+  if (state.stillFor > 0.6 || separation < HEEL_GAP) {
+    const dx=separation>.001?(state.x-owner.x)/separation:1;
+    const dy=separation>.001?(state.y-owner.y)/separation:0;
+    const angle=Math.atan2(dy,dx);
+    // Choose the closest clear heel point, including a stable direction at exact overlap.
+    for(const turn of [0,.5,-.5,1,-1,1.5,-1.5,Math.PI]){
+      const candidate={x:owner.x+Math.cos(angle+turn)*HEEL_GAP,y:owner.y+Math.sin(angle+turn)*HEEL_GAP};
+      if(!isWalkable || isWalkable(candidate.x,candidate.y)){target=candidate;break;}
+    }
+    if(state.stillFor > .6){
+      // Feet can be separated yet sprites overlap vertically. Prefer a clear
+      // side seat instead of resting directly behind the owner's head.
+      state.side ??= state.x >= owner.x ? 1 : -1;
+      for(const side of [state.side,-state.side]){
+        const seat={x:owner.x+side*HEEL_GAP,y:owner.y+.4};
+        if(!isWalkable || isWalkable(seat.x,seat.y)){target=seat;state.side=side;break;}
+      }
+    }
   }
   const gap = Math.hypot(target.x - state.x, target.y - state.y);
   const ownerGap = Math.hypot(owner.x - state.x, owner.y - state.y);
   const moving = gap > SETTLE;
+  let advanced=false;
   if (moving) {
     const speed = (ownerGap > CATCH_UP ? 9 : 5.5) * deltaSeconds;
     const stride = Math.min(speed, gap);
     const nextX = state.x + ((target.x - state.x) / gap) * stride;
     const nextY = state.y + ((target.y - state.y) / gap) * stride;
     // Never let a pet stand in the river, even if its owner took a bridge.
-    if (!isWalkable || isWalkable(nextX, nextY) || ownerGap > CATCH_UP * 2) {
+    if (!isWalkable || isWalkable(nextX, nextY)) {
       const dx = nextX - state.x;
       const dy = nextY - state.y;
       state.facing = Math.abs(dx) > Math.abs(dy)
         ? (dx < 0 ? "left" : "right")
         : (dy < 0 ? "up" : "down");
+      advanced=true;
       state.x = nextX;
       state.y = nextY;
     }
   }
-  state.moving = moving;
+  // A short hold bridges trail samples so the atlas does not flip between
+  // walking and sitting on successive frames while following a slow owner.
+  state.motionHold = advanced ? .18 : Math.max(0, (state.motionHold || 0) - deltaSeconds);
+  state.moving = state.motionHold > 0;
   return state;
 }
 
@@ -140,9 +173,18 @@ export function updatePets(owners, { deltaSeconds, layerFor, isWalkable }) {
       state = { pet: owner.pet, scene: owner.scene, x: owner.x, y: owner.y, facing: "down", trail: [], pin: null, moving: false };
       pets.set(owner.id, state);
     }
-    updatePet(state, owner, deltaSeconds, isWalkable);
+    const walkable=isWalkable ? (x,y)=>isWalkable(x,y,owner.scene) : null;
+    if(!state.initialized){
+      // Start beside the owner, not underneath their feet.
+      for(const angle of [0,Math.PI,Math.PI/2,-Math.PI/2,.75,-.75,2.4,-2.4]){
+        const x=owner.x+Math.cos(angle)*HEEL_GAP,y=owner.y+Math.sin(angle)*HEEL_GAP;
+        if(!walkable||walkable(x,y)){state.x=x;state.y=y;break;}
+      }
+      state.initialized=true;
+    }
+    updatePet(state, owner, deltaSeconds, walkable);
     const layer = layerFor(owner.scene);
-    if (!layer) continue;
+    if (!layer || !petArtReady(owner.pet)) continue;
     if (!state.pin || state.pin.parentElement !== layer) {
       state.pin?.remove();
       state.pin = makePin(layer);

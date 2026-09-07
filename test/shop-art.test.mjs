@@ -7,7 +7,7 @@ import {itemArt,itemSprite} from '../shop/item-art.mjs';
 const catalog=loadCatalog();
 
 test('all decoration and preview stock uses a real transparent PNG',()=>{
- const stock=catalog.items.filter(item=>item.kind!=='pet');
+ const stock=catalog.items.filter(item=>['decoration','wardrobe'].includes(item.kind));
  assert(stock.length>=16);
  for(const item of stock){
   assert.match(item.art,/^\/assets\/shop\/.+\.png$/);

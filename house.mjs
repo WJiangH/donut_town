@@ -14,6 +14,22 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
   const grid={cols:14,rows:9};
   let furniture=new Map(), layout=[], owned=[], selected=null, dragging=null, timer=null, saving=null, revision=0, savedRevision=0, loaded=false;
   const resident=root.querySelector('[data-house="resident"]');
+  const roomSelect=root.querySelector('[data-house="room"]'), roomArt=root.querySelector('.room-art');
+  let rooms=[], roomId='room-cottage', roomRequest=0;
+  async function applyRoom(id) {
+    const room=rooms.find(item=>item.id===id);if(!room)return false;
+    const request=++roomRequest;
+    const image=new Image();image.src=room.art;
+    await image.decode();
+    if(request!==roomRequest)return false;
+    roomArt.src=room.art;roomId=id;roomSelect.value=id;return true;
+  }
+  roomSelect.onchange=async()=>{
+    const chosen=roomSelect.value;roomSelect.disabled=true;
+    try{if(await applyRoom(chosen))changed();}
+    catch{roomSelect.value=roomId;status.textContent='Room could not load. Try again.';}
+    finally{roomSelect.disabled=false;}
+  };
   const keys=new Set();
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   let decorating=false, position={x:7.5,y:8.5}, route=[], direction='down', animation=null, lastTime=0, painted='';
@@ -29,7 +45,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
   }
   function tile(item,entry) {
     const {w,h}=size(item.id);
-    const style=entry?`grid-column:${entry.x+1}/span ${w};grid-row:${entry.y+1}/span ${h};z-index:${item.id.endsWith('-rug')?0:(entry.y+h)*10};`:'';
+    const style=entry?`left:${entry.x/grid.cols*100}%;top:${entry.y/grid.rows*100}%;width:${w/grid.cols*100}%;height:${h/grid.rows*100}%;z-index:${item.id.endsWith('-rug')?0:Math.round((entry.y+h)*10)};`:'';
     const art=entry?itemSprite(item):`<img src="${escapeHtml(itemArt(item,true))}" alt="" loading="lazy" decoding="async" draggable="false">`;
     return `<button class="house-tile${selected===item.id?' selected':''}" data-item="${escapeHtml(item.id)}" style="${style}" title="${escapeHtml(item.name)} · +${decorationLuxury(item)} Luxury" aria-label="${escapeHtml(item.name)}" aria-pressed="${selected===item.id}">${art}</button>`;
   }
@@ -64,7 +80,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     if(savedRevision===revision)return true;
     saving=(async()=>{
       while(savedRevision!==revision){
-        const version=revision, snapshot={items:layout.map(item=>({...item}))};
+        const version=revision, snapshot={roomId,items:layout.map(item=>({...item}))};
         status.textContent='Saving…';
         try{
           const response=await fetch('/api/house',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({layout:snapshot}),signal:AbortSignal.timeout(20000)});
@@ -81,12 +97,19 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
   function changed(){revision++;status.textContent='Saving…';render();clearTimeout(timer);timer=setTimeout(flush,350);}
   function place(id,x,y){if(!valid(id,x,y)){status.textContent='Choose a clear spot.';return;}const entry=placed(id);if(entry){entry.x=x;entry.y=y;}else layout.push({id,x,y});changed();}
   function remove(){if(!placed(selected))return;layout=layout.filter(item=>item.id!==selected);changed();}
-  function cell(event){const r=floor.getBoundingClientRect();if(event.clientX<r.left||event.clientX>=r.right||event.clientY<r.top||event.clientY>=r.bottom)return null;return{x:Math.floor((event.clientX-r.left)/r.width*grid.cols),y:Math.floor((event.clientY-r.top)/r.height*grid.rows)};}
+  function cell(event){
+    const r=floor.getBoundingClientRect();if(event.clientX<r.left||event.clientX>=r.right||event.clientY<r.top||event.clientY>=r.bottom)return null;
+    const x=(event.clientX-r.left)/r.width*grid.cols, y=(event.clientY-r.top)/r.height*grid.rows;
+    return decorating?{x:Math.round((x-(dragging?.offsetX||0))*4)/4,y:Math.round((y-(dragging?.offsetY||0))*4)/4}:{x,y};
+  }
   function cancel(){dragging?.ghost?.remove();dragging=null;floor.querySelector('.house-target')?.setAttribute('hidden','');}
   root.addEventListener('pointerdown',event=>{
     const button=event.target.closest('.house-tile');if(!decorating||!loaded||!button||event.button!==0)return;
     event.preventDefault();selected=button.dataset.item;
-    dragging={id:selected,x:event.clientX,y:event.clientY,moved:false};root.setPointerCapture(event.pointerId);
+    const entry=placed(selected), r=floor.getBoundingClientRect();
+    dragging={id:selected,x:event.clientX,y:event.clientY,moved:false,
+      offsetX:entry?(event.clientX-r.left)/r.width*grid.cols-entry.x:0,
+      offsetY:entry?(event.clientY-r.top)/r.height*grid.rows-entry.y:0};root.setPointerCapture(event.pointerId);
     root.querySelectorAll('.house-tile').forEach(el=>el.classList.toggle('selected',el.dataset.item===selected));
   });
   root.addEventListener('pointermove',event=>{
@@ -99,10 +122,10 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     if(pos){const {w,h}=size(dragging.id);target.style.left=`${pos.x/grid.cols*100}%`;target.style.top=`${pos.y/grid.rows*100}%`;target.style.width=`${Math.min(w,grid.cols-pos.x)/grid.cols*100}%`;target.style.height=`${Math.min(h,grid.rows-pos.y)/grid.rows*100}%`;target.classList.toggle('invalid',!valid(dragging.id,pos.x,pos.y));}
   });
   root.addEventListener('pointerup',event=>{
-    if(!decorating){if(loaded&&event.target===floor){const pos=cell(event);if(pos){route=navigation.path(position,{x:pos.x+.5,y:pos.y+.5});if(!route.length)status.textContent='Choose a clear spot.';}}return;}
+    if(!decorating){if(loaded&&event.target===floor){const pos=cell(event);if(pos){route=navigation.path(position,pos);if(!route.length)status.textContent='Choose a clear spot.';}}return;}
     if(!dragging){if(event.target===floor&&selected){const pos=cell(event);if(pos)place(selected,pos.x,pos.y);}return;}
-    const {id,moved}=dragging;cancel();
-    if(moved){const pos=cell(event);if(pos)place(id,pos.x,pos.y);else{const r=shelf.getBoundingClientRect();if(event.clientX>=r.left&&event.clientX<=r.right&&event.clientY>=r.top&&event.clientY<=r.bottom)remove();else status.textContent='Drop on the floor or shelf.';}}
+    const {id,moved}=dragging, pos=cell(event);cancel();
+    if(moved){if(pos)place(id,pos.x,pos.y);else{const r=shelf.getBoundingClientRect();if(event.clientX>=r.left&&event.clientX<=r.right&&event.clientY>=r.top&&event.clientY<=r.bottom)remove();else status.textContent='Drop on the floor or shelf.';}}
     render();
     root.querySelector(`[data-item="${id}"]`)?.focus({preventScroll:true});
   });
@@ -112,7 +135,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
   root.addEventListener('keydown',event=>{
     if(!decorating||!selected)return;
     const delta={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
-    if(delta){event.preventDefault();event.stopPropagation();const pos=placed(selected)||{x:6,y:4};place(selected,pos.x+delta[0],pos.y+delta[1]);}
+    if(delta){event.preventDefault();event.stopPropagation();const pos=placed(selected)||{x:6,y:4};const step=event.shiftKey?1:.25;place(selected,pos.x+delta[0]*step,pos.y+delta[1]*step);}
     if(['Delete','Backspace'].includes(event.key)){event.preventDefault();event.stopPropagation();remove();}
     if(event.key==='Escape'){cancel();selected=null;render();}
   });
@@ -179,7 +202,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     if(!(await flush()))return;
     status.textContent='Opening your home…';
     try{const response=await fetch('/api/house',{signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw Error(MESSAGES[data.error]||'Home unavailable.');
-      Object.assign(grid,data.grid);furniture=new Map(data.furniture.map(item=>[item.id,item]));owned=data.owned;layout=data.layout.items;selected=null;loaded=true;status.textContent='Make yourself at home.';setDecorating(false);
+      Object.assign(grid,data.grid);furniture=new Map(data.furniture.map(item=>[item.id,item]));owned=data.owned;layout=data.layout.items;rooms=data.rooms;roomSelect.innerHTML=rooms.map(room=>`<option value="${escapeHtml(room.id)}">${escapeHtml(room.name)}</option>`).join('');await applyRoom(data.layout.roomId||'room-cottage');selected=null;loaded=true;status.textContent='Make yourself at home.';setDecorating(false);
       if(!root.hidden&&animation===null)animation=requestAnimationFrame(tick);
     }catch(error){status.textContent=error.message;}
   }

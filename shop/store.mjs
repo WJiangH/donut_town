@@ -27,7 +27,7 @@ redis.call('HSET', KEYS[1], ARGV[1], result)
 return result
 `;
 
-const KINDS = new Set(['pet', 'decoration', 'wardrobe']);
+const KINDS = new Set(['pet', 'decoration', 'wardrobe', 'room']);
 
 export function loadCatalog(url = new URL('../content/shop.json', import.meta.url)) {
   const catalog = JSON.parse(readFileSync(url));

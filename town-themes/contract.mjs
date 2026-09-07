@@ -23,11 +23,11 @@ export function validateTheme(theme) {
 }
 
 // An explicit Town allowlist overrides Slack workspace roles. Raw IDs stay private.
-export function canManageTheme(member, characterKey, configuredKeys = '') {
+export function canManageTheme(member, characterKey, configuredKeys = '', designatedKeys = []) {
   if (!member) return false;
   if (configuredKeys.trim()) {
     const keys = configuredKeys.split(/[\s,]+/).filter(Boolean);
     return /^[a-f0-9]{64}$/.test(characterKey || '') && keys.includes(characterKey);
   }
-  return member.isWorkspaceAdmin === true;
+  return member.isWorkspaceAdmin === true || (/^[a-f0-9]{64}$/.test(characterKey || '') && designatedKeys.includes(characterKey));
 }

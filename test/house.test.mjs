@@ -25,7 +25,7 @@ test('a room only holds decorations the member owns, one to a square', () => {
     { items: [{ id: 'pet-cat', x: 1, y: 1 }] },                                   // a pet is not furniture
     { items: [{ id: 'deco-rug', x: HOUSE_GRID.cols, y: 0 }] },                    // off the floor
     { items: [{ id: 'deco-rug', x: 0, y: -1 }] },
-    { items: [{ id: 'deco-rug', x: 1.5, y: 0 }] },                                // between squares
+    { items: [{ id: 'deco-rug', x: 1.1, y: 0 }] },                                // finer than quarter cells
     { items: [{ id: 'deco-rug', x: 2, y: 2 }, { id: 'deco-fern', x: 2, y: 2 }] }, // stacked
     { items: [{ id: 'deco-rug', x: 1, y: 1 }, { id: 'deco-rug', x: 2, y: 2 }] },  // cloned
     { items: 'everything' },
