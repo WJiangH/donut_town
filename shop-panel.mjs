@@ -46,7 +46,11 @@ export function mountShop(root, { onOwnedChange = () => {} } = {}) {
     try {
       const response = await fetch('/api/shop', { signal: AbortSignal.timeout(15000) });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) { status.textContent = MESSAGES[payload.error] || 'The shop is closed right now.'; return; }
+      if (!response.ok) {
+        console.warn('Donut Town shop is closed:', response.status, payload.error || '(no code)');
+        status.textContent = MESSAGES[payload.error] || 'The shop is closed right now.';
+        return;
+      }
       state = { items: payload.items || [], owned: payload.owned || [], wallet: payload.wallet };
       status.textContent = state.items.length ? 'Spend the donuts you have earned.' : 'Nothing on the shelves yet.';
       render();
@@ -69,7 +73,11 @@ export function mountShop(root, { onOwnedChange = () => {} } = {}) {
         signal: AbortSignal.timeout(15000)
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) { status.textContent = MESSAGES[payload.error] || 'Could not buy that. Try again.'; return; }
+      if (!response.ok) {
+        console.warn('Donut Town purchase refused:', response.status, payload.error || '(no code)');
+        status.textContent = MESSAGES[payload.error] || 'Could not buy that. Try again.';
+        return;
+      }
       state = { ...state, owned: payload.owned, wallet: payload.wallet };
       status.textContent = `${payload.item.name} is yours.`;
       onOwnedChange(state.owned);

@@ -64,6 +64,7 @@ export async function mountWardrobe(root, {manifestUrl, initialOutfit = {}, onSa
       const answer = await fetch('/api/wardrobe', {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({outfit}), signal:AbortSignal.timeout(15000)});
       const payload = await answer.json().catch(() => ({}));
       if (!answer.ok) {
+        console.warn('Donut Town wardrobe refused the save:', answer.status, payload.error || '(no code)');
         note = SAVE_MESSAGES[payload.error] || 'Could not save. Try again.';
         return;
       }

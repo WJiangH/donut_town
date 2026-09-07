@@ -42,13 +42,24 @@ export class ShopStore {
     this.url = url; this.token = token; this.fetch = fetchImpl; this.key = key;
   }
   get configured() { return Boolean(this.url && this.token); }
-  async command(args) {
+  // A cold instance or a distant region can miss a first, tight attempt, and a
+  // wardrobe or a purchase is worth one more try before telling somebody no.
+  async command(args, attempt = 0) {
     if (!this.configured) throw new Error('shop_store_unavailable');
+    try {
+      return await this.send(args);
+    } catch (error) {
+      if (attempt > 0) throw error;
+      await new Promise(resolve => setTimeout(resolve, 250));
+      return this.command(args, attempt + 1);
+    }
+  }
+  async send(args) {
     const response = await this.fetch(this.url, {
       method: 'POST',
       headers: { authorization: `Bearer ${this.token}`, 'content-type': 'application/json' },
       body: JSON.stringify(args),
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(8000)
     });
     if (!response.ok) throw new Error('shop_store_unavailable');
     const result = await response.json();
