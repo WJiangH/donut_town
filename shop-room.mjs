@@ -1,7 +1,9 @@
-// The shop as a room: what is on the shelves, and buying it while standing there.
+// A paged product wall; purchases and pet equipment use the existing shop API.
 import { itemArt } from "./shop/item-art.mjs";
 import { SHOP_MESSAGES, shopRequest } from "./shop-panel.mjs";
 
+const PAGE_SIZE = 16;
+const escapeHtml = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 const CATEGORIES = {all:'All',home:'Home',seasonal:'Seasonal',pets:'Pets',style:'Style'};
 
 export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = () => {} } = {}) {
@@ -16,35 +18,36 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
   let busy = false;
 
   const stock = () => state.items.filter(item => !item.starter && (category === "all" || item.category === category));
-  function slots() {
-    return stock().slice(page*6, page*6+6)
-      .map((item, index) => ({item, x: 32 + (index % 3)*18, y: 24 + Math.floor(index/3)*11}));
-  }
 
   function render() {
+    const focused = root.contains(document.activeElement) ? document.activeElement : null;
+    const focusSlot = focused?.dataset.slot, focusCategory = focused?.dataset.category;
     const tabs = root.querySelector('[data-shop="categories"]');
     tabs.innerHTML = Object.entries(CATEGORIES).map(([key,label])=>`<button data-category="${key}" aria-pressed="${category===key}">${label}</button>`).join('');
     tabs.querySelectorAll('button').forEach(button=>button.onclick=()=>{category=button.dataset.category;page=0;selected=null;render();});
-    const pages = Math.max(1,Math.ceil(stock().length/6));
+    const pages = Math.max(1,Math.ceil(stock().length/PAGE_SIZE));
     page=Math.min(page,pages-1);
     const pager=root.querySelector('[data-shop="pages"]');
     pager.hidden=pages===1;
-    pager.innerHTML=`<button aria-label="Previous shelf" ${page===0?'disabled':''}>←</button><span>${page+1} / ${pages}</span><button aria-label="Next shelf" ${page===pages-1?'disabled':''}>→</button>`;
+    pager.innerHTML=`<button aria-label="Previous page" ${page===0?'disabled':''}>←</button><span>${page+1} / ${pages}</span><button aria-label="Next page" ${page===pages-1?'disabled':''}>→</button>`;
     pager.querySelectorAll('button').forEach((button,index)=>button.onclick=()=>{page+=index?1:-1;selected=null;render();});
-    shelves.innerHTML = slots().map(({ item, x, y }) => {
+    shelves.innerHTML = stock().slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE).map(item => {
       const owned = state.owned.includes(item.id);
-      const art = `background-image:url('${itemArt(item, true)}');background-size:contain;background-repeat:no-repeat;background-position:center`;
+      const label = item.available===false ? "Coming soon" : owned ? "Owned" : `${item.price} 🍩`;
       return `<button class="shop-slot${owned ? " owned" : ""}${selected === item.id ? " selected" : ""}" type="button"
-        data-slot="${item.id}" style="left:${x}%;top:${y}%;--swatch:${item.swatch || "#c9a227"}"
-        aria-label="${item.name}, ${owned ? "owned" : `${item.price} donuts`}">
-        <i style="${art}"></i><small>${item.available===false ? "Soon" : owned ? "Owned" : `${item.price}🍩`}</small>
+        data-slot="${escapeHtml(item.id)}" aria-pressed="${selected===item.id}"
+        aria-label="${escapeHtml(item.name)}, ${item.available===false ? 'coming soon' : owned ? 'owned' : `${item.price} donuts`}">
+        <span class="shop-product-art"><img src="${escapeHtml(itemArt(item,true))}" alt="" loading="lazy" decoding="async" draggable="false"></span>
+        <strong>${escapeHtml(item.name)}</strong><small>${label}</small>
       </button>`;
-    }).join("");
+    }).join("") || '<p class="shop-empty">Nothing here yet.</p>';
     shelves.querySelectorAll("[data-slot]").forEach(button => {
       button.onclick = () => select(button.dataset.slot);
     });
-    wallet.textContent = state.wallet ? `${state.wallet.balance} of ${state.wallet.earned} 🍩` : "—";
+    wallet.textContent = state.wallet ? `${state.wallet.balance} 🍩` : "—";
     renderBar();
+    if(focusSlot)shelves.querySelector(`[data-slot="${focusSlot}"]`)?.focus({preventScroll:true});
+    else if(focusCategory)tabs.querySelector(`[data-category="${focusCategory}"]`)?.focus({preventScroll:true});
   }
 
   function renderBar() {
@@ -76,7 +79,7 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
     try {
       const payload = await shopRequest("/api/shop");
       state = { items: payload.items || [], owned: payload.owned || [], pet: payload.pet || null, wallet: payload.wallet };
-      status.textContent = "Choose something for your home.";
+      status.textContent = "Select an item to see more.";
       render();
       onOwnedChange(state.owned);
       onPetChange(state.pet);

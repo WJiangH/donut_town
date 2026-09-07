@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=41" />
+    <link rel="stylesheet" href="styles.css?v=42" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -120,34 +120,26 @@
         </div>
       </section>
 
-      <section class="interior-stage shop-stage" id="shopView" aria-label="Donut Shop" hidden>
-        <div class="room-toolbar">
-          <button class="room-back-button" id="leaveShop">Back to town</button>
-          <div>
-            <span>Inside</span>
-            <strong>Donut Shop</strong>
-          </div>
-          <strong class="shop-wallet" data-shop="wallet">—</strong>
-        </div>
-
-        <div class="map-wrap">
-          <div class="map-world shop-world" id="shopWorld">
-            <img class="room-art" src="/assets/donut-shop-interior-v1.png" alt="" draggable="false" />
-            <div class="shop-shelves" data-shop="shelves"></div>
-            <div class="pets-layer" id="shopPetsLayer" aria-hidden="true"></div>
-            <div class="residents-layer" id="shopResidentsLayer" aria-live="polite"></div>
-            <div class="live-players-layer" id="shopLivePlayersLayer" aria-live="polite"></div>
+      <section class="interior-stage shop-stage shop-wall-stage" id="shopView" aria-label="Donut Shop" hidden>
+        <div class="shop-wall">
+          <header class="shop-wall-heading">
+            <button class="room-back-button" id="leaveShop">Back to town</button>
+            <h1>Donut Shop</h1>
+            <div class="shop-wall-balance"><span>Your donuts</span><strong class="shop-wallet" data-shop="wallet">—</strong></div>
+          </header>
+          <nav class="shop-categories" data-shop="categories" aria-label="Shop categories"></nav>
+          <div class="shop-shelves" data-shop="shelves" aria-label="Products"></div>
+          <div class="shop-pages" data-shop="pages" aria-label="Product pages"></div>
+          <p class="shop-status" role="status" data-shop="status">Opening the shop…</p>
+          <div class="shop-counter-bar" data-shop="bar" hidden>
+            <span class="shop-thumb" data-shop="bar-thumb" aria-hidden="true"></span>
+            <span class="shop-bar-copy"><strong data-shop="bar-name"></strong><small data-shop="bar-blurb"></small></span>
+            <button type="button" data-shop="bar-action"></button>
           </div>
         </div>
-
-        <div class="shop-pages" data-shop="pages" aria-label="Shelf pages"></div>
-        <nav class="shop-categories" data-shop="categories" aria-label="Shop categories"></nav>
-        <div class="shop-counter-bar" data-shop="bar" hidden>
-          <span class="shop-thumb" data-shop="bar-thumb" aria-hidden="true"></span>
-          <span class="shop-bar-copy"><strong data-shop="bar-name"></strong><small data-shop="bar-blurb"></small></span>
-          <button type="button" data-shop="bar-action"></button>
+        <div id="shopWorld" hidden aria-hidden="true">
+          <div id="shopPetsLayer"></div><div id="shopResidentsLayer"></div><div id="shopLivePlayersLayer"></div>
         </div>
-        <p class="shop-status room-movement-help" role="status" data-shop="status">Walk up to a shelf to see what is on it.</p>
       </section>
 
       <aside class="invite-dock" id="inviteDock" aria-label="Your pending Donut invitations">
@@ -256,6 +248,6 @@
     <script src="town-collision.js?v=3"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=3"></script>
-    <script src="app.js?v=50"></script>
+    <script src="app.js?v=51"></script>
   </body>
 </html>

@@ -22,3 +22,16 @@ for(const click of [false,true])test(`${click?'click-to-walk':'keyboard movement
  assert.equal(g.context.playerAction,null,'stopping does not restore the old pose');assert.equal(g.pickerUpdates(),1);
 });
 test('movement clears poses even if local storage is unavailable',()=>{const g=game({storageFails:true});g.context.gameLoop(32);assert.equal(g.context.chosenPose,null);assert.equal(g.context.playerAction,null)});
+
+test('browsing the shop pauses movement and preserves the selected pose',()=>{
+ const g=game();g.context.currentScene='donutShop';
+ const position={...g.context.player};let scheduled=0;
+ g.context.window.requestAnimationFrame=()=>scheduled++;
+ g.context.gameLoop(32);
+ assert.deepEqual(g.context.player,position);
+ assert.equal(g.context.chosenPose,'sit');
+ assert.equal(g.presence.at(-1).moving,false);
+ assert.equal(scheduled,1,'the loop remains scheduled for returning to town');
+ g.context.currentScene='town';g.context.gameLoop(48);
+ assert.notDeepEqual(g.context.player,position,'town movement resumes');
+});

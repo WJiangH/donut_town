@@ -1022,6 +1022,11 @@ function transitionToScene(nextScene) {
 function gameLoop(timestamp) {
   const deltaSeconds = Math.max(0, Math.min((timestamp - lastGameTime) / 1000, 0.05));
   lastGameTime = timestamp;
+  if (currentScene === "donutShop") {
+    publishPresence(false, false);
+    window.requestAnimationFrame(gameLoop);
+    return;
+  }
   let dx = 0;
   let dy = 0;
 
@@ -1734,7 +1739,7 @@ document.addEventListener("keydown", event => {
     closeDrawer();
     closeProfile();
   }
-  if (drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open")) return;
+  if (currentScene === "donutShop" || drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open")) return;
   const key = event.key.toLowerCase();
   if (currentScene === "town" && cameraMode === "overview" && event.shiftKey && key.startsWith("arrow")) {
     event.preventDefault();
