@@ -17,9 +17,9 @@ const residentSlots = [
   { x: 85, y: 80, activity: "plaza" }
 ];
 const chemPodResidentSlots = [
-  { x: 29, y: 49 }, { x: 29, y: 65 }, { x: 40, y: 75 },
-  { x: 61, y: 75 }, { x: 73, y: 61 }, { x: 74, y: 43 },
-  { x: 35, y: 40 }, { x: 64, y: 40 }
+  { x: 30, y: 73 }, { x: 67, y: 73 }, { x: 50, y: 45 },
+  { x: 74, y: 45 }, { x: 18, y: 65 }, { x: 80, y: 65 },
+  { x: 27, y: 45 }, { x: 52, y: 74 }
 ];
 
 const donutStations = [
@@ -1145,7 +1145,6 @@ function gameLoop(timestamp) {
   // Only worth a frame of work when somebody's pose actually moves.
   if (residentPosesAnimate) paintResidentCharacters(sceneLayer("residents") || layer);
   updateTownCamera(deltaSeconds);
-  if(currentScene === "chemPod" && isMoving)chemRoomCamera?.follow(player.x/100,player.y/100);
   updatePetFollowers(deltaSeconds, isMoving);
   publishPresence(false, isMoving);
   renderLivePlayers(deltaSeconds);
@@ -1271,7 +1270,7 @@ function spreadResidentSlots(slots, collision, count, spacing) {
   for (const spot of spots) slots.push({ ...spot, activity: "path" });
 }
 spreadResidentSlots(residentSlots, window.TownCollision, 160, 4.2);
-// Keep the compact room's deliberate gathering positions; additional occupants
+// Keep the lab's deliberate station positions; additional occupants
 // share the same reachable floor using the existing population allocator.
 // After the anchors are settled, put the member back where they left off.
 restorePosition();
@@ -1625,7 +1624,7 @@ function updatePetFollowers(deltaSeconds, ownerMoving) {
     geometryFor: name => {
       const collision=scene(name).collision(),world=sceneLayer('pets',name)?.parentElement;
       return {key:name==='town'?activeThemeId:name,width:world?.offsetWidth,height:world?.offsetHeight,
-        figureScale:name==='chemPod'?(world?.offsetWidth||1000)/1000:1,
+        figureScale:name==='chemPod'?(world?.offsetWidth||1750)/1750:1,
         lineIsClear:collision?.lineIsClear,findPath:collision?.findPath};
     },
     isWalkable: (x, y, name) => name === "chemPod" ? isChemPodWalkable(x,y) : name === "donutShop" ? isShopWalkable(x,y) : isTownWalkable(x,y)
@@ -1828,15 +1827,9 @@ document.addEventListener("keydown", event => {
 
 document.addEventListener("keyup", event => pressedKeys.delete(event.key.toLowerCase()));
 window.addEventListener("blur", () => { pressedKeys.clear(); });
-let chemRoomCamera=null;
-import('./interior-camera.mjs').then(({mountInteriorCamera})=>{
-  const world=document.querySelector('#chemPodWorld');
-  chemRoomCamera=mountInteriorCamera(world.parentElement,world,document.querySelector('#chemRoomOverview'));
-});
-// Match an 88px painted resident to about 13% of the room height.
-// Observe the scene itself so entering a previously hidden room also sizes it.
+// One complete-room view; an 88px resident paints at about 9% of room height.
 new ResizeObserver(([entry]) => {
-  if (entry.contentRect.width > 0) entry.target.style.setProperty("--pod-figure", entry.contentRect.width / 1000);
+  if (entry.contentRect.width > 0) entry.target.style.setProperty("--pod-figure", entry.contentRect.width / 1750);
 }).observe(document.querySelector("#chemPodWorld"));
 
 window.addEventListener("resize", () => {

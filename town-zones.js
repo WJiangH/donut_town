@@ -61,14 +61,15 @@
     { action: "sitGrass", scene: "town", x: 69.5, y: 33.2, radius: 2.0, seats: 2, note: "east cottage green" },
     { action: "sitGrass", scene: "town", x: 51.8, y: 82.4, radius: 2.0, seats: 2, note: "south lane green" },
 
-    // Feet beside the compact v3 room's furniture, not on its painted tops.
-    { action: "experiment", scene: "chemPod", x: 43, y: 71, seats: 2, note: "central lab bench" },
-    { action: "experiment", scene: "chemPod", x: 58, y: 71, seats: 2, note: "microscope" },
-    { action: "experiment", scene: "chemPod", x: 50, y: 40, seats: 1, note: "fume hood" },
-    { action: "read", scene: "chemPod", x: 72, y: 40, seats: 1, note: "bookshelf" },
-    { action: ["read", "coffee"], scene: "chemPod", x: 27, y: 61, seats: 1, note: "reading nook" },
-    { action: "read", scene: "chemPod", x: 21, y: 77, seats: 1, note: "bookstand" },
-    { action: "coffee", scene: "chemPod", x: 76, y: 62, seats: 1, note: "coffee counter" }
+    // Feet on the modern lab floor, outside the painted equipment footprints.
+    { action: "experiment", scene: "chemPod", x: 30, y: 73, seats: 1, note: "west experiment bench" },
+    { action: "experiment", scene: "chemPod", x: 67, y: 73, seats: 1, note: "east microscope bench" },
+    { action: "experiment", scene: "chemPod", x: 50, y: 45, seats: 1, note: "automated synthesis station" },
+    { action: "read", scene: "chemPod", x: 74, y: 45, seats: 1, note: "analysis monitors" },
+    { action: "read", scene: "chemPod", x: 18, y: 65, seats: 1, note: "reading console" },
+    { action: "experiment", scene: "chemPod", x: 27, y: 45, seats: 1, note: "fume hood" },
+    { action: "coffee", scene: "chemPod", x: 80, y: 65, seats: 1, note: "coffee console" }
+
 
   ];
 

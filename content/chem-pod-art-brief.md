@@ -1,52 +1,52 @@
-# Chem Pod · compact interior v3
+# Chem Pod · modern laboratory v4
 
-Production asset: `assets/chem-pod-interior-v3.png`, 1536 × 1024 PNG,
-2,267,937 bytes (previous v2: 2,603,140 bytes, new download about 13% smaller).
-Generated as a fresh composition using the existing Chem Pod v2 and town map v2
-as game-art references. No original Slack/profile photo was provided to generation.
-The old dynamic photo gallery was also removed from the room UI; Slack avatars
-remain in profiles.
+Production asset: `assets/chem-pod-interior-v4.png`, 1672 × 941 PNG,
+2,289,117 bytes (v3: 2,267,937 bytes; about 0.9% larger). The background loads
+only when the room is entered. Foreground islands reuse that same image URL.
 
-## Room and scale
+Generated with the built-in image tool as a fresh layout, using v3 game art
+only as a pixel-style reference. No Slack photos, portraits, or member data
+were supplied to generation or embedded in this image.
 
-One experiment island, a back-wall fume hood, bookcase, reading nook, coffee
-counter and bottom-center doorway. Warm wood, sage and cream retain the town's
-palette. The standing personalized sprite is approximately 22% of room height,
-scaled by the room's measured width; the old fixed 0.68 indoor shrink is gone
-for Chem Pod. The complete boundary fits both desktop and portrait viewports.
-Portrait screens retain surrounding space to avoid cropping the room.
+## Room contract
 
-The central bench, reading nook and coffee counter reuse clipped copies of the
-same decoded PNG for depth. Their feet-based stacking order shares a context
-with resident/player elements. No separate foreground raster assets are fetched.
+One fixed whole-room view, fitted to the actual image aspect ratio with CSS
+container units. No zoom, dragging camera, automatic follow, or overview toggle.
+Standing sprites paint at about 8.9% of room height (88px × room width / 1750),
+including remote members; the pet uses the same scale. Eight residents are
+staged beside instruments, not randomly on furniture. These placements do not
+claim live presence.
 
-Geometry is explicitly measured against the final generated art, not copied
-from the requested prompt coordinates (the generator changed their placement).
-`scripts/build-chempod-walkmask.mjs` is the source for the connected walk mask
-and rectangular fallback. `town-zones.js` has the corresponding interaction
-anchors. The compact room has eight deliberate resident staging positions;
-additional workspace members remain around town. These are placements, not
-claims of online presence.
+Two experiment islands, rear synthesis enclosure, fume hood and analysis
+monitors, separate reading and coffee consoles, and a wide connected center
+walkway. `scripts/build-chempod-walkmask.mjs` defines conservative furniture
+rectangles with side clearance for sprite bodies, and bakes the 224 × 126 mask.
+The same geometry supplies the fallback. `town-zones.js` holds the matching
+interaction anchors. Four clipped copies of the background supply bench/console
+depth using the same feet-based stacking context as characters. They are not
+additional asset downloads. The dynamic announcement sits outside the art.
 
 ## Final generation prompt
 
-Create a completely redesigned Chem Pod interior background for the cozy Donut Town pixel-art game. References are GAME ART ONLY: use their warm wood, sage green, cream tile, crisp 16-bit pixel technique and overhead three-quarter camera. Do not preserve the old huge room layout. Output a landscape 3:2 full room background, 1536x1024. This is a SMALL intimate playable chemistry clubhouse, roughly 7 metres wide by 5 metres deep, with human-scale furniture and just one modest central experiment island. View close enough that an adult game character would occupy 13 percent of image height; the door opening must correspond to this scale. Enlarge chunky furniture/details relative to room, fewer tile rows, no huge showroom emptiness. Complete straight rectangular room boundary fully visible with a little dark sage surround; back wall upper 10-30 percent, playable floor approx x12-88 y34-87, short front cutaway wall around y88-93, clear wide entrance centered x44-57 y88-97. Central single wooden green-top chemistry bench occupies x37-61 y43-59, with a few colorful flasks, one small microscope and one brass instrument, NO stools blocking its front. Leave connected generous paths on all four sides of this bench and a broad path to the bottom-center door. Back wall: a compact fume hood in center, short closed cabinets left, narrow books shelf right. Left side near x16-28 y49-65 a cozy small armchair and low bookstand in one compact furniture island. Right side near x73-85 y50-64 a tiny coffee counter with kettle and two cups. Back-left wall a plain small cream noticeboard EMPTY for later live text, x18-30 y14-25. One potted fern beside back-right cabinet. Warm practical lighting, subtle floor contact shadows, readable game-like chunky pixel clusters, no photorealistic texture. Keep foreground floor mostly clear, human intimate scale, strongest focus central experiment bench. No people, no characters, no animals, no human likenesses, no portraits, no photos, no faces, no picture frames, no team gallery. No words, letters, numbers, labels, logos, signs, UI, grids or watermarks. Do not insert any reference town exterior or any crop of previous image; compose a fresh compact laboratory room.
+Create a NEW production game background: a fancy contemporary chemistry research laboratory for Donut Town. Use attached OLD GAME ART only for the crisp handcrafted pixel-art rendering and overhead three-quarter orthographic viewpoint. Completely replace its cramped wooden cottage architecture and oversized central furniture. Landscape WIDE 16:9 canvas 1536x864. One complete cutaway rectangular modern laboratory with every outer boundary visible and a bottom-center open doorway. Contemporary premium materials: ivory modular cabinets, charcoal frames, muted teal glass, brushed metal, subtle warm amber lighting, small plants. Cozy sophisticated 16-bit game pixel art, crisp pixel clusters, no photographic realism. Room much wider and more spacious, live adult characters later will be only 9% of canvas height. Layout precise and simple: rear wall from y5-24%, cabinets/equipment at x10-90 y18-33%, main accessible pale grey terrazzo floor x10-90 y35-86%. Two SMALL separate experiment islands: left island x25-39% y45-58%; right island x61-75% y45-58%. Each includes some colorful flasks and a compact microscope or analytical instrument, leaving a BROAD unobstructed central aisle x42-58 from rear to entrance and clear paths around all sides. Back wall center hero feature: an elegant glass enclosed automated synthesis instrument with subtle teal practical lighting. Left rear a fume hood, right rear a compact analysis station with monitors showing only abstract curves no characters. Small reading/sample workstation at left wall x10-18 y59-69, small coffee console right wall x82-89 y59-69. Keep at least 60 percent of the playable floor visually free for nine small live characters, no stools or loose clutter in paths. Low cutaway front wall at y88-93 with wide central opening x44-56 to bottom edge. Dark desaturated teal surrounding margin minimal 2-3%. No people, characters, pets, portraits, faces, photos, posters, text, logos, letters, numbers, labels, UI, icons, grids or watermark. Do not preserve old image composition. This is a detailed professional pixel game level, not an architectural photorealistic render.
+
+The generated dimensions and furniture positions differ from the requested
+coordinates. Integration uses measurements of the delivered image, not the
+prompt's proposed geometry.
 
 ## Validation
 
-- One background generation; final scale tuned with the actual rendered resident,
-  since the prompt's suggested sprite proportion did not produce the desired fit.
-- Local browser: 1280 × 720 desktop and 390 × 844 portrait; custom avatar and a
-  simulated 65-member roster (eight residents indoors, three personalized and
-  five starter sprites). No production member or wallet writes.
-- Browser: click movement, front/side furniture depth, toolbar and doorway exit/re-entry,
-  clear doorway and photo-free room image sources. Keyboard taps from the browser
-  runner were too brief to demonstrate continuous movement; existing held-key
-  handlers remain unchanged. Reduced-motion transition inspected in code.
-- Geometry tests sample every path segment around all four sides of the island,
-  reject table/counter/front-wall positions, and check blocked clicks project to
-  reachable floor. All tagged activity anchors are reachable from the entrance.
-- Full local test suite: 94 passed, including the isolated local Redis chat test.
-  Tests requiring local listeners need sandbox network permission.
-- Skill frontmatter validator passed. This is one observed generation/integration,
-  not an independent lower-capability model evaluation or a deployment test.
+Geometry checks traverse all sides of both benches, the central aisle, and all
+activity anchors from the doorway; every sampled route segment must stay on the
+floor. Blocked clicks must project to reachable ground. Browser QA uses an
+isolated synthetic roster, with real generated game sprites but no production
+member or wallet writes.
+
+Local browser QA: 2048 × 1014 and 390 × 844. The full frame stays fixed while
+walking; both exit controls and re-entry work. Central-aisle movement, blocked
+bench clicks, and walking behind the west bench were observed. The narrow frame
+is fully contained; it keeps the same view rather than enlarging/cropping the
+room. Pets share the resident scale at both sizes. Keyboard movement and
+reduced-motion transition handlers are unchanged; this pass exercised click
+movement. All 137 remaining repository tests passed after removing the obsolete
+two-view camera module and its two tests. Privacy pattern check: zero findings.

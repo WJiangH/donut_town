@@ -83,7 +83,7 @@ test('walking up to a bench happens before sitting on it', () => {
 test('the Chem Pod floor is one room you can cross, and its spots stand on it', () => {
   assert.equal(ChemPodCollision.ready, true);
   assert.ok(ChemPodCollision.isWalkable(50, 86), 'the doorway should be floor');
-  assert.ok(!ChemPodCollision.isWalkable(50, 50), 'the lab bench should not be floor');
+  assert.ok(!ChemPodCollision.isWalkable(30, 55), 'the lab bench should not be floor');
   assert.ok(!ChemPodCollision.isWalkable(50, 20), 'the back counters should not be floor');
   for (const zone of TownZones.list.filter(zone => zone.scene === 'chemPod')) {
     assert.ok(ChemPodCollision.isWalkable(zone.anchor.x, zone.anchor.y), `${zone.note} stands off the floor`);
@@ -108,8 +108,8 @@ test('a crowd gets its own space instead of stacking up', () => {
   }
 });
 
-test('compact Chem Pod keeps a route around every side of the island', () => {
-  const stops = [{x:50,y:86},{x:28,y:55},{x:50,y:40},{x:74,y:55},{x:50,y:75}];
+test('modern Chem Pod connects both benches and keeps the central aisle clear', () => {
+  const stops = [{x:50,y:86},{x:18,y:60},{x:30,y:44},{x:50,y:55},{x:67,y:44},{x:80,y:60},{x:67,y:73},{x:30,y:73}];
   for (let i = 0; i < stops.length; i++) {
     assert.ok(ChemPodCollision.isWalkable(stops[i].x, stops[i].y));
     const path = ChemPodCollision.findPath(stops[i], stops[(i + 1) % stops.length]);
@@ -125,7 +125,7 @@ test('compact Chem Pod keeps a route around every side of the island', () => {
       previous = point;
     }
   }
-  for (const point of [{x:50,y:55},{x:18,y:61},{x:85,y:60},{x:20,y:85},{x:80,y:85}]) {
+  for (const point of [{x:30,y:55},{x:67,y:55},{x:13,y:61},{x:88,y:60},{x:20,y:85},{x:80,y:85}]) {
     assert.equal(ChemPodCollision.isWalkable(point.x,point.y),false);
     const target = ChemPodCollision.nearestWalkable(point.x,point.y);
     assert.ok(ChemPodCollision.isWalkable(target.x,target.y));

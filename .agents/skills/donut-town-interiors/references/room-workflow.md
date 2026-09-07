@@ -62,10 +62,10 @@ Inspect the final PNG at original size and confirm:
 - no people, text, watermark, or baked UI are present;
 - perspective, scale, palette, lighting, and pixel density match the town;
 - the player sprite remains readable against both light and dark floor areas;
-- judge scale with an actual rendered sprite beside a counter and doorway, not the empty PNG. Chem Pod v3 now uses about 13% painted standing height / room height to fit eight residents comfortably, not a universal value. Scale with room width rather than a fixed indoor shrink factor;
+- judge scale with an actual rendered sprite beside a counter and doorway, not the empty PNG. Chem Pod v4 uses about 9% painted standing height / room height with eight residents and two modest benches, not a universal value. Scale with room width rather than a fixed indoor shrink factor;
 - verify desktop and narrow-screen CSS together: later generic `.map-world` rules must not crop a room or undo its fit rule;
 - Donut Home uses one fixed complete-room view, with matching wall/floor colors in surrounding space and controls outside the artwork. Do not add Home zoom, panning, or a second overview mode. Keep the entire floor reachable for furniture placement.
-- for Pod rooms that need a movable camera, use the shared `interior-camera.mjs`: preserve the artwork aspect ratio, allow ground dragging and movement-driven camera tracking, and offer an explicit whole-room overview. Keep exit controls fixed outside the moving plane and furniture geometry on the same plane as the background.
+- Chem Pod uses one fixed whole-room view, as requested. Fit the full image with CSS container units at its actual aspect ratio; do not add zoom, panning, movement tracking, or a second overview mode. Keep exits outside the scene plane and keep collision, sprites, and furniture on the same plane.
 - check furniture depth. When using clipped copies of a shared room image for foreground occlusion, character containers must not create a stacking context that defeats their feet-based z-index. Test in front of and behind each island;
 - record production image dimensions and bytes versus the previous asset. A new full-room PNG need not introduce multiple raster downloads for furniture depth.
 

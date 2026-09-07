@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=48" />
+    <link rel="stylesheet" href="styles.css?v=49" />
     <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
@@ -109,19 +109,19 @@
             <span>Inside</span>
             <strong>Chem Pod</strong>
           </div>
-          <button class="room-camera-button" id="chemRoomOverview" aria-pressed="false">Room overview</button>
         </div>
 
-        <div class="map-wrap">
-          <div class="map-world interior-world" id="chemPodWorld">
-            <img class="town-map interior-map" loading="lazy" decoding="async" src="assets/chem-pod-interior-v3.png" alt="A compact pixel-art chemistry clubhouse with one experiment bench, a reading nook, a coffee counter and a clear central doorway." />
             <aside class="chem-pod-notice" aria-label="Chem Pod announcement">
               <span id="chemPodNoticeKicker">This week</span>
               <strong id="chemPodNoticeTitle">Welcome, neighbors!</strong>
             </aside>
-            <img class="chem-foreground chem-bench" loading="lazy" decoding="async" src="assets/chem-pod-interior-v3.png" alt="" aria-hidden="true" />
-            <img class="chem-foreground chem-reading" loading="lazy" decoding="async" src="assets/chem-pod-interior-v3.png" alt="" aria-hidden="true" />
-            <img class="chem-foreground chem-coffee" loading="lazy" decoding="async" src="assets/chem-pod-interior-v3.png" alt="" aria-hidden="true" />
+        <div class="map-wrap">
+          <div class="map-world interior-world" id="chemPodWorld">
+            <img class="town-map interior-map" loading="lazy" decoding="async" src="assets/chem-pod-interior-v4.png" alt="A spacious modern pixel-art laboratory with twin experiment benches, a glass synthesis station and a clear central aisle." />
+            <img class="chem-foreground chem-bench-left" loading="lazy" decoding="async" src="assets/chem-pod-interior-v4.png" alt="" aria-hidden="true" />
+            <img class="chem-foreground chem-bench-right" loading="lazy" decoding="async" src="assets/chem-pod-interior-v4.png" alt="" aria-hidden="true" />
+            <img class="chem-foreground chem-reading" loading="lazy" decoding="async" src="assets/chem-pod-interior-v4.png" alt="" aria-hidden="true" />
+            <img class="chem-foreground chem-coffee" loading="lazy" decoding="async" src="assets/chem-pod-interior-v4.png" alt="" aria-hidden="true" />
             <div class="residents-layer" id="chemPodResidentsLayer" aria-live="polite"></div>
             <div class="pets-layer" id="chemPodPetsLayer" aria-hidden="true"></div>
             <div class="live-players-layer" id="chemPodLivePlayersLayer" aria-live="polite"></div>
@@ -294,10 +294,10 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
     <script src="assets/town-walkmask.js?v=3"></script>
-    <script src="assets/chempod-walkmask.js?v=2"></script>
+    <script src="assets/chempod-walkmask.js?v=4"></script>
     <script src="town-collision.js?v=5"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
-    <script src="town-zones.js?v=5"></script>
-    <script src="app.js?v=56"></script>
+    <script src="town-zones.js?v=6"></script>
+    <script src="app.js?v=57"></script>
   </body>
 </html>

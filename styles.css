@@ -312,7 +312,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 
 .interior-world { width: min(106%, calc((100dvh - 72px) * 1.59)); }
 /* This room always fits in its viewport, including the narrow-screen override. */
-#chemPodWorld { width: min(100%, calc((100dvh - 150px) * 1.5)); }
+#chemPodView { background: #08191c; }
+#chemPodView .map-wrap { container-type:size; }
+#chemPodWorld { width:min(100cqw,calc(100cqh * 1672 / 941));aspect-ratio:1672 / 941; }
 .interior-stage .resident-pin,
 .interior-stage .player-pin,
 .interior-stage .remote-player {
@@ -325,14 +327,16 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 #chemPodWorld .resident-pin .resident-label { opacity: 0; }
 #chemPodWorld .resident-pin:is(:hover, :focus-visible) { z-index: var(--feet-depth) !important; }
 #chemPodWorld .resident-pin:is(:hover, :focus-visible) .resident-label { opacity: 1; }
+#chemPodWorld .pet-pin { transform:scale(var(--pod-figure,1));transform-origin:0 0; }
 #chemPodWorld .residents-layer, #chemPodWorld .live-players-layer { z-index: auto; }
 /* Reuse the same decoded room image for depth; no extra foreground PNGs. */
-.chem-bench { z-index: 690; clip-path: polygon(32% 41%, 37% 41%, 37% 38%, 40% 38%, 40% 41%, 60% 41%, 60% 39%, 65% 39%, 68% 43%, 68% 68.5%, 32% 68.5%); }
-.chem-reading { z-index: 740; clip-path: polygon(9% 54%, 10% 50%, 11% 39%, 14% 35%, 18% 36%, 22% 42%, 24.5% 45%, 25% 54%, 23% 56%, 22.5% 73.5%, 9% 73.5%); }
-.chem-coffee { z-index: 740; clip-path: polygon(79% 50%, 84% 50%, 84% 45%, 89% 45%, 90% 49%, 91.5% 51%, 91.5% 73%, 79% 73%); }
-.chem-pod-notice { position: absolute; z-index: 3; pointer-events: none; left: 18.5%; top: 11.7%; width: 9.3%; height: 8%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #4a321e; text-align: center; }
-.chem-pod-notice span { margin-bottom: 4px; font-size: clamp(4px, .5vw, 8px); text-transform: uppercase; letter-spacing: .04em; }
-.chem-pod-notice strong { max-width: 100%; font-size: clamp(5px, .72vw, 12px); line-height: 1.25; }
+.chem-bench-left { z-index:690;clip-path:polygon(22.8% 47%,40.6% 47%,40.6% 68.2%,22.8% 68.2%); }
+.chem-bench-right { z-index:690;clip-path:polygon(59% 47%,76.6% 47%,76.6% 68.2%,59% 68.2%); }
+.chem-reading { z-index:710;clip-path:polygon(8% 48%,14.5% 48%,14.5% 71%,8% 71%); }
+.chem-coffee { z-index:710;clip-path:polygon(84.3% 48%,92% 48%,92% 71%,84.3% 71%); }
+.chem-pod-notice { position:absolute;z-index:120;left:20px;top:82px;max-width:165px;pointer-events:none;color:#b5cdca;font-size:10px;line-height:1.5; }
+.chem-pod-notice span,.chem-pod-notice strong { display:block; }
+.chem-pod-notice span { font-size:8px;text-transform:uppercase;letter-spacing:.08em; }
 .room-toolbar { position: absolute; z-index: 8; left: 20px; top: 18px; display: flex; align-items: center; gap: 13px; padding: 8px; }
 .room-toolbar div { padding-right: 7px; }
 .room-toolbar span, .room-toolbar strong { display: block; }
@@ -918,13 +922,13 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
 .house-room-choice select { max-width:170px;padding:5px; }
 .house-mode { margin:0; }
 .house-mode span { display:none; }
-.house-mode button,.room-camera-button { padding:9px 12px;border:2px solid #756448;background:#f5edda;color:#273e2d;font:inherit;font-size:11px;cursor:pointer; }
+.house-mode button { padding:9px 12px;border:2px solid #756448;background:#f5edda;color:#273e2d;font:inherit;font-size:11px;cursor:pointer; }
 .house-viewport { position:relative;min-height:0;overflow:hidden;container-type:size; }
 .house-view .house-room,.house-view:not(.decorating) .house-room { position:absolute;left:50%;top:50%;width:min(100cqw,150cqh);height:auto;aspect-ratio:3/2;transform:translate(-50%,-50%);margin:0;border:0;border-radius:0;box-shadow:0 0 0 4px #231d1580; }
 .house-floor .house-resident { transform:translate(-50%,-100%) scale(var(--home-figure,1));transform-origin:bottom center; }
 .house-shelf-wrap { padding:8px;background:#f2ead9ed;border:2px solid #726249;max-height:160px;overflow:auto; }
 .house-shelf { min-height:40px;max-height:70px; }
-#chemPodWorld { left:0;top:0;max-width:none;transform-origin:0 0;will-change:transform; }
+#chemPodWorld { left:50%;top:50%;max-width:none;transform:translate(-50%,-50%); }
 #chemPodView .map-wrap { touch-action:none; }
 #chemPodView .room-toolbar { z-index:120; }
 .town-stage { background:#17281e; }
@@ -937,7 +941,7 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
  .house-room-choice select { max-width:150px; }
  .house-shelf-wrap { max-height:160px; }
  #chemPodView .room-toolbar { top:10px;left:10px;gap:7px; }
- #chemPodView .room-toolbar>div,#chemPodView .room-movement-help { display:none; }
+ #chemPodView .room-toolbar>div,#chemPodView .room-movement-help,#chemPodView .chem-pod-notice { display:none; }
 }
 
 /* Wide overview uses its natural side gutters for controls, never shrinks the map for them. */
