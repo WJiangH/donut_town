@@ -23,9 +23,9 @@ For unusual cases (preview-only, walk-cycle repair, or a non-casual silhouette) 
 
 ## Interaction poses
 
-When asked to add sit, garden, coffee, read, lookout, or lab poses to an existing resident, read only [references/action-pipeline.md](references/action-pipeline.md). That is the token-cheap path: two sheets, local extraction, compose scripts. Do not load the other reference files unless a gate fails.
+When asked to add or redraw sit, garden, coffee, read, lookout, lab, dance, or fish poses, read only [references/action-pipeline.md](references/action-pipeline.md). That is the token-cheap path: per-resident flavor card, two 6×1 sheets, local extraction, one `actions-v2.png`. Do not load the other reference files unless a gate fails.
 
-For a batch, spawn one agent per assigned character that is missing the seven action ids. Agents write that id's action assets only. The parent validates and deploys once.
+For a batch, spawn one agent per assigned character whose manifest is not yet on `actions-v2.png`. Agents write that id's action assets only. The parent validates and deploys once. New map labels belong in `town-zones.js` and are out of scope for the agent.
 
 ## Production animation
 

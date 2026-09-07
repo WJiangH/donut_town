@@ -64,112 +64,111 @@
   "animationStatus": "preview-repeated-stride",
   "actions": {
     "sitChair": {
-      "url": "/assets/residents/r-607f12/actions-v1.png",
-      "imageWidth": 1400,
-      "imageHeight": 360,
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
       "frameHeight": 348,
       "frames": [
         [
-          75,
+          34,
           8,
-          129,
+          212,
           348
         ]
       ],
-      "facing": "down"
-    },
-    "sitGrass": {
-      "url": "/assets/residents/r-607f12/action-loops-v1.png",
-      "imageWidth": 960,
-      "imageHeight": 360,
-      "frameHeight": 348,
-      "frames": [
-        [
-          525,
-          8,
-          149,
-          348
-        ],
-        [
-          764,
-          8,
-          152,
-          348
-        ]
-      ],
-      "loop": [
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0
-      ],
-      "frameMs": 280,
       "facing": "down"
     },
     "garden": {
-      "url": "/assets/residents/r-607f12/actions-v1.png",
-      "imageWidth": 1400,
-      "imageHeight": 360,
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
       "frameHeight": 348,
       "frames": [
         [
-          334,
+          322,
           8,
-          172,
-          347
+          195,
+          348
         ]
       ],
       "facing": "down"
     },
     "lookout": {
-      "url": "/assets/residents/r-607f12/actions-v1.png",
-      "imageWidth": 1400,
-      "imageHeight": 360,
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
       "frameHeight": 348,
       "frames": [
         [
-          631,
+          633,
           8,
-          137,
+          134,
           348
         ]
       ],
       "facing": "right"
     },
     "read": {
-      "url": "/assets/residents/r-607f12/actions-v1.png",
-      "imageWidth": 1400,
-      "imageHeight": 360,
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
       "frameHeight": 348,
       "frames": [
         [
-          907,
+          912,
           8,
-          145,
+          136,
           348
         ]
       ],
       "facing": "down"
     },
-    "coffee": {
-      "url": "/assets/residents/r-607f12/action-loops-v1.png",
-      "imageWidth": 960,
-      "imageHeight": 360,
+    "experiment": {
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
       "frameHeight": 348,
       "frames": [
         [
-          53,
+          1172,
           8,
-          134,
+          175,
+          348
+        ]
+      ],
+      "facing": "up"
+    },
+    "fish": {
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [
+        [
+          1434,
+          8,
+          211,
+          348
+        ]
+      ],
+      "facing": "right"
+    },
+    "coffee": {
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [
+        [
+          72,
+          368,
+          136,
           348
         ],
         [
-          289,
-          8,
-          142,
+          347,
+          368,
+          145,
           348
         ]
       ],
@@ -184,20 +183,64 @@
       "frameMs": 240,
       "facing": "down"
     },
-    "experiment": {
-      "url": "/assets/residents/r-607f12/actions-v1.png",
-      "imageWidth": 1400,
-      "imageHeight": 360,
+    "sitGrass": {
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
       "frameHeight": 348,
       "frames": [
         [
-          1175,
-          8,
-          169,
+          566,
+          388,
+          268,
+          328
+        ],
+        [
+          846,
+          400,
+          268,
+          316
+        ]
+      ],
+      "loop": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "frameMs": 280,
+      "facing": "down"
+    },
+    "dance": {
+      "url": "/assets/residents/r-607f12/actions-v2.png",
+      "imageWidth": 1680,
+      "imageHeight": 720,
+      "frameHeight": 348,
+      "frames": [
+        [
+          1141,
+          368,
+          237,
+          348
+        ],
+        [
+          1417,
+          368,
+          245,
           348
         ]
       ],
-      "facing": "up"
+      "loop": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "frameMs": 200,
+      "facing": "down"
     }
   }
 }

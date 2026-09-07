@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { SlackClient } from '../../../../slack/client.mjs';
 
-const REQUIRED_ACTIONS = ['sitChair', 'sitGrass', 'garden', 'lookout', 'read', 'coffee', 'experiment'];
+const REQUIRED_ACTIONS = ['sitChair', 'sitGrass', 'garden', 'lookout', 'read', 'coffee', 'experiment', 'dance', 'fish'];
 const missingActions = process.argv.includes('--missing-actions');
 
 process.loadEnvFile(fileURLToPath(new URL('../../../../.env.local', import.meta.url)));
