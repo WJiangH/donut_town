@@ -5,14 +5,14 @@ import {readFileSync} from 'node:fs';
 function loadTown() {
   const scope = {window: {location: {search: ''}}, document: {addEventListener() {}}};
   scope.window.window = scope.window;
-  for (const file of ['../assets/town-walkmask.js', '../town-collision.js', '../assets/town-zones-auto.js', '../town-zones.js']) {
+  for (const file of ['../assets/town-walkmask.js', '../assets/chempod-walkmask.js', '../town-collision.js', '../assets/town-zones-auto.js', '../town-zones.js']) {
     const source = readFileSync(new URL(file, import.meta.url), 'utf8');
     new Function('window', 'document', 'atob', source)(scope.window, scope.document, atob);
   }
   return scope.window;
 }
 
-const {TownCollision, TownZones} = loadTown();
+const {TownCollision, ChemPodCollision, TownZones} = loadTown();
 const ALL_ACTIONS = Object.fromEntries(
   ['sitChair', 'sitGrass', 'coffee', 'read', 'garden', 'lookout', 'experiment'].map(id => [id, {}])
 );
@@ -78,4 +78,32 @@ test('walking up to a bench happens before sitting on it', () => {
   assert.deepEqual(step.walkTo, {x: bench.anchor.x, y: bench.anchor.y});
   const seated = TownZones.settle(bench.anchor, 'town', 9000, {sitChair: {}}, []);
   assert.equal(seated.action, 'sitChair');
+});
+
+test('the Chem Pod floor is one room you can cross, and its spots stand on it', () => {
+  assert.equal(ChemPodCollision.ready, true);
+  assert.ok(ChemPodCollision.isWalkable(50, 86), 'the doorway should be floor');
+  assert.ok(!ChemPodCollision.isWalkable(50, 50), 'the lab bench should not be floor');
+  assert.ok(!ChemPodCollision.isWalkable(50, 20), 'the back counters should not be floor');
+  for (const zone of TownZones.list.filter(zone => zone.scene === 'chemPod')) {
+    assert.ok(ChemPodCollision.isWalkable(zone.anchor.x, zone.anchor.y), `${zone.note} stands off the floor`);
+    assert.ok(ChemPodCollision.findPath({x: 50, y: 86}, zone.anchor).length, `${zone.note} cannot be reached from the door`);
+  }
+});
+
+test('a crowd gets its own space instead of stacking up', () => {
+  for (const [collision, count, spacing] of [[TownCollision, 160, 4.2], [ChemPodCollision, 26, 4.5]]) {
+    const spots = collision.spreadPoints(count, spacing);
+    assert.equal(spots.length, count);
+    for (const spot of spots) assert.ok(collision.isWalkable(spot.x, spot.y));
+    let closest = Infinity;
+    for (let i = 0; i < spots.length; i++) {
+      for (let j = i + 1; j < spots.length; j++) {
+        closest = Math.min(closest, Math.hypot(spots[i].x - spots[j].x, spots[i].y - spots[j].y));
+      }
+    }
+    assert.ok(closest > 1.5, `two neighbours ended up ${closest.toFixed(1)} apart`);
+    // The same neighbour should land in the same place on the next load.
+    assert.deepEqual(collision.spreadPoints(count, spacing), spots);
+  }
 });

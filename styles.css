@@ -161,7 +161,15 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 }
 .action-spot:hover, .action-spot:focus-visible { background: var(--ink); color: #fff; }
 
-.interior-world { width: max(100%, calc((100dvh - 72px) * 1.5)); }
+/* The whole room should be in view, and the people in it read as people in a
+   room rather than furniture: hold the pod to the stage and stand them down. */
+.interior-world { width: min(106%, calc((100dvh - 72px) * 1.59)); }
+.interior-stage .resident-pin,
+.interior-stage .player-pin,
+.interior-stage .remote-player {
+  transform: translate(-50%, -100%) scale(var(--pod-figure, .68));
+  transform-origin: bottom center;
+}
 .interior-map { filter: saturate(.88) brightness(.98); }
 .chem-pod-notice, .chem-pod-team-wall { position: absolute; z-index: 3; pointer-events: none; }
 .chem-pod-notice {

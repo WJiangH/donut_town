@@ -636,7 +636,10 @@ function isTownWalkable(x, y) {
   return (plaza || corridor) && !obstacle;
 }
 
+// The baked floor follows the aisles between the benches; the rectangles below
+// stay as a fallback for when the mask file is missing.
 function isChemPodWalkable(x, y) {
+  if (window.ChemPodCollision?.ready) return window.ChemPodCollision.isWalkable(x, y);
   const insideFloor = x >= 10 && x <= 90 && y >= 34 && y <= 89;
   const blocked = chemPodObstacles.some(obstacle => x >= obstacle.left && x <= obstacle.right && y >= obstacle.top && y <= obstacle.bottom);
   return insideFloor && !blocked;
@@ -648,7 +651,7 @@ function isWalkable(x, y) {
 
 function activeSceneBounds() {
   return currentScene === "chemPod"
-    ? { minX: 10, maxX: 90, minY: 34, maxY: 89 }
+    ? { minX: 8, maxX: 92, minY: 30, maxY: 92 }
     : { minX: 5, maxX: 95, minY: 5, maxY: 94 };
 }
 
@@ -747,13 +750,18 @@ function renderActionSpots() {
   }
 }
 
+function sceneCollision() {
+  return currentScene === "chemPod" ? window.ChemPodCollision : window.TownCollision;
+}
+
 function nearestWalkable(x, y) {
   const bounds = activeSceneBounds();
   x = Math.max(bounds.minX, Math.min(bounds.maxX, x));
   y = Math.max(bounds.minY, Math.min(bounds.maxY, y));
   if (isWalkable(x, y)) return { x, y };
-  // The town mask is far finer than a one percent grid, so search it directly.
-  if (currentScene === "town" && window.TownCollision?.ready) return window.TownCollision.nearestWalkable(x, y, player);
+  // The masks are far finer than a one percent grid, so search them directly.
+  const mask = sceneCollision();
+  if (mask?.ready) return mask.nearestWalkable(x, y, player);
   let best = { x: player.x, y: player.y, distance: Infinity };
   for (let px = bounds.minX; px <= bounds.maxX; px += 1) {
     for (let py = bounds.minY; py <= bounds.maxY; py += 1) {
@@ -766,7 +774,8 @@ function nearestWalkable(x, y) {
 }
 
 function findWalkPath(start, goal) {
-  if (currentScene === "town" && window.TownCollision?.ready) return window.TownCollision.findPath(start, goal);
+  const mask = sceneCollision();
+  if (mask?.ready) return mask.findPath(start, goal);
   const from = nearestWalkable(Math.round(start.x), Math.round(start.y));
   const to = nearestWalkable(Math.round(goal.x), Math.round(goal.y));
   const startKey = `${from.x},${from.y}`;
@@ -1076,11 +1085,22 @@ function snapTownAnchors() {
     point.x = spot.x;
     point.y = spot.y;
   };
-  residentSlots.forEach(snap);
   donutStations.forEach(station => [station, station.left, station.right].forEach(snap));
   [player, scenePlayerPositions.town].forEach(snap);
 }
 snapTownAnchors();
+
+// Give everyone their own patch of town rather than crowding the plaza: the
+// mask knows every road, lawn, bridge and crop row, so spread over all of it.
+function spreadResidentSlots(slots, collision, count, spacing) {
+  if (!collision?.ready) return;
+  const spots = collision.spreadPoints(count, spacing);
+  if (spots.length < 8) return;
+  slots.length = 0;
+  for (const spot of spots) slots.push({ ...spot, activity: "path" });
+}
+spreadResidentSlots(residentSlots, window.TownCollision, 160, 4.2);
+spreadResidentSlots(chemPodResidentSlots, window.ChemPodCollision, 26, 4.5);
 
 residents.forEach((person, index) => Object.assign(person, populationSlot(residentSlots, index)));
 

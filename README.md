@@ -83,6 +83,7 @@ This is still a testing build:
 - The current user can click paths or hold WASD / arrow keys to walk.
 - Walking is limited to the roads, lawns, bridges and crop rows on the map.
 - Standing still somewhere tagged settles a character into what that place is for.
+- Neighbours are spread over the whole town rather than crowded round the plaza.
 - A user can rank up to three invitations.
 - Booked and pending residents have visible status without revealing partners.
 
@@ -106,6 +107,21 @@ Bridges, boardwalks and shaded crossings are listed as `ALLOW_SEGMENTS` inside
 that script, and fenced ground you should still be able to walk - the farm crop
 rows - as `ALLOW_SHAPES`. Add to them when the colour pass reads a crossing as
 water or fences off somewhere the town should be able to wander.
+
+### The Chem Pod floor
+
+The room's floor is baked from its own art the same way the town is, so people
+walk the aisles between the benches instead of a few hand-drawn rectangles, and
+the counters, cabinets and wall tops stay solid. Regenerate it after changing
+the interior art:
+
+```
+node scripts/build-chempod-walkmask.mjs
+```
+
+The room is held to the stage so all of it is in view, and figures indoors are
+drawn a little smaller (`--pod-figure` in `styles.css`) so they read as people
+in a room. A genuinely larger, multi-room pod would need new interior art.
 
 ### What each place on the map is for
 

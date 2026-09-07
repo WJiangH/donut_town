@@ -55,10 +55,17 @@
     { action: "sitGrass", scene: "town", x: 69.5, y: 33.2, radius: 2.0, seats: 2, note: "east cottage green" },
     { action: "sitGrass", scene: "town", x: 51.8, y: 82.4, radius: 2.0, seats: 2, note: "south lane green" },
 
-    // Chem Pod interior, where the floor plan is fixed rather than painted.
-    { action: "experiment", scene: "chemPod", x: 50, y: 71, radius: 2.4, seats: 2, facing: "up", note: "lab bench" },
-    { action: "read", scene: "chemPod", x: 41, y: 75, radius: 2.0, seats: 2, facing: "down", note: "reading corner" },
-    { action: "coffee", scene: "chemPod", x: 70, y: 79, radius: 2.0, seats: 2, facing: "down", note: "coffee counter" }
+    // Chem Pod interior: the same idea, against the room's own floor.
+    { action: "experiment", scene: "chemPod", x: 50, y: 60, seats: 3, note: "central lab bench" },
+    { action: "experiment", scene: "chemPod", x: 46, y: 30, seats: 2, note: "fume hood" },
+    { action: "experiment", scene: "chemPod", x: 74, y: 50, seats: 2, note: "east workbench" },
+    { action: "experiment", scene: "chemPod", x: 22, y: 34, seats: 2, note: "west workbench" },
+    { action: ["read", "coffee"], scene: "chemPod", x: 36, y: 74, seats: 2, note: "reading table" },
+    { action: "read", scene: "chemPod", x: 88, y: 40, seats: 1, note: "bookshelf" },
+    { action: "read", scene: "chemPod", x: 15, y: 55, seats: 1, note: "notice board" },
+    { action: "coffee", scene: "chemPod", x: 76, y: 72, seats: 3, note: "coffee counter" },
+    { action: "coffee", scene: "chemPod", x: 58, y: 72, seats: 1, note: "sample trolley" },
+    { action: ["read", "experiment"], scene: "chemPod", x: 66, y: 56, seats: 2, note: "blackboard" }
   ];
 
   // How close you have to stop, and how long you have to stay, before a pose starts.
@@ -82,16 +89,14 @@
   // Stand beside the furniture, on ground the walk mask allows, facing it.
   function resolveAnchor(zone) {
     if (zone.radius) {
-      const centre = zone.scene === "town" && window.TownCollision?.ready
-        ? window.TownCollision.nearestWalkable(zone.x, zone.y)
-        : { x: zone.x, y: zone.y };
+      const collision = zone.scene === "chemPod" ? window.ChemPodCollision : window.TownCollision;
+      const centre = collision?.ready ? collision.nearestWalkable(zone.x, zone.y) : { x: zone.x, y: zone.y };
       zone.anchor = { x: Math.round(centre.x * 10) / 10, y: Math.round(centre.y * 10) / 10 };
       zone.facing = zone.facing || "down";
       return;
     }
-    const walkable = zone.scene === "town" && window.TownCollision?.ready
-      ? (x, y) => window.TownCollision.isWalkable(x, y)
-      : () => true;
+    const collision = zone.scene === "chemPod" ? window.ChemPodCollision : window.TownCollision;
+    const walkable = collision?.ready ? (x, y) => collision.isWalkable(x, y) : () => true;
     // Benches and tables sit on ground you can stand on, so settle right on them.
     if (walkable(zone.x, zone.y)) {
       zone.anchor = { x: zone.x, y: zone.y };
@@ -101,10 +106,12 @@
     }
     let best = null;
     let bestScore = Infinity;
-    for (let dy = -4; dy <= 4.001; dy += 0.25) {
-      for (let dx = -4; dx <= 4.001; dx += 0.25) {
+    // Indoor furniture is large, so look a good way out for somewhere to stand.
+    const range = zone.scene === "chemPod" ? 9 : 4;
+    for (let dy = -range; dy <= range + 0.001; dy += 0.3) {
+      for (let dx = -range; dx <= range + 0.001; dx += 0.3) {
         const gap = Math.hypot(dx, dy);
-        if (gap < 0.4 || gap > 4) continue;
+        if (gap < 0.4 || gap > range) continue;
         const x = zone.x + dx;
         const y = zone.y + dy;
         if (!walkable(x, y)) continue;

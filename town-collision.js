@@ -1,10 +1,9 @@
 // Town collision: the baked walk mask plus the navigation helpers built on it.
 // The mask comes from assets/town-walkmask.js (see scripts/build-town-walkmask.mjs).
 (function () {
-  const data = window.TOWN_WALK_MASK;
-  const collision = { ready: false, cols: 0, rows: 0 };
-  window.TownCollision = collision;
-  if (!data || !data.bits) return;
+  function buildCollision(data) {
+    const collision = { ready: false, cols: 0, rows: 0 };
+    if (!data || !data.bits) return collision;
 
   const binary = atob(data.bits);
   const bits = new Uint8Array(binary.length);
@@ -130,9 +129,36 @@
     return smoothed;
   };
 
+  // Even spacing over the whole floor, so a crowd is not all in one square.
+  // The order is fixed, so the same neighbour lands in the same place twice.
+  collision.spreadPoints = function (count, minSpacing = 3) {
+    const open = [];
+    for (let row = 1; row < rows - 1; row++) {
+      for (let col = 1; col < cols - 1; col++) {
+        if (!isWalkableCell(col, row)) continue;
+        if (!isWalkableCell(col - 1, row) || !isWalkableCell(col + 1, row)) continue;
+        if (!isWalkableCell(col, row - 1) || !isWalkableCell(col, row + 1)) continue;
+        // A fixed scramble of the grid: neighbouring cells are considered far
+        // apart in time, which spreads the early picks over the whole map.
+        const key = ((col * 73856093) ^ (row * 19349663)) >>> 0;
+        open.push({ x: centerX(col), y: centerY(row), key });
+      }
+    }
+    open.sort((left, right) => left.key - right.key);
+    const picked = [];
+    for (let spacing = minSpacing; spacing > 0.6 && picked.length < count; spacing *= 0.8) {
+      for (const spot of open) {
+        if (picked.length >= count) break;
+        if (picked.some(taken => Math.hypot(taken.x - spot.x, (taken.y - spot.y) * 0.7) < spacing)) continue;
+        picked.push({ x: Math.round(spot.x * 10) / 10, y: Math.round(spot.y * 10) / 10 });
+      }
+    }
+    return picked;
+  };
+
   // ?collision=1 paints the walkable mask over the map so it can be eyeballed.
-  collision.showOverlay = function () {
-    const world = document.querySelector("#mapWorld");
+  collision.showOverlay = function (worldSelector = "#mapWorld") {
+    const world = document.querySelector(worldSelector);
     if (!world || world.querySelector(".collision-overlay")) return;
     const canvas = document.createElement("canvas");
     canvas.className = "collision-overlay";
@@ -152,7 +178,16 @@
     world.appendChild(canvas);
   };
 
+    return collision;
+  }
+
+  window.TownCollision = buildCollision(window.TOWN_WALK_MASK);
+  window.ChemPodCollision = buildCollision(window.CHEMPOD_WALK_MASK);
+
   if (new URLSearchParams(window.location.search).get("collision") === "1") {
-    document.addEventListener("DOMContentLoaded", () => collision.showOverlay());
+    document.addEventListener("DOMContentLoaded", () => {
+      window.TownCollision.showOverlay?.("#mapWorld");
+      window.ChemPodCollision.showOverlay?.("#chemPodWorld");
+    });
   }
 })();
