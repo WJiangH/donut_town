@@ -1,0 +1,134 @@
+{
+  "id": "pet-frog",
+  "kind": "pet",
+  "name": "Lab frog",
+  "price": 4,
+  "swatch": "#7fb069",
+  "blurb": "Hops along. Fond of the Chem Pod.",
+  "gait": "hop",
+  "displayHeight": 42,
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-distinct-stride",
+  "walk": {
+    "imageWidth": 1024,
+    "imageHeight": 1024,
+    "frameHeight": 260,
+    "frames": [
+      [
+        94,
+        139,
+        226,
+        152
+      ],
+      [
+        417,
+        115,
+        208,
+        187
+      ],
+      [
+        751,
+        82,
+        165,
+        247
+      ],
+      [
+        98,
+        435,
+        223,
+        168
+      ],
+      [
+        413,
+        429,
+        219,
+        175
+      ],
+      [
+        707,
+        402,
+        258,
+        225
+      ],
+      [
+        102,
+        734,
+        206,
+        189
+      ],
+      [
+        421,
+        734,
+        201,
+        189
+      ],
+      [
+        751,
+        696,
+        166,
+        260
+      ]
+    ],
+    "url": "/assets/pets/pet-frog/walk-v1.png",
+    "loop": [
+      0,
+      1,
+      2,
+      1
+    ],
+    "frameMs": 160,
+    "rows": [
+      "down",
+      "right",
+      "up"
+    ],
+    "columns": [
+      "stepA",
+      "neutral",
+      "stepB"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "sit": {
+    "imageWidth": 1024,
+    "imageHeight": 1024,
+    "frameHeight": 261,
+    "frames": [
+      [
+        55,
+        388,
+        294,
+        255
+      ],
+      [
+        391,
+        382,
+        270,
+        261
+      ],
+      [
+        698,
+        388,
+        271,
+        249
+      ]
+    ],
+    "url": "/assets/pets/pet-frog/sit-v1.png",
+    "rows": [
+      "sit"
+    ],
+    "columns": [
+      "down",
+      "right",
+      "up"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "portrait": {
+    "url": "/assets/pets/pet-frog/portrait-v1.png",
+    "imageWidth": 445,
+    "imageHeight": 445
+  },
+  "notes": "Hop cycle: crouch / ready / airborne. Airborne frames are taller; align by feet."
+}

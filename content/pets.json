@@ -1,8 +1,0 @@
-{
-  "_note": "Where each pet's walk strip lives. Swap url/frames/size for real art; nothing else changes.",
-  "pets": {
-    "pet-cat": { "url": "/assets/pets/pet-cat-placeholder-v1.png", "frames": 3, "frameMs": 150, "height": 34, "placeholder": true },
-    "pet-duck": { "url": "/assets/pets/pet-duck-placeholder-v1.png", "frames": 3, "frameMs": 160, "height": 32, "placeholder": true },
-    "pet-frog": { "url": "/assets/pets/pet-frog-placeholder-v1.png", "frames": 3, "frameMs": 180, "height": 30, "placeholder": true }
-  }
-}

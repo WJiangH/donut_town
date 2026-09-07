@@ -1,6 +1,6 @@
 const ALLOWED_SCENES = new Set(["town", "chemPod"]);
 const ALLOWED_DIRECTIONS = new Set(["up", "down", "left", "right"]);
-const ALLOWED_ACTIONS = new Set(["sitChair", "sitGrass", "garden", "lookout", "read", "coffee", "experiment"]);
+const ALLOWED_ACTIONS = new Set(["sitChair", "sitGrass", "garden", "lookout", "read", "coffee", "experiment", "dance", "fish"]);
 // A pet id is only ever relayed, never trusted as proof of ownership: the
 // worst a forged one can do is show a sprite that does not exist.
 const PET_ID = /^pet-[a-z0-9-]{2,30}$/;

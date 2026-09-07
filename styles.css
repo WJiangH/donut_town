@@ -144,34 +144,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .building-entrance small { margin-top: 4px; color: var(--accent-dark); font-size: 7px; }
 .building-entrance:hover, .building-entrance:focus-visible, .room-exit:hover, .room-exit:focus-visible { transform: translate(-50%, -72%) translateY(-3px); }
 
-.action-spots { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
-.action-spot {
-  position: absolute;
-  transform: translate(-50%, -120%);
-  pointer-events: auto;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  padding: 5px 9px;
-  background: #fff8e8;
-  box-shadow: 2px 2px 0 var(--ink);
-  color: var(--ink);
-  font: 800 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.action-spot:hover, .action-spot:focus-visible { background: var(--ink); color: #fff; }
 
 /* The whole room should be in view, and the people in it read as people in a
    room rather than furniture: hold the pod to the stage and stand them down. */
 .pets-layer { position: absolute; inset: 0; pointer-events: none; }
-.pet-pin {
+.pet-pin { position: absolute; width: 0; height: 0; }
+.pet-art {
   position: absolute;
-  width: 34px; height: 34px;
-  transform: translate(-50%, -100%);
+  left: 50%; bottom: 0;
+  transform: translateX(-50%);
   background-repeat: no-repeat;
   image-rendering: pixelated;
 }
-.pet-pin.facing-left { transform: translate(-50%, -100%) scaleX(-1); }
+.pet-art.mirrored { transform: translateX(-50%) scaleX(-1); }
 
 /* A member's own room: a grid of floorboards you can drop things onto. */
 .house-view { position: fixed; z-index: 65; inset: 0; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; padding: 18px; background: #efe6d6; }
@@ -246,6 +231,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .shop-item { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 9px; background: #e5efdf; border: 2px solid var(--line); border-radius: 10px; }
 .shop-item.owned { opacity: .68; }
 .shop-thumb { width: 26px; height: 26px; background: var(--swatch); border: 2px solid var(--ink); box-shadow: inset -3px -3px 0 rgba(0, 0, 0, .18); image-rendering: pixelated; }
+.shop-thumb.pictured { background-size: cover; background-position: center; box-shadow: none; }
 .shop-copy { display: grid; gap: 3px; min-width: 0; }
 .shop-copy strong { font-size: 11px; }
 .shop-copy small { color: var(--muted); font-size: 8px; line-height: 1.4; }

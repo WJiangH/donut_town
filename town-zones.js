@@ -42,6 +42,12 @@
     { action: "garden", scene: "town", x: 76.6, y: 22.0, seats: 2, note: "farm plots" },
     { action: "garden", scene: "town", x: 18.2, y: 88.5, seats: 2, note: "village garden" },
 
+    // Open paving, with room to swing an arm: dance.
+    { action: "dance", scene: "town", x: 50.5, y: 50.5, radius: 2.4, seats: 3, note: "fountain plaza south" },
+    { action: "dance", scene: "town", x: 51.0, y: 66.5, radius: 2.0, seats: 3, note: "flowerbed circle" },
+    { action: ["dance", "read"], scene: "town", x: 51.0, y: 7.6, radius: 1.6, seats: 2, note: "gazebo floor" },
+    { action: "dance", scene: "town", x: 43.5, y: 44.0, radius: 1.8, seats: 2, note: "fountain plaza west" },
+
     // Open lawn, measured off the map art: sit on the grass.
     { action: "sitGrass", scene: "town", x: 62.8, y: 90.2, radius: 3.0, seats: 4, note: "south-east meadow" },
     { action: "sitGrass", scene: "town", x: 26.3, y: 52.7, radius: 2.6, seats: 3, note: "west green" },

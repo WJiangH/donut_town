@@ -88,20 +88,10 @@ let clickPath = [];
 let playerDirection = "down";
 let playerFrame = 1;
 let playerAction = null;
-let pendingActionSpot = null;
+// The pet a member has taken out with them, learned from the shop.
+let equippedPet = null;
 let lastFrameChange = 0;
 
-const actionSpots = [
-  { id: "coffee", scene: "town", x: 32, y: 26, facing: "down", label: "Coffee" },
-  { id: "sitChair", scene: "town", x: 50, y: 36, facing: "down", label: "Sit" },
-  { id: "sitGrass", scene: "town", x: 40, y: 52, facing: "down", label: "Lawn" },
-  { id: "garden", scene: "town", x: 81, y: 28, facing: "down", label: "Garden" },
-  { id: "lookout", scene: "town", x: 84, y: 51, facing: "right", label: "View" },
-  { id: "read", scene: "town", x: 22, y: 24, facing: "down", label: "Read" },
-  { id: "experiment", scene: "chemPod", x: 50, y: 71, facing: "up", label: "Lab" },
-  { id: "read", scene: "chemPod", x: 41, y: 75, facing: "down", label: "Read" },
-  { id: "coffee", scene: "chemPod", x: 70, y: 79, facing: "down", label: "Coffee" }
-];
 let lastGameTime = performance.now();
 const remotePlayers = new Map();
 const remotePlayerElements = new Map();
@@ -744,8 +734,8 @@ function setCameraMode(nextMode, announce = false) {
   cameraMode = nextMode;
   document.querySelector("#mapWrap").dataset.cameraMode = cameraMode;
   document.querySelector("#townMovementHelp").textContent = cameraMode === "overview"
-    ? "Drag to explore · Click a yellow label to sit, sip, or garden"
-    : "Click a yellow label or a path · WASD / arrows to walk";
+    ? "Drag to explore · Click to walk · Stop somewhere and see what you do"
+    : "Click a path or use WASD · Stop somewhere and see what you do";
   document.querySelectorAll("[data-camera-mode]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.cameraMode === cameraMode));
   });
@@ -764,39 +754,6 @@ function actionSpotOccupants() {
     }
   }
   return occupants;
-}
-
-function nearestActionSpot(point, radius = 1.6) {
-  let best = null;
-  for (const spot of actionSpots) {
-    if (spot.scene !== currentScene) continue;
-    const distance = Math.hypot(spot.x - point.x, spot.y - point.y);
-    if (distance <= radius && (!best || distance < best.distance)) best = { ...spot, distance };
-  }
-  return best;
-}
-
-function walkToActionSpot(spot) {
-  pendingActionSpot = spot;
-  playerAction = null;
-  const destination = nearestWalkable(spot.x, spot.y);
-  clickPath = findWalkPath(player, destination);
-}
-
-function renderActionSpots() {
-  for (const [scene, rootId] of [["town", "townActionSpots"], ["chemPod", "chemPodActionSpots"]]) {
-    const root = document.querySelector(`#${rootId}`);
-    if (!root) continue;
-    root.innerHTML = actionSpots.filter(spot => spot.scene === scene).map(spot =>
-      `<button class="action-spot" type="button" style="left:${spot.x}%;top:${spot.y}%" data-index="${actionSpots.indexOf(spot)}" aria-label="${escapeHtml(spot.label)}">${escapeHtml(spot.label)}</button>`
-    ).join("");
-    root.querySelectorAll(".action-spot").forEach(button => button.addEventListener("click", event => {
-      event.stopPropagation();
-      const spot = actionSpots[Number(button.dataset.index)];
-      if (!spot || currentScene !== spot.scene) return;
-      walkToActionSpot(spot);
-    }));
-  }
 }
 
 function sceneCollision() {
@@ -908,7 +865,6 @@ function setScene(nextScene) {
   playerDirection = currentScene === "chemPod" ? "up" : "down";
   playerFrame = 1;
   playerAction = null;
-  pendingActionSpot = null;
   clickPath = [];
   document.querySelector("#townView").hidden = currentScene !== "town";
   document.querySelector("#chemPodView").hidden = currentScene !== "chemPod";
@@ -970,31 +926,16 @@ function gameLoop(timestamp) {
   if (isMoving) {
     playerAction = null;
     window.TownZones?.reset();
-    if (pendingActionSpot && pressedKeys.size) pendingActionSpot = null;
-  } else if (pendingActionSpot && pendingActionSpot.scene === currentScene && !clickPath.length) {
-    if (currentUser?.character?.actions?.[pendingActionSpot.id]) {
-      playerAction = pendingActionSpot.id;
-      playerDirection = pendingActionSpot.facing;
-    }
-    pendingActionSpot = null;
-  } else if (!pendingActionSpot && window.TownZones?.ready) {
+  } else if (!clickPath.length && window.TownZones?.ready) {
     // Standing still somewhere tagged settles you into what that place is for:
     // a free bench, the lawn, a bridge railing, the cafe tables, a garden bed.
-    if (!clickPath.length) {
-      const settled = window.TownZones.settle(player, currentScene, timestamp, currentUser?.character?.actions, actionSpotOccupants());
-      if (settled?.walkTo) clickPath = findWalkPath(player, settled.walkTo);
-      else if (settled) {
-        playerAction = settled.action;
-        playerDirection = settled.facing;
-      } else {
-        playerAction = null;
-      }
-    }
-  } else if (!pendingActionSpot) {
-    const spot = nearestActionSpot(player, 1.6);
-    if (spot && currentUser?.character?.actions?.[spot.id]) {
-      playerAction = spot.id;
-      playerDirection = spot.facing;
+    const settled = window.TownZones.settle(player, currentScene, timestamp, currentUser?.character?.actions, actionSpotOccupants());
+    if (settled?.walkTo) clickPath = findWalkPath(player, settled.walkTo);
+    else if (settled) {
+      playerAction = settled.action;
+      playerDirection = settled.facing;
+    } else {
+      playerAction = null;
     }
   }
   if (isMoving) {
@@ -1508,8 +1449,6 @@ document.querySelector("#shopEntrance").addEventListener("click", event => {
   if (currentScene === "town") clickPath = findWalkPath(player, { x: 51, y: 47 });
   openShop();
 });
-// The pet a member has taken out with them, learned from the shop.
-let equippedPet = null;
 let petsModule = null;
 function setEquippedPet(petId) {
   equippedPet = petId || null;
@@ -1668,8 +1607,7 @@ async function startTown() {
   const ready = await syncSlackResidents();
   clearTimeout(slow);
   if (ready) {
-    renderActionSpots();
-    loading.classList.add("done");
+      loading.classList.add("done");
     document.querySelector(".app-shell").inert = false;
     if (new URLSearchParams(location.search).get("profile") === "1") openProfile();
     syncInvitationStates();
@@ -1682,7 +1620,6 @@ document.querySelector("#retryTown").addEventListener("click", startTown);
 
 if (window.location.protocol === "file:") {
   residents = [];
-  renderActionSpots();
   renderResidents();
   renderInvitationDock();
   document.querySelector("#neighborSummary").innerHTML = `Slack is unavailable in file mode · <a href="http://127.0.0.1:4173/">Open connected town</a>`;

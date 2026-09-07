@@ -11,6 +11,7 @@ export function loadCatalog(url = new URL('../content/shop.json', import.meta.ur
     if (!KINDS.has(item.kind)) throw new Error(`Invalid shop item kind: ${item.kind}`);
     if (!Number.isInteger(item.price) || item.price < 0 || item.price > 999) throw new Error(`Invalid price for ${item.id}`);
     if (typeof item.name !== 'string' || !item.name.trim()) throw new Error(`Invalid name for ${item.id}`);
+    if (item.thumb !== undefined && !/^\/assets\/[\w./-]+\.(png|jpg)$/.test(item.thumb)) throw new Error(`Invalid thumbnail for ${item.id}`);
     ids.add(item.id);
   }
   const starter = Number.isInteger(catalog.starterDonuts) ? catalog.starterDonuts : 0;

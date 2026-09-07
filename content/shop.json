@@ -2,15 +2,88 @@
   "currency": "donut",
   "starterDonuts": 6,
   "items": [
-    { "id": "pet-cat", "kind": "pet", "name": "Town cat", "price": 6, "swatch": "#d9a25c", "blurb": "Trots after you and sits when you sit." },
-    { "id": "pet-duck", "kind": "pet", "name": "Pond duck", "price": 5, "swatch": "#f0c453", "blurb": "Waddles behind you, happiest near water." },
-    { "id": "pet-frog", "kind": "pet", "name": "Lab frog", "price": 4, "swatch": "#7fb069", "blurb": "Hops along. Fond of the Chem Pod." },
-    { "id": "deco-fern", "kind": "decoration", "name": "Potted fern", "price": 1, "swatch": "#5f9e5a", "blurb": "A green corner for an empty room." },
-    { "id": "deco-rug", "kind": "decoration", "name": "Woven rug", "price": 2, "swatch": "#b8563f", "blurb": "Warms up a bare floor." },
-    { "id": "deco-lamp", "kind": "decoration", "name": "Brass lamp", "price": 2, "swatch": "#d8a33c", "blurb": "Evening light for the reading chair." },
-    { "id": "deco-shelf", "kind": "decoration", "name": "Book shelf", "price": 3, "swatch": "#8a5a34", "blurb": "Somewhere to keep the good ones." },
-    { "id": "deco-table", "kind": "decoration", "name": "Round table", "price": 3, "swatch": "#c08a4a", "blurb": "Two chairs, one pot of coffee." },
-    { "id": "deco-window", "kind": "decoration", "name": "Bay window", "price": 4, "swatch": "#79a7c4", "blurb": "A view of the town from indoors." },
-    { "id": "deco-donut-sign", "kind": "decoration", "name": "Donut sign", "price": 5, "swatch": "#f0a0b8", "blurb": "The town's own neon, in pixels." }
+    {
+      "id": "pet-cat",
+      "kind": "pet",
+      "name": "Town cat",
+      "price": 6,
+      "swatch": "#d9a25c",
+      "blurb": "Trots after you and sits when you sit.",
+      "thumb": "/assets/pets/pet-cat/portrait-v1.png"
+    },
+    {
+      "id": "pet-duck",
+      "kind": "pet",
+      "name": "Pond duck",
+      "price": 5,
+      "swatch": "#f0c453",
+      "blurb": "Waddles behind you, happiest near water.",
+      "thumb": "/assets/pets/pet-duck/portrait-v1.png"
+    },
+    {
+      "id": "pet-frog",
+      "kind": "pet",
+      "name": "Lab frog",
+      "price": 4,
+      "swatch": "#7fb069",
+      "blurb": "Hops along. Fond of the Chem Pod.",
+      "thumb": "/assets/pets/pet-frog/portrait-v1.png"
+    },
+    {
+      "id": "deco-fern",
+      "kind": "decoration",
+      "name": "Potted fern",
+      "price": 1,
+      "swatch": "#5f9e5a",
+      "blurb": "A green corner for an empty room."
+    },
+    {
+      "id": "deco-rug",
+      "kind": "decoration",
+      "name": "Woven rug",
+      "price": 2,
+      "swatch": "#b8563f",
+      "blurb": "Warms up a bare floor."
+    },
+    {
+      "id": "deco-lamp",
+      "kind": "decoration",
+      "name": "Brass lamp",
+      "price": 2,
+      "swatch": "#d8a33c",
+      "blurb": "Evening light for the reading chair."
+    },
+    {
+      "id": "deco-shelf",
+      "kind": "decoration",
+      "name": "Book shelf",
+      "price": 3,
+      "swatch": "#8a5a34",
+      "blurb": "Somewhere to keep the good ones."
+    },
+    {
+      "id": "deco-table",
+      "kind": "decoration",
+      "name": "Round table",
+      "price": 3,
+      "swatch": "#c08a4a",
+      "blurb": "Two chairs, one pot of coffee."
+    },
+    {
+      "id": "deco-window",
+      "kind": "decoration",
+      "name": "Bay window",
+      "price": 4,
+      "swatch": "#79a7c4",
+      "blurb": "A view of the town from indoors."
+    },
+    {
+      "id": "deco-donut-sign",
+      "kind": "decoration",
+      "name": "Donut sign",
+      "price": 5,
+      "swatch": "#f0a0b8",
+      "blurb": "The town's own neon, in pixels."
+    }
   ]
 }

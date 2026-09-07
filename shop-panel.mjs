@@ -36,7 +36,7 @@ export function mountShop(root, { onOwnedChange = () => {}, onPetChange = () => 
         ? `<button data-pet="${escapeHtml(item.id)}" class="shop-pet${out ? ' out' : ''}">${out ? 'With you' : 'Take out'}</button>`
         : '';
       return `<li class="shop-item${owned ? ' owned' : ''}">
-        <span class="shop-thumb" style="--swatch:${escapeHtml(item.swatch || '#c9a227')}" aria-hidden="true"></span>
+        <span class="shop-thumb${item.thumb ? ' pictured' : ''}" style="--swatch:${escapeHtml(item.swatch || '#c9a227')}${item.thumb ? `;background-image:url('${escapeHtml(item.thumb)}')` : ''}" aria-hidden="true"></span>
         <span class="shop-copy">
           <strong>${escapeHtml(item.name)}</strong>
           <small>${escapeHtml(KIND_LABEL[item.kind] || item.kind)} · ${escapeHtml(item.blurb || '')}</small>

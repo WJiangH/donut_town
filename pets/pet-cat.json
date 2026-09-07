@@ -1,0 +1,134 @@
+{
+  "id": "pet-cat",
+  "kind": "pet",
+  "name": "Town cat",
+  "price": 6,
+  "swatch": "#d9a25c",
+  "blurb": "Trots after you and sits when you sit.",
+  "gait": "trot",
+  "displayHeight": 42,
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-distinct-stride",
+  "walk": {
+    "imageWidth": 1024,
+    "imageHeight": 1024,
+    "frameHeight": 243,
+    "frames": [
+      [
+        90,
+        73,
+        242,
+        243
+      ],
+      [
+        434,
+        73,
+        179,
+        243
+      ],
+      [
+        716,
+        73,
+        238,
+        243
+      ],
+      [
+        80,
+        396,
+        239,
+        232
+      ],
+      [
+        406,
+        397,
+        224,
+        231
+      ],
+      [
+        718,
+        396,
+        232,
+        232
+      ],
+      [
+        94,
+        716,
+        238,
+        232
+      ],
+      [
+        436,
+        716,
+        170,
+        232
+      ],
+      [
+        725,
+        716,
+        231,
+        232
+      ]
+    ],
+    "url": "/assets/pets/pet-cat/walk-v1.png",
+    "loop": [
+      0,
+      1,
+      2,
+      1
+    ],
+    "frameMs": 130,
+    "rows": [
+      "down",
+      "right",
+      "up"
+    ],
+    "columns": [
+      "stepA",
+      "neutral",
+      "stepB"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "sit": {
+    "imageWidth": 1024,
+    "imageHeight": 1024,
+    "frameHeight": 367,
+    "frames": [
+      [
+        89,
+        340,
+        294,
+        344
+      ],
+      [
+        400,
+        332,
+        259,
+        367
+      ],
+      [
+        711,
+        339,
+        245,
+        338
+      ]
+    ],
+    "url": "/assets/pets/pet-cat/sit-v1.png",
+    "rows": [
+      "sit"
+    ],
+    "columns": [
+      "down",
+      "right",
+      "up"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "portrait": {
+    "url": "/assets/pets/pet-cat/portrait-v1.png",
+    "imageWidth": 513,
+    "imageHeight": 513
+  },
+  "notes": "Walk row 1/3 step frames are 3/4 rather than strict front/back; side row is a clean trot. Sit ground line removed from the gaps."
+}

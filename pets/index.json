@@ -1,0 +1,31 @@
+{
+  "displayHeight": 42,
+  "mirrorRightForLeft": true,
+  "walkLoop": [0, 1, 2, 1],
+  "items": [
+    {
+      "id": "pet-cat",
+      "name": "Town cat",
+      "manifest": "/pets/pet-cat.json",
+      "walk": "/assets/pets/pet-cat/walk-v1.png",
+      "sit": "/assets/pets/pet-cat/sit-v1.png",
+      "portrait": "/assets/pets/pet-cat/portrait-v1.png"
+    },
+    {
+      "id": "pet-duck",
+      "name": "Pond duck",
+      "manifest": "/pets/pet-duck.json",
+      "walk": "/assets/pets/pet-duck/walk-v1.png",
+      "sit": "/assets/pets/pet-duck/sit-v1.png",
+      "portrait": "/assets/pets/pet-duck/portrait-v1.png"
+    },
+    {
+      "id": "pet-frog",
+      "name": "Lab frog",
+      "manifest": "/pets/pet-frog.json",
+      "walk": "/assets/pets/pet-frog/walk-v1.png",
+      "sit": "/assets/pets/pet-frog/sit-v1.png",
+      "portrait": "/assets/pets/pet-frog/portrait-v1.png"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "id": "pet-duck",
+  "kind": "pet",
+  "name": "Pond duck",
+  "price": 5,
+  "swatch": "#f0c453",
+  "blurb": "Waddles behind you, happiest near water.",
+  "gait": "waddle",
+  "displayHeight": 42,
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-distinct-stride",
+  "walk": {
+    "imageWidth": 1024,
+    "imageHeight": 1024,
+    "frameHeight": 254,
+    "frames": [
+      [
+        149,
+        97,
+        161,
+        253
+      ],
+      [
+        446,
+        97,
+        152,
+        253
+      ],
+      [
+        721,
+        97,
+        182,
+        254
+      ],
+      [
+        113,
+        390,
+        237,
+        253
+      ],
+      [
+        401,
+        390,
+        238,
+        253
+      ],
+      [
+        690,
+        390,
+        237,
+        248
+      ],
+      [
+        145,
+        682,
+        173,
+        245
+      ],
+      [
+        442,
+        682,
+        156,
+        246
+      ],
+      [
+        732,
+        682,
+        171,
+        246
+      ]
+    ],
+    "url": "/assets/pets/pet-duck/walk-v1.png",
+    "loop": [
+      0,
+      1,
+      2,
+      1
+    ],
+    "frameMs": 150,
+    "rows": [
+      "down",
+      "right",
+      "up"
+    ],
+    "columns": [
+      "stepA",
+      "neutral",
+      "stepB"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "sit": {
+    "imageWidth": 1024,
+    "imageHeight": 1024,
+    "frameHeight": 308,
+    "frames": [
+      [
+        98,
+        354,
+        228,
+        308
+      ],
+      [
+        362,
+        354,
+        333,
+        308
+      ],
+      [
+        714,
+        354,
+        229,
+        308
+      ]
+    ],
+    "url": "/assets/pets/pet-duck/sit-v1.png",
+    "rows": [
+      "sit"
+    ],
+    "columns": [
+      "down",
+      "right",
+      "up"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "portrait": {
+    "url": "/assets/pets/pet-duck/portrait-v1.png",
+    "imageWidth": 537,
+    "imageHeight": 537
+  },
+  "notes": "Waddle is clearest on the down and up rows; side-row foot change is smaller."
+}
