@@ -441,10 +441,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .resident-facts dd { margin: 0; font-size: 10px; font-weight: 800; }
 .resident-facts .empty-fact { display: block; color: var(--muted); font-size: 9px; line-height: 1.5; }
 .donut-count { display: flex; align-items: center; gap: 11px; padding: 14px 0; border-top: 2px solid var(--line); border-bottom: 2px solid var(--line); font-size: 10px; }
-.mini-donut, .donut { border-radius: 50%; background: #de7380; border: 4px solid #9e4d32; position: relative; box-shadow: inset 0 -4px rgba(114, 38, 42, .18); }
-.mini-donut { width: 33px; height: 33px; }
-.mini-donut::after, .donut::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--paper); border-radius: 50%; border: 3px solid #9e4d32; }
-.mini-donut::after { width: 8px; height: 8px; }
+/* The donut is drawn as pixel art, like everything else in town. */
+.mini-donut, .donut {
+  background: url("assets/ui/donut-16.png") center / contain no-repeat;
+  image-rendering: pixelated;
+}
+.mini-donut { width: 32px; height: 32px; }
+.donut { aspect-ratio: 1; width: 100%; max-width: 120px; background-image: url("assets/ui/donut-32.png"); }
 .topic-block { margin-top: 22px; }
 .topic-block > span { display: block; color: var(--muted); font-size: 9px; margin-bottom: 10px; }
 .topic-list { display: flex; flex-wrap: wrap; gap: 7px; }
@@ -463,12 +466,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .donut-total { display: flex; align-items: center; gap: 9px; padding: 10px 12px; background: #e5efdf; border: 2px solid var(--line); border-radius: 10px; }
 .donut-total strong { font-size: 18px; }
 
-.donut { aspect-ratio: 1; width: 100%; max-width: 120px; border-width: 8px; }
-.donut::after { width: 22%; height: 22%; border-width: 6px; background: #d7b477; }
-.donut.cocoa { background: #744737; }
-.donut.berry { background: #a75586; }
-.donut.lemon { background: #e6b84e; }
-.donut.mint { background: #6fa985; }
 .toast { position: fixed; z-index: 70; left: 50%; bottom: 22px; transform: translate(-50%, 120px); background: var(--ink); color: #f7faf4; border: 3px solid #f7faf4; border-radius: 9px; padding: 13px 18px; box-shadow: 4px 4px 0 var(--accent); font-size: 10px; opacity: 0; transition: transform 220ms ease, opacity 220ms ease; }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
 .map-empty { position: absolute; z-index: 6; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--surface-solid); border: 3px solid var(--ink); border-radius: var(--radius); padding: 20px; text-align: center; box-shadow: 5px 5px 0 var(--ink); }
@@ -566,5 +563,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
 .profile-wardrobe .outfit-swatch[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 1px; background-color: var(--swatch); }
 .profile-wardrobe button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .wardrobe-directions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.wardrobe-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.profile-wardrobe .wardrobe-save { background: var(--accent); border-color: var(--accent); color: #fffaf2; font-weight: 700; }
+.profile-wardrobe button[disabled] { opacity: .45; cursor: default; }
 .profile-wardrobe [role="status"] { margin: 10px 0 0; font-size: 8px; color: var(--muted); }
 @media (max-width: 360px) { .wardrobe-body { grid-template-columns: 100px 1fr; gap: 10px; } .profile-wardrobe button { padding: 6px; } }

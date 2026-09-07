@@ -143,6 +143,22 @@ node scripts/build-town-zones.mjs
 
 Open the town with `?zones=1` to see every tag drawn over the map.
 
+### Changing how you look
+
+The profile drawer previews a look and only equips it when **Save look** is
+pressed; **Undo changes** puts the saved one back. A refusal now says which one
+it was - not signed in through Slack, no wardrobe for that character, or no
+wardrobe storage configured - instead of a single "could not apply".
+
+Saving needs `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`; without
+them the API answers `outfit_store_unavailable` and nothing can be equipped.
+
+The small UI icons are pixel art rather than CSS circles:
+
+```
+node scripts/build-pixel-icons.mjs
+```
+
 ### Free invitation history with Upstash
 
 The preferred persistent store is an Upstash Redis database in the same region
