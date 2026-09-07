@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=52" />
+    <link rel="stylesheet" href="styles.css?v=53" />
     <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
@@ -30,6 +30,7 @@
         </div>
 
         <div class="profile-control">
+          <button class="town-settings-button" id="openMessages" type="button">Messages</button>
           <button class="town-settings-button" id="townSettingsButton" type="button" aria-label="Town settings" hidden>Settings</button>
           <button class="availability" id="availabilityButton" aria-pressed="true">
             <span class="status-light" aria-hidden="true"></span>
@@ -64,6 +65,7 @@
             <button type="button" id="railChem"><span aria-hidden="true">⚗</span> Chem Pod <span aria-hidden="true">→</span></button>
             </nav>
           </details>
+          <details class="pair-board" id="pairBoard"><summary><span class="mini-donut" aria-hidden="true"></span> Baking together <small id="pairBoardCount">0 pairs</small></summary><p>This week’s Donut Chat pairs</p><ol id="pairBoardList"></ol></details>
           <section id="townDirectory" class="town-directory" aria-labelledby="directoryTitle">
             <div class="directory-heading"><h2 id="directoryTitle">Neighbors</h2><span id="directoryCount"></span></div>
             <input id="neighborSearch" type="search" placeholder="Find a neighbor…" aria-label="Find a neighbor" autocomplete="off" />
@@ -186,6 +188,7 @@
         </button>
         <div class="dock-body" hidden>
           <p class="dock-help" id="inviteDockHelp">People waiting to answer your invitation appear here.</p>
+          <ol class="pending-invite-list incoming-invites" id="incomingInviteList"></ol>
           <ol class="pending-invite-list" id="pendingInviteList"></ol>
           <div class="pending-invite-empty" id="pendingInviteEmpty">You have three invitations available. Choose a neighbor to begin.</div>
         </div>
@@ -206,13 +209,14 @@
       </div>
       <p class="connection-note" id="connectionNote"></p>
       <button class="invite-button" id="inviteButton"></button>
+      <div class="neighbor-actions"><a class="house-entrance" id="visitNeighborHome" href="#"><span class="house-entrance-mark" aria-hidden="true"></span>Visit Home <span aria-hidden="true">→</span></a><button id="messageNeighbor" type="button">Message</button></div>
     </aside>
 
     <section class="house-view" id="houseView" hidden aria-label="Your donut house">
       <div class="house-bar">
         <button class="room-back-button" id="leaveHouse">Back to town</button>
         <div>
-          <span>Your place</span>
+          <span data-house="owner-label">Your place</span>
           <strong>Donut Home</strong>
         </div>
         <div class="house-luxury" aria-label="Home luxury">
@@ -228,12 +232,20 @@
         <label class="house-room-choice">Room <select data-house="room" aria-label="Room style"></select></label>
         <div class="house-mode"><button type="button" data-house="mode" aria-pressed="false">Decorate</button><span data-house="help">Click the floor or use WASD / arrows to walk</span></div>
       </div>
+      <div class="home-living-space">
+      <aside class="home-social home-visitors" aria-label="Home visitors"><span class="social-kicker">Welcome in</span><h2>Visitors</h2><ul data-social="visitors"></ul></aside>
       <div class="house-viewport">
       <div class="house-room">
         <img class="room-art" alt="" draggable="false" />
         <div class="house-floor" data-house="floor" tabindex="0" role="group" aria-label="Home floor"></div>
         <div class="house-resident" data-house="resident" aria-hidden="true"></div>
       </div>
+      </div>
+      <aside class="home-social home-guestbook" aria-label="Home guestbook"><span class="social-kicker">Little things, lasting connections</span><h2>Guestbook</h2>
+        <div data-social="gifts" hidden><div class="home-reactions"><button type="button" data-kind="kudos">★ Kudos</button><button type="button" data-kind="flower">✿ Flowers</button><button type="button" data-kind="heart">♥ Heart</button></div><div class="home-gift"><label>Donuts <input type="number" min="1" max="999" value="1" aria-label="Donuts to gift"></label><button type="button" data-kind="donut">Send</button><small>You have <b data-social="balance">0</b></small></div></div>
+        <form data-social="note-form" hidden><textarea name="text" maxlength="1000" required placeholder="Leave a little note…" aria-label="Guestbook note"></textarea><button type="submit">Leave note</button></form>
+        <p role="status" data-social="status"></p><ul data-social="notes"></ul>
+      </aside>
       </div>
       <div class="house-shelf-wrap" data-house="editor" hidden>
         <div class="house-tools"><strong data-house="selected">Select a decoration</strong><button data-house="remove" disabled>Put away</button><button data-house="retry" hidden>Retry save</button><button id="houseShop">Visit shop</button></div>
@@ -243,6 +255,12 @@
       </div>
     </section>
 
+    <aside class="messages-panel" id="messagesPanel" hidden aria-label="Private messages">
+      <header><button type="button" data-messages="back" aria-label="All conversations">←</button><h2>Messages</h2><button type="button" data-messages="close" aria-label="Close messages">Close</button></header>
+      <p class="messages-note">Private Town messages · Latest 100 · Separate from Slack</p>
+      <ol data-messages="list"></ol><p role="status"></p>
+      <form hidden><textarea name="text" maxlength="1000" required placeholder="Say hello…" aria-label="Private message"></textarea><button type="submit">Send</button></form>
+    </aside>
     <div class="profile-scrim" id="profileScrim" hidden></div>
     <aside class="profile-drawer" id="profileDrawer" aria-hidden="true" aria-labelledby="profileName">
       <button class="close-button" id="closeProfile" aria-label="Close your profile">Close</button>
@@ -318,6 +336,6 @@
     <script src="town-collision.js?v=6"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=6"></script>
-    <script src="app.js?v=60"></script>
+    <script src="app.js?v=61"></script>
   </body>
 </html>

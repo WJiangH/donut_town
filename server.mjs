@@ -12,6 +12,7 @@ import { grantedDonuts } from "./shop/grants.mjs";
 import { HouseStore, HOUSE_GRID, validateLayout, homeOwned } from "./house/store.mjs";
 import { houseLuxury } from "./house/luxury.mjs";
 import { ChatStore } from "./chats/store.mjs";
+import { SocialStore, socialInput } from "./social/store.mjs";
 import { ChatService } from "./chats/service.mjs";
 import { ThemeStore } from "./town-themes/store.mjs";
 import { ThemeService } from "./town-themes/service.mjs";
@@ -19,7 +20,7 @@ import { validateTheme } from "./town-themes/contract.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
-import { activeInvitations, activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
+import { activeInvitations, activeRoundId, getInvitation, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
 import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "./slack/ledger.mjs";
 import { UpstashInvitationStore } from "./slack/upstash-store.mjs";
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
@@ -62,6 +63,7 @@ const invitationStore = new UpstashInvitationStore({ url: config.upstashUrl, tok
 const outfitStore = new OutfitStore({ url: config.upstashUrl, token: config.upstashToken });
 const shopStore = new ShopStore({ url: config.upstashUrl, token: config.upstashToken });
 const shopCatalog = loadCatalog();
+const socialStore = new SocialStore(shopStore, config.channelId);
 const houseStore = new HouseStore({ url: config.upstashUrl, token: config.upstashToken });
 const chatService = new ChatService({
   invitationStore,
@@ -80,6 +82,7 @@ let profileCache = null;
 let profileCacheExpiresAt = 0;
 let hydratedInvitationRoundId = null;
 let invitationHydrationPromise = null;
+let invitationReadAt = 0;
 const ledgerMessageTsByInviter = new Map();
 const realtimeServer = new WebSocketServer({ noServer: true, maxPayload: 512 });
 const presenceHub = new PresenceHub();
@@ -130,6 +133,11 @@ const server = createServer(async (request, response) => {
     }
 
     renewSessionCookie(request, response);
+    if (request.method === 'POST' && url.pathname.startsWith('/api/')) {
+      const origin=request.headers.origin;
+      if ((origin && new URL(origin).host!==request.headers.host) || request.headers['sec-fetch-site']==='cross-site') return sendJson(response,403,{error:'same_origin_required'});
+      if (!request.headers['content-type']?.startsWith('application/json')) return sendJson(response,415,{error:'json_required'});
+    }
 
     if (url.pathname === '/api/town/theme') {
       response.setHeader('cache-control','private, no-store');
@@ -176,6 +184,7 @@ const server = createServer(async (request, response) => {
         currentUserConfigured: Boolean(currentUserId),
         currentUserFound,
         profileConnected: false,
+        incomingInvitations: incomingFor(currentUserId),
         outgoingInvitations: currentUserId ? pendingInvitationsFor(currentUserId).map(invitation => ({
           id: invitation.id,
           inviteeId: invitation.inviteeId,
@@ -200,6 +209,7 @@ const server = createServer(async (request, response) => {
       const session = getSlackSession(request);
       response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
+        incomingInvitations: incomingFor(session?.sub),
         states: Object.fromEntries(members.map(member => [member.id, invitationStateFor(member.id)])),
         outgoingInvitations: session?.sub ? pendingInvitationsFor(session.sub).map(invitation => ({
           id: invitation.id,
@@ -295,7 +305,11 @@ const server = createServer(async (request, response) => {
       const members = await getCachedChannelMembers();
       if (!members.some(entry => entry.id === session.sub)) return sendJson(response, 403, { error: "member_not_found" });
       if (!houseStore.configured) return sendJson(response, 503, { error: "house_store_unavailable" });
-      const key = memberCharacterKey(session.sub, config.signingSecret);
+      const self = memberCharacterKey(session.sub, config.signingSecret);
+      const key = url.searchParams.get('owner') || self;
+      const owner = members.find(entry => memberCharacterKey(entry.id, config.signingSecret) === key);
+      if (!owner) return sendJson(response,404,{error:'member_not_found'});
+      if (request.method!=='GET' && key!==self) return sendJson(response,403,{error:'home_read_only'});
       let owned;
       try { owned = ownedIds(await shopStore.purse(key, shopCatalog)); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
       owned = homeOwned(owned, shopCatalog);
@@ -305,7 +319,7 @@ const server = createServer(async (request, response) => {
       if (request.method === "GET") {
         let layout;
         try { layout = await houseStore.load(key, { ownedIds: owned, catalog: shopCatalog }); } catch { return sendJson(response, 503, { error: "house_store_unavailable" }); }
-        return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, rooms, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
+        return sendJson(response, 200, { owner: {key,name:owner.displayName || owner.realName || "Neighbor"}, canDecorate: key===self, grid: HOUSE_GRID, layout, owned, furniture, rooms, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
       }
       if (request.method !== "POST") return sendJson(response, 405, { error: "method_not_allowed" });
 
@@ -316,7 +330,63 @@ const server = createServer(async (request, response) => {
         layout = validateLayout(body.layout, { ownedIds: owned, catalog: shopCatalog });
       } catch { return sendJson(response, 400, { error: "invalid_layout" }); }
       try { await houseStore.save(key, layout); } catch { return sendJson(response, 503, { error: "house_save_failed" }); }
-      return sendJson(response, 200, { grid: HOUSE_GRID, layout, owned, furniture, rooms, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
+      return sendJson(response, 200, { owner: {key,name:owner.displayName || owner.realName || "Neighbor"}, canDecorate: key===self, grid: HOUSE_GRID, layout, owned, furniture, rooms, luxury: houseLuxury(layout, { catalog: shopCatalog, ownedIds: owned }) });
+    }
+
+    if (url.pathname === '/api/social' || url.pathname === '/api/messages') {
+      response.setHeader('cache-control','private, no-store');
+      const session=getSlackSession(request);
+      if(!session?.sub)return sendJson(response,401,{error:'slack_login_required'});
+      const members=await getCachedChannelMembers();
+      const member=members.find(m=>m.id===session.sub);
+      if(!member)return sendJson(response,403,{error:'member_not_found'});
+      if(!shopStore.configured)return sendJson(response,503,{error:'social_unavailable'});
+      const self=memberCharacterKey(member.id,config.signingSecret);
+      const messaging=url.pathname==='/api/messages';
+      const people=new Map(members.map(m=>[memberCharacterKey(m.id,config.signingSecret),{key:memberCharacterKey(m.id,config.signingSecret),name:m.displayName||m.realName||'Neighbor',avatar:m.avatarUrl||null}]));
+      const person=key=>people.get(key)||{key:null,name:'Former neighbor',avatar:null};
+      const decorate=e=>({...e,sender:person(e.from),recipient:person(e.to)});
+      try {
+        if(!['GET','POST'].includes(request.method))return sendJson(response,405,{error:'method_not_allowed'});
+        const body=request.method==='POST'?JSON.parse(await readBody(request)):{};
+        const peer=messaging?(url.searchParams.get('peer')||body.peer):(url.searchParams.get('home')||body.home||self);
+        if(peer && !people.has(peer))return sendJson(response,404,{error:'member_not_found'});
+        if(request.method==='POST') {
+          if(!peer)return sendJson(response,400,{error:'choose_a_neighbor'});
+          const event=socialInput(body,{self,peer,messaging});
+          await socialStore.event(event,shopCatalog.starterDonuts+grantedDonuts(self)+(Number.isInteger(member.donutCount)?member.donutCount:0));
+          return sendJson(response,201,{ok:true});
+        }
+        if(messaging)return sendJson(response,200,{self,peer:peer?person(peer):null,messages:(await socialStore.messages(self,peer)).map(decorate)});
+        await socialStore.visit(peer,self);
+        const [home,purse]=await Promise.all([socialStore.home(peer),shopStore.purse(self,shopCatalog)]);
+        return sendJson(response,200,{self,owner:person(peer),notes:home.notes.map(decorate),visitors:home.visitors.map(e=>({...e,sender:person(e.from)})),wallet:walletFor({earned:shopCatalog.starterDonuts+grantedDonuts(self)+(Number.isInteger(member.donutCount)?member.donutCount:0),purse})});
+      } catch(error) {
+        const code=error.code||error.message;
+        const known=['invalid_interaction','choose_a_neighbor','invalid_message','invalid_amount','not_enough_donuts','try_again_later','request_conflict'];
+        return sendJson(response,known.includes(code)?400:503,{error:known.includes(code)?code:'social_unavailable'});
+      }
+    }
+
+    if (url.pathname === '/api/slack/invitations/respond') {
+      response.setHeader('cache-control','private, no-store');
+      const session=getSlackSession(request);
+      if(!session?.sub)return sendJson(response,401,{error:'slack_login_required'});
+      if(request.method!=='POST')return sendJson(response,405,{error:'method_not_allowed'});
+      try {
+        const body=JSON.parse(await readBody(request));
+        if(!['accepted','declined'].includes(body.status)||typeof body.id!=='string')return sendJson(response,400,{error:'invalid_invitation'});
+        const members=await getCachedChannelMembers();
+        if(!members.some(m=>m.id===session.sub))return sendJson(response,403,{error:'member_not_found'});
+        const result=await respondToInvitation(body.id,body.status,session.sub);
+        if(!result)return sendJson(response,409,{error:'invitation_not_active'});
+        // Acceptance is already durable. A notification failure must not undo it.
+        if(config.allowSend&&slack&&!result.duplicateResponse) {
+          void notifyInviter(result,body.status).catch(()=>console.error('Invitation notification failed'));
+          void updateInvitationCard(result,body.status).catch(()=>console.error('Invitation card update failed'));
+        }
+        return sendJson(response,200,{ok:true,status:body.status});
+      }catch(error){return sendJson(response,error.code?409:503,{error:error.code||'invitation_unavailable'});}
     }
 
     if (url.pathname === "/api/profile/chats" || url.pathname === "/api/profile/chats/confirm") {
@@ -363,7 +433,7 @@ const server = createServer(async (request, response) => {
     if (request.method === "POST" && url.pathname === "/api/slack/invitations") {
       const session = getSlackSession(request);
       if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
-      await ensureInvitationStateHydrated();
+      await ensureInvitationStateHydrated(true);
       const body = JSON.parse(await readBody(request));
       const members = await getCachedChannelMembers();
       const selfTest = body.selfTest === true;
@@ -393,14 +463,21 @@ const server = createServer(async (request, response) => {
       }
       if (!slack) return missingConfiguration(response);
       try {
-        if (!invitation.selfTest) await persistInvitationSnapshots([invitation.inviterId]);
+        if (!invitation.selfTest) {
+          if(invitationStore.configured) restoreInvitationSnapshots(await socialStore.invitation('add',invitation,activeRoundId()));
+          else await persistInvitationSnapshots([invitation.inviterId]);
+        }
         const channel = await slack.openDm(invitation.inviteeId);
-        await slack.postMessage(channel, message);
+        const delivered=await slack.postMessage(channel, message);
+        if(!invitation.selfTest&&invitationStore.configured&&delivered.ts){
+          // Message delivery has succeeded; missing card metadata must not cancel a valid invitation.
+          await socialStore.invitation('delivery',{id:invitation.id,messageChannel:channel,messageTs:delivered.ts},activeRoundId()).catch(()=>console.error('Invitation card reference unavailable'));
+        }
         return sendJson(response, 201, { ok: true, dryRun: false, invitation });
       } catch (error) {
         discardInvitation(invitation.id);
         if (!invitation.selfTest) {
-          await persistInvitationSnapshots([invitation.inviterId]).catch(ledgerError => console.error("Slack ledger rollback failed", ledgerError));
+          await (invitationStore.configured ? socialStore.invitation('remove', {id:invitation.id}, activeRoundId()).then(restoreInvitationSnapshots) : persistInvitationSnapshots([invitation.inviterId])).catch(()=>console.error('Invitation delivery rollback failed'));
         }
         throw error;
       }
@@ -529,10 +606,42 @@ async function getCachedChannelMembers() {
   return memberSyncPromise;
 }
 
-async function ensureInvitationStateHydrated() {
+function incomingFor(userId) {
+  return activeInvitations().filter(i=>i.inviteeId===userId&&i.status==='pending').map(i=>({id:i.id,inviterId:i.inviterId,createdAt:i.createdAt}));
+}
+
+async function respondToInvitation(id,status,responder) {
+  // Self-test invitations never enter persistent pair/reward storage.
+  const test=getInvitation(id);
+  if(test?.selfTest)return answerInvitation(id,status,responder);
+  await ensureInvitationStateHydrated(true);
+  const invitation=getInvitation(id);
+  if(!invitation||invitation.inviteeId!==responder)return null;
+  const members=await getCachedChannelMembers();
+  if(![responder,invitation.inviterId].every(id=>members.some(m=>m.id===id)))return null;
+  if(invitationStore.configured) {
+    const keys=[invitation.inviterId,responder].map(id=>memberCharacterKey(id,config.signingSecret));
+    let snapshots;
+    try{snapshots=await socialStore.invitation('answer',{id,responder,inviter:invitation.inviterId,status},activeRoundId(),keys);}
+    catch(error){if(['invitation_not_active','already_booked'].includes(error.code))return null;throw error;}
+    restoreInvitationSnapshots(snapshots);
+    getInvitation(id).duplicateResponse=!snapshots.changed;
+  }else{
+    if(status==='accepted')throw Error('shop_store_unavailable');
+    const answer=answerInvitation(id,status,responder);
+    if(!answer)return null;
+    await persistInvitationSnapshots(activeInvitations().map(i=>i.inviterId));
+  }
+  presenceHub.broadcast({type:'invitations-changed'});
+  return getInvitation(id);
+}
+
+async function ensureInvitationStateHydrated(force=false) {
   if (!invitationStore.configured && !config.ledgerChannelId) return;
   const roundId = activeRoundId();
-  if (hydratedInvitationRoundId === roundId) return;
+  if(force && invitationHydrationPromise)await invitationHydrationPromise;
+  // Roster polls share a one-second snapshot; writes always read durable state.
+  if (hydratedInvitationRoundId === roundId && (!invitationStore.configured || (!force && Date.now()-invitationReadAt<1000))) return;
   if (invitationHydrationPromise) return invitationHydrationPromise;
   invitationHydrationPromise = (async () => {
     if (invitationStore.configured) {
@@ -540,6 +649,7 @@ async function ensureInvitationStateHydrated() {
       if (snapshots !== null || !config.ledgerChannelId) {
         restoreInvitationSnapshots(snapshots || []);
         hydratedInvitationRoundId = roundId;
+        invitationReadAt=Date.now();
         return;
       }
     }
@@ -643,29 +753,37 @@ async function handleSlackAction(payload, publicBaseUrl) {
     return;
   }
   if (!["donut_accept", "donut_decline"].includes(action.action_id)) return;
-  await ensureInvitationStateHydrated();
   const status = action.action_id === "donut_accept" ? "accepted" : "declined";
-  const previousStatuses = new Map(activeInvitations().map(invitation => [invitation.id, invitation.status]));
-  const invitation = answerInvitation(action.value, status, payload.user.id);
+  let invitation;
+  try{invitation=await respondToInvitation(action.value,status,payload.user.id);}
+  catch{await slack.postMessage(payload.channel.id,{text:'Could not save your answer. Please try the invitation button again.'});return;}
   if (!invitation) {
     await slack.postMessage(payload.channel.id, { text: "This Donut invitation is no longer active." });
     return;
   }
-  if (!invitation.selfTest) {
-    const changedInviters = activeInvitations()
-      .filter(item => previousStatuses.get(item.id) !== item.status)
-      .map(item => item.inviterId);
-    await persistInvitationSnapshots(changedInviters);
-  }
   const responderMessage = status === "accepted"
     ? invitation.selfTest
       ? "Self-test accepted. A real acceptance will mark both people as booked. :doughnut:"
-      : "Accepted! Donut Town marked you as booked for this week. :doughnut:"
+      : "Accepted! You are paired this week. You each earned 5 donuts in Town. :doughnut:"
     : invitation.selfTest
       ? "Self-test declined. A real decline will leave both people available."
       : "No problem. Donut Town will leave you available for another week.";
-  await slack.postMessage(payload.channel.id, { text: responderMessage });
+  const card={...invitation,messageChannel:payload.channel?.id||invitation.messageChannel,messageTs:payload.message?.ts||payload.container?.message_ts||invitation.messageTs};
+  if(card.messageChannel&&card.messageTs)await updateInvitationCard(card,status);
+  else await slack.postMessage(payload.channel.id, { text: responderMessage });
   if (invitation.selfTest) return;
+  if(!invitation.duplicateResponse)await notifyInviter(invitation, status);
+}
+
+async function updateInvitationCard(invitation,status) {
+  if(!invitation.messageChannel||!invitation.messageTs)return;
+  const text=invitation.selfTest ? `Self-test ${status}. No rewards issued.` : status==='accepted'
+    ? `Paired! <@${invitation.inviterId}> and <@${invitation.inviteeId}> are booked for this week. You each earned 5 donuts. :doughnut:`
+    : 'This Donut invitation was declined. You can choose another neighbor in Town.';
+  await slack.updateMessage(invitation.messageChannel,invitation.messageTs,{text,blocks:[{type:'section',text:{type:'mrkdwn',text}}]});
+}
+
+async function notifyInviter(invitation,status) {
   const inviterChannel = await slack.openDm(invitation.inviterId);
   await slack.postMessage(inviterChannel, {
     text: status === "accepted"

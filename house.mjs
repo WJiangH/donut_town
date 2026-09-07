@@ -1,3 +1,4 @@
+import { mountHomeSocial } from './social-client.mjs';
 import { itemArt, itemSprite } from './shop/item-art.mjs';
 import { decorationLuxury, houseLuxury, LUXURY_TIERS } from './house/luxury.mjs';
 import { homeNavigation } from './house/navigation.mjs';
@@ -9,8 +10,10 @@ const MESSAGES = {
   invalid_layout: 'That spot will not take it.'
 };
 const escapeHtml = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}) {
+export function mountHouse(root, {paintCharacter = null, onMove = () => {}, onVisit = () => {}} = {}) {
   const floor=root.querySelector('[data-house="floor"]'), shelf=root.querySelector('[data-house="shelf"]'), status=root.querySelector('[data-house="status"]');
+  const social=mountHomeSocial(root,{onVisit});
+  let canDecorate=false, loadVersion=0;
   const grid={cols:14,rows:9};
   let furniture=new Map(), layout=[], owned=[], selected=null, dragging=null, timer=null, saving=null, revision=0, savedRevision=0, loaded=false;
   const resident=root.querySelector('[data-house="resident"]');
@@ -99,7 +102,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
     })().finally(()=>{saving=null;});
     return saving;
   }
-  function changed(){revision++;status.textContent='Saving…';render();clearTimeout(timer);timer=setTimeout(flush,350);}
+  function changed(){if(!canDecorate||!loaded)return;revision++;status.textContent='Saving…';render();clearTimeout(timer);timer=setTimeout(flush,350);}
   function place(id,x,y){if(!valid(id,x,y)){status.textContent='Choose a clear spot.';return;}const entry=placed(id);if(entry){entry.x=x;entry.y=y;}else layout.push({id,x,y});changed();}
   function remove(){if(!placed(selected))return;layout=layout.filter(item=>item.id!==selected);changed();}
   function cell(event){
@@ -148,7 +151,7 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
   root.querySelector('[data-house="retry"]').onclick=flush;
   root.querySelector('[data-house="mode"]').onclick=()=>setDecorating(!decorating);
   function setDecorating(value){
-    decorating=value;cancel();keys.clear();route=[];selected=null;
+    decorating=canDecorate&&value;cancel();keys.clear();route=[];selected=null;
     root.classList.toggle('decorating',decorating);
     root.querySelector('[data-house="editor"]').hidden=!decorating;
     root.querySelector('[data-house="mode"]').setAttribute('aria-pressed',String(decorating));
@@ -203,13 +206,16 @@ export function mountHouse(root, {paintCharacter = null, onMove = () => {}} = {}
   });
   document.addEventListener('keyup',event=>keys.delete(event.key.toLowerCase()));
   window.addEventListener('blur',()=>keys.clear());
-  async function load(){
-    if(!(await flush()))return;
+  async function load(owner=null){
+    const version=++loadVersion;
+    if(!(await flush())||version!==loadVersion)return;
+    pause();loaded=false;canDecorate=false;root.querySelector('.house-viewport').inert=true;social.pause();
     status.textContent='Opening your home…';
-    try{const response=await fetch('/api/house',{signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw Error(MESSAGES[data.error]||'Home unavailable.');
-      Object.assign(grid,data.grid);furniture=new Map(data.furniture.map(item=>[item.id,item]));owned=data.owned;layout=data.layout.items;rooms=data.rooms;roomSelect.innerHTML=rooms.map(room=>`<option value="${escapeHtml(room.id)}">${escapeHtml(room.name)}</option>`).join('');await applyRoom(data.layout.roomId||'room-cottage');selected=null;loaded=true;status.textContent='Make yourself at home.';setDecorating(false);
+    try{const response=await fetch('/api/house'+(owner?'?owner='+encodeURIComponent(owner):''),{signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw Error(MESSAGES[data.error]||'Home unavailable.');
+      if(version!==loadVersion)return;
+      Object.assign(grid,data.grid);furniture=new Map(data.furniture.map(item=>[item.id,item]));owned=data.owned;layout=data.layout.items;rooms=data.rooms;roomSelect.innerHTML=rooms.map(room=>`<option value="${escapeHtml(room.id)}">${escapeHtml(room.name)}</option>`).join('');await applyRoom(data.layout.roomId||'room-cottage');if(version!==loadVersion)return;canDecorate=data.canDecorate===true;root.querySelector('.house-viewport').inert=false;root.querySelector('.house-room-choice').hidden=!canDecorate;root.querySelector('.house-mode').hidden=!canDecorate;root.querySelector('[data-house="owner-label"]').textContent=canDecorate?'Your place':data.owner.name+'’s place';social.load(data.owner.key);selected=null;loaded=true;status.textContent='Make yourself at home.';setDecorating(false);
       if(!root.hidden&&animation===null)animation=requestAnimationFrame(tick);
     }catch(error){status.textContent=error.message;}
   }
-  return {load,flush,pause};
+  return {load,flush,pause(){loadVersion++;pause();social.pause();}};
 }

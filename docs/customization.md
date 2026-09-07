@@ -111,12 +111,15 @@ One Node dependency (`ws`) is installed with the lockfile; there is no frontend 
 | Invitations | Upstash weekly snapshots and active process cache |
 | Outfits / shop / Home | Upstash, under keyed member identifiers |
 | Chat confirmations / friendships | Upstash; hashed participants, no chat text |
+| Home visits / guestbooks / private messages | Upstash; see [social data and limits](town-social.md) |
+| Pair rewards / donut gifts | Atomic updates to the shared Upstash wallet |
 | Position / pose preference | Browser storage |
 | Active town theme | Upstash, scoped to the configured channel |
 | Presence / used login tokens | Process memory |
 
 A confirmed Town chat needs both participants' attestations; it does not prove
-attendance independently or award donuts. History reads the last 52 weekly
+attendance independently or award additional donuts. Accepting a new invitation
+awards 5 donuts to each partner separately from this completion milestone. History reads the last 52 weekly
 invitation snapshots, shows the latest 50 confirmations and all-time friendship
 totals. Pending/declined invitations and self-tests cannot count as completed
 chats. The weekly pair is counted once, even under repeated confirmations.

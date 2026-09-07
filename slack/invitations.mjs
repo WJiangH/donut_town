@@ -102,7 +102,9 @@ export function invitationSnapshotFor(inviterId) {
 
 export function restoreInvitationSnapshots(snapshots) {
   const roundId = ensureActiveRound();
+  const selfTests=[...invitations.values()].filter(i=>i.selfTest);
   invitations.clear();
+  for(const invitation of selfTests)invitations.set(invitation.id,invitation);
   for (const snapshot of snapshots) {
     if (snapshot?.version !== 1 || snapshot.roundId !== roundId || !/^[UW][A-Z0-9]+$/.test(snapshot.inviterId || "")) continue;
     for (const invitation of snapshot.invitations || []) {

@@ -42,6 +42,7 @@ export function mountShop(root, { onOwnedChange = () => {}, onPetChange = () => 
   let busy = false;
 
   function render() {
+    if(state.wallet)window.dispatchEvent(new CustomEvent('town-wallet',{detail:state.wallet}));
     wallet.textContent = state.wallet ? `${state.wallet.balance} left of ${state.wallet.earned}` : '—';
     shelf.innerHTML = state.items.filter(item => !item.starter).map(item => {
       const owned = state.owned.includes(item.id);

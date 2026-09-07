@@ -54,6 +54,9 @@ const mapObstacles = [
 
 
 let outgoingInvitations = [];
+let incomingInvitations = [];
+let respondingInvitation = null;
+let incomingMarkupCache = null;
 let selectedResident = null;
 let currentFilter = "all";
 let invitesOpen = true;
@@ -650,6 +653,7 @@ function connectRealtime() {
       publishPresence(true, false);
       return;
     }
+    if (message.type === 'invitations-changed') { void syncInvitationStates(); void refreshWallet(); return; }
     if (message.type === 'town-theme') { themeController?.check(); return; }
     if (message.type === "snapshot") {
       replaceRemotePlayers(message.players);
@@ -1198,6 +1202,10 @@ function openResident(id) {
             : !invitesOpen
               ? "Invitations are paused"
               : "Invite to a Donut chat";
+  const homeLink=document.querySelector('#visitNeighborHome');
+  homeLink.href='?home='+encodeURIComponent(selectedResident.characterKey||'');
+  homeLink.hidden=!selectedResident.characterKey;
+  document.querySelector('#messageNeighbor').disabled=!selectedResident.characterKey;
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
   // ponytail: the existing neighbor drawer replaces the existing own profile.
@@ -1298,6 +1306,7 @@ async function syncSlackResidents(response) {
     document.querySelector("#loadingMessage").textContent = "Preparing resident characters…";
     await Promise.all(data.members.map(async member => { member.character = await loadCharacterArt(member.character); }));
     const summary = document.querySelector("#neighborSummary");
+    incomingInvitations = Array.isArray(data.incomingInvitations) ? data.incomingInvitations : [];
     outgoingInvitations = Array.isArray(data.outgoingInvitations) ? data.outgoingInvitations : [];
     currentUser = data.members.find(member => member.isCurrentUser) || null;
     const neighbors = data.members
@@ -1412,9 +1421,11 @@ async function syncInvitationStates() {
   try {
     const response = await fetch("/api/slack/invitation-states", { headers: { accept: "application/json" } });
     if (!response.ok) return;
-    const { states, outgoingInvitations: nextOutgoingInvitations } = await response.json();
+    const { states, incomingInvitations: incoming, outgoingInvitations: nextOutgoingInvitations } = await response.json();
+    incomingInvitations = Array.isArray(incoming) ? incoming : [];
     outgoingInvitations = Array.isArray(nextOutgoingInvitations) ? nextOutgoingInvitations : [];
     residents.forEach(person => Object.assign(person, states[person.slackId] || { status: "open", partnerId: null, pairId: null }));
+    if(currentUser && currentUser.pairId!==states[currentUser.id]?.pairId)void refreshWallet();
     if (currentUser) Object.assign(currentUser, states[currentUser.id] || { status: "open", partnerId: null, pairId: null });
     applyPairPreview();
     layoutBookedPairs();
@@ -1454,11 +1465,11 @@ function renderCurrentProfile() {
     ...slackFacts(currentUser)
   ].filter(([, value]) => value);
   document.querySelector("#currentProfileFacts").innerHTML = factsMarkup(ownFacts, "Add a title, status, or pronouns in Slack to see more here.");
-  const donutCount = currentUser?.donutCount;
+  const donutCount = currentUser?.wallet?.balance;
   document.querySelector("#myDonutCount").textContent = Number.isInteger(donutCount) ? donutCount : "-";
   document.querySelector("#myDonutNote").textContent = Number.isInteger(donutCount)
-    ? "Completed pairings recorded in the Donut Bot sheet."
-    : "Lottery donut rewards are not connected yet.";
+    ? "Your Town balance · +5 when an invitation is accepted."
+    : "Loading your Town balance…";
   updateTownSidebar();
 }
 
@@ -1490,7 +1501,16 @@ function openProfile() {
   if(docked)profileDrawer.scrollTo({top:0});
   loadProfilePanels();
 }
+let walletLoading=false;
+function paintWallet(wallet){if(!currentUser)return;currentUser.wallet=wallet;document.querySelector('#myDonutCount').textContent=wallet.balance;document.querySelector('#myDonutNote').textContent='Your Town balance · +5 per accepted pair.';}
+async function refreshWallet(){
+  if(walletLoading||!currentUser)return;walletLoading=true;
+  try{const response=await fetch('/api/shop',{signal:AbortSignal.timeout(15000)});if(response.ok)paintWallet((await response.json()).wallet);}
+  catch{}finally{walletLoading=false;}
+}
+window.addEventListener('town-wallet',e=>{if(e.detail)paintWallet(e.detail);else void refreshWallet();});
 function loadProfilePanels() {
+  void refreshWallet();
   const profileDrawer = document.querySelector('#profileDrawer');
   if (!profileChatsMount) profileChatsMount = import("./profile-chats.mjs").then(module => module.mountProfileChats(document.querySelector("#profileChats"))).catch(() => {
     profileChatsMount = null;
@@ -1534,6 +1554,11 @@ function closeDrawer() {
 }
 
 function renderInvitationDock() {
+  const incomingList=document.querySelector('#incomingInviteList');
+  const incomingMarkup=incomingInvitations.map(i=>{const p=residents.find(r=>r.slackId===i.inviterId);return `<li><strong>${escapeHtml(p?.name||'Neighbor')}</strong><small>Invited you to a Donut Chat · +5 donuts each</small><div><button data-answer="accepted" data-invitation="${escapeHtml(i.id)}" ${respondingInvitation?'disabled':''}>Accept</button><button data-answer="declined" data-invitation="${escapeHtml(i.id)}" ${respondingInvitation?'disabled':''}>Decline</button></div></li>`;}).join('');
+  if(incomingMarkupCache!==incomingMarkup){incomingList.innerHTML=incomingMarkup;incomingMarkupCache=incomingMarkup;}
+  document.querySelector('#dockHandle>span').textContent=incomingInvitations.length?`${incomingInvitations.length} incoming invite${incomingInvitations.length===1?'':'s'}`:'My invitations';
+  renderPairBoard();
   const available = Math.max(0, 3 - outgoingInvitations.length);
   const booked = currentUser?.status === "booked";
   document.querySelector("#availableInviteCount").textContent = booked ? 0 : available;
@@ -1692,7 +1717,8 @@ function setChosenPose(pose) {
 
 // A member's own room, entered from their profile.
 let housePanel = null;
-function openHouse() {
+function openHouse(owner=null) {
+  if(typeof owner!=="string")owner=null;
   closeDrawer();
   const view = document.querySelector("#houseView");
   view.hidden = false;
@@ -1703,6 +1729,7 @@ function openHouse() {
   if (!housePanel) {
     housePanel = import("./house.mjs")
       .then(module => module.mountHouse(view, {
+        onVisit: openHouse,
         onMove: () => { if (chosenPose) setChosenPose(null); },
         paintCharacter: (element, direction = "down", frame = 1) => {
           if (currentUser?.character) {
@@ -1725,7 +1752,7 @@ function openHouse() {
         return null;
       });
   }
-  housePanel?.then(panel => panel?.load());
+  housePanel?.then(panel => panel?.load(owner));
 }
 async function closeHouse(returnToTown = true) {
   const panel = await housePanel;
@@ -1917,11 +1944,13 @@ async function startTown() {
       loading.classList.add("done");
     document.querySelector(".app-shell").inert = false;
     if (new URLSearchParams(location.search).get("profile") === "1") openProfile();
+    const homeKey=new URLSearchParams(location.search).get('home');
+    if(/^[a-f0-9]{64}$/.test(homeKey||''))openHouse(homeKey);
     syncInvitationStates();
     // Restore the equipped pet without requiring a visit to the shop.
     const previousPet=equippedPet;
     void fetch('/api/shop',{signal:AbortSignal.timeout(20000)}).then(async response=>{
-      if(response.ok){const data=await response.json();if(equippedPet===previousPet)setEquippedPet(data.pet);}
+      if(response.ok){const data=await response.json();if(equippedPet===previousPet)setEquippedPet(data.pet);paintWallet(data.wallet);}
     }).catch(()=>{});
   } else {
     message.textContent = "Could not load the town. Please try again.";
@@ -1954,3 +1983,34 @@ if (window.matchMedia("(max-width: 760px)").matches) {
   document.querySelector("#dockHandle").setAttribute("aria-expanded", "false");
 }
 window.requestAnimationFrame(gameLoop);
+
+// A directory entry, a guestbook visitor and a shared URL all open the same room.
+document.querySelector('#visitNeighborHome').onclick=e=>{e.preventDefault();if(selectedResident?.characterKey)openHouse(selectedResident.characterKey);};
+let messagesMount;
+async function openMessages(peer=null){
+  pressedKeys.clear();clickPath=[];
+  try{messagesMount ||= import('./social-client.mjs').then(m=>m.mountMessages(document.querySelector('#messagesPanel')));(await messagesMount).open(peer);}
+  catch{messagesMount=null;showToast('Messages unavailable. Try again.');}
+}
+document.querySelector('#messageNeighbor').onclick=()=>openMessages(selectedResident?.characterKey);
+document.querySelector('#openMessages').onclick=()=>openMessages();
+document.querySelector('#incomingInviteList').onclick=async event=>{
+  const button=event.target.closest('[data-answer]');if(!button||button.disabled||respondingInvitation)return;
+  respondingInvitation=button.dataset.invitation;
+  const id=button.dataset.invitation,status=button.dataset.answer;
+  button.parentElement.querySelectorAll('button').forEach(b=>b.disabled=true);
+  try{
+    const r=await fetch('/api/slack/invitations/respond',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id,status}),signal:AbortSignal.timeout(20000)});
+    if(!r.ok)throw Error();
+    showToast(status==='accepted'?'Paired! You each earned 5 donuts.':'Invitation declined.');
+  }catch{showToast('Could not update this invitation. Refreshing…');}
+  finally{respondingInvitation=null;incomingMarkupCache=null;await syncInvitationStates();renderInvitationDock();}
+};
+function renderPairBoard(){
+  const pairs=window.DonutFactory.pairsFor([...residents,...(currentUser?[currentUser]:[])]);
+  document.querySelector('#pairBoardCount').textContent=`${pairs.length} pair${pairs.length===1?'':'s'}`;
+  const list=document.querySelector('#pairBoardList');
+  const html=pairs.map(p=>`<li><button data-workshop="${p.page}"><strong>${p.members.map(m=>escapeHtml(m.name||m.displayName||'Neighbor')).join(' &amp; ')}</strong><small>Factory ${p.page%2+1}${p.page>=2?' · Shift '+(Math.floor(p.page/2)+1):''} <span aria-hidden="true">→</span></small></button></li>`).join('')||'<li class="social-empty">Your next conversation starts with an invitation.</li>';
+  if(list.innerHTML!==html)list.innerHTML=html;
+}
+document.querySelector('#pairBoardList').onclick=e=>{const b=e.target.closest('[data-workshop]');if(b){closeProfile();closeDrawer();requestedFactory=Number(b.dataset.workshop);transitionToScene('donutFactory');document.querySelector('#pairBoard').open=false;}};

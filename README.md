@@ -38,7 +38,8 @@ same character. Walking animations and poses give residents a little personality
 **Your own Donut Home.** Everyone begins with the same starter room. Place and
 rearrange owned furniture on the floor, add plants or seasonal decorations, and
 save a space that feels yours. Placed decorations grow your home's **Luxury**
-score from Simple through Cozy, Charming, Elegant, Luxurious and Grand.
+score from Simple through Cozy, Charming, Elegant, Luxurious and Grand. Visit a
+neighbor’s Home, leave a note, bring flowers or gift a few donuts.
 
 **A shop full of small possibilities.** Browse a wall of pixel goods, spend
 donuts on available items and find new things for your Home. The catalog brings
@@ -47,6 +48,13 @@ unfinished items clearly marked as previews.
 
 **A companion for the walk.** Take an owned pet out with you. It follows your
 route and waits when you stop; other connected members can see it beside you.
+
+**Bake a connection.** Accept a Donut Chat invitation in Town or Slack. Both
+residents become a pair, each earns **5 donuts**, and their baking station appears
+in Donut Factory. The **Baking together** board shows this week’s pairs.
+
+**A conversation close by.** Open a neighbor’s profile and send a private Town
+message without leaving the map. Your Town inbox stays separate from Slack DMs.
 
 **Friendships with a little history.** Invite a teammate to a Donut chat through
 Slack, then find your matches in your profile. When both people confirm they
@@ -109,9 +117,9 @@ Give me the channel entrance URL and any checks that remain unverified.
 
 - Connected players have real-time presence. Other resident placements represent the channel roster and do not mean those people are online.
 - Personalized artwork is optional and prepared with the art skill. New workspaces receive starter appearances; wardrobe and pose support depend on each character's assets.
-- Donuts start at the catalog's configured allowance. Recurring earn-from-chat rewards and Lottery history sync are still to come; some shop items are previews.
+- Donuts start at the catalog's configured allowance. New accepted Town/Slack invitation pairs earn 5 donuts per person, once per pair; Lottery history sync is still to come. Some shop items are previews.
 - Friendship points require both participants to confirm a chat. They record those confirmations, not independently verified attendance.
-- Homes currently focus on decorating your own room. Visiting other members' Homes is not part of the current experience.
+- Home visits, guestbooks, gifts and private Town messages require Redis. Guestbooks and conversations retain their latest 100 entries. See [interaction and storage rules](docs/town-social.md).
 - Render's free instance sleeps after inactivity. Use an always-on instance for reliable Slack callbacks; see [hosting notes](docs/deploy.md#hosting-and-cost).
 
 </details>
@@ -124,6 +132,7 @@ starting points for you or your agent:
 | Change | Start here |
 | --- | --- |
 | Shop items, prices, starter allowance | [`content/shop.json`](content/shop.json) |
+| Visits, private messages and pair rewards | [`docs/town-social.md`](docs/town-social.md) |
 | Home furniture and Luxury tiers | [`docs/customization.md`](docs/customization.md) |
 | Characters, animation and wardrobe | [Pixel-art skill](.agents/skills/donut-town-pixel-art/SKILL.md) |
 | New rooms, scale and walkable floors | [Interior skill](.agents/skills/donut-town-interiors/SKILL.md) |

@@ -3,12 +3,12 @@ import { readFileSync } from 'node:fs';
 const PURCHASE = `
 local raw = redis.call('HGET', KEYS[1], ARGV[1])
 local purse = raw and cjson.decode(raw) or {owned={}}
-local spent = 0
+local spent = purse.gifted or 0
 for _,entry in ipairs(purse.owned or {}) do
   if entry.id == ARGV[2] then return cjson.encode(purse) end
   spent = spent + (tonumber(entry.price) or 0)
 end
-if spent + tonumber(ARGV[3]) > tonumber(ARGV[4]) then return redis.error_reply('not_enough_donuts') end
+if spent + tonumber(ARGV[3]) > tonumber(ARGV[4]) + (purse.credits or 0) then return redis.error_reply('not_enough_donuts') end
 purse.owned = purse.owned or {}
 table.insert(purse.owned, {id=ARGV[2],price=tonumber(ARGV[3]),at=ARGV[5]})
 local result = cjson.encode(purse)
@@ -54,7 +54,8 @@ export function loadCatalog(url = new URL('../content/shop.json', import.meta.ur
 
 // A wallet is what a member has earned, less what they have already spent.
 export function walletFor({ earned = 0, purse }) {
-  const spent = purse?.owned?.reduce((total, entry) => total + (entry.price || 0), 0) || 0;
+  earned += purse?.credits || 0;
+  const spent = (purse?.gifted || 0) + (purse?.owned?.reduce((total, entry) => total + (entry.price || 0), 0) || 0);
   return { earned, spent, balance: earned - spent };
 }
 
@@ -107,7 +108,7 @@ export class ShopStore {
     if (!response.ok) throw new Error('shop_store_unavailable');
     const result = await response.json();
     if (result.error) {
-      const code = ['not_enough_donuts','pet_not_owned'].find(code => result.error.includes(code));
+      const code = ['not_enough_donuts','pet_not_owned','invitation_not_active','already_booked','invitation_already_pending','pending_invitation_limit','try_again_later','request_conflict'].find(code => result.error.includes(code));
       throw Object.assign(new Error(code || 'shop_store_unavailable'), {code});
     }
     return result.result;
@@ -123,7 +124,7 @@ export class ShopStore {
         owned.push({ id: item.id, price: Number.isInteger(entry.price) ? entry.price : item.price, at: entry.at || null });
       }
     }
-    return { owned, pet: typeof value?.pet === 'string' ? value.pet : null };
+    return { owned, pet: typeof value?.pet === 'string' ? value.pet : null, ...(Number.isSafeInteger(value?.credits)&&value.credits>0?{credits:value.credits}:{}), ...(Number.isSafeInteger(value?.gifted)&&value.gifted>0?{gifted:value.gifted}:{}) };
   }
   async purse(key, catalog) {
     if (!/^[a-f0-9]{64}$/.test(key || '')) throw new Error('invalid_member_key');
