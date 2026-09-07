@@ -111,6 +111,39 @@ const overviewCenter = { x: 1536, y: 1004 };
 let mapDrag = null;
 let suppressMapClick = false;
 
+// Where a member was last standing, kept in their browser so a refresh puts
+// them back rather than at the fountain.
+const POSITION_KEY = "donut-town:position";
+let positionSaveTimer = null;
+
+function rememberPosition() {
+  clearTimeout(positionSaveTimer);
+  positionSaveTimer = setTimeout(() => {
+    try {
+      const spots = { ...scenePlayerPositions, [currentScene]: { x: player.x, y: player.y } };
+      window.localStorage?.setItem(POSITION_KEY, JSON.stringify({ scene: currentScene, spots }));
+    } catch {
+      // A browser that refuses storage simply starts from the fountain again.
+    }
+  }, 600);
+}
+
+// Only ground the town still allows: the map may have changed under a saved spot.
+function restorePosition() {
+  let saved;
+  try { saved = JSON.parse(window.localStorage?.getItem(POSITION_KEY) || "null"); } catch { return; }
+  if (!saved?.spots) return;
+  for (const [scene, spot] of Object.entries(saved.spots)) {
+    if (!scenePlayerPositions[scene] || !Number.isFinite(spot?.x) || !Number.isFinite(spot?.y)) continue;
+    const collision = scene === "chemPod" ? window.ChemPodCollision : window.TownCollision;
+    const landing = collision?.ready ? collision.nearestWalkable(spot.x, spot.y) : spot;
+    scenePlayerPositions[scene] = { x: landing.x, y: landing.y };
+  }
+  if (saved.scene && scenePlayerPositions[saved.scene] && saved.scene === currentScene) {
+    Object.assign(player, scenePlayerPositions[currentScene]);
+  }
+}
+
 function clampCameraOffset(offset, viewportSize, worldSize) {
   return Math.max(viewportSize - worldSize, Math.min(0, offset));
 }
@@ -973,6 +1006,7 @@ function gameLoop(timestamp) {
     playerFrame = 1;
   }
 
+  if (isMoving) rememberPosition();
   updatePlayerElement(isMoving);
   // Only worth a frame of work when somebody's pose actually moves.
   if (residentPosesAnimate) paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
@@ -1101,6 +1135,8 @@ function spreadResidentSlots(slots, collision, count, spacing) {
 }
 spreadResidentSlots(residentSlots, window.TownCollision, 160, 4.2);
 spreadResidentSlots(chemPodResidentSlots, window.ChemPodCollision, 26, 4.5);
+// After the anchors are settled, put the member back where they left off.
+restorePosition();
 
 residents.forEach((person, index) => Object.assign(person, populationSlot(residentSlots, index)));
 

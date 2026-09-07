@@ -180,6 +180,13 @@ facing right and mirrored in code. Replace the files with real art of the same
 shape - or point `petArt()` in `pets.mjs` at new names - and nothing else
 changes.
 
+### Where you left off
+
+A refresh puts a member back where they were standing rather than at the
+fountain. The spot is kept per scene in their own browser and checked against
+the walk mask on the way back in, so a saved spot that the map no longer allows
+lands on the nearest ground instead of inside a hedge.
+
 ### Choosing your own pose
 
 The profile lists every pose a member's character has. Pick one and they hold
