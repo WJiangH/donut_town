@@ -1023,7 +1023,7 @@ body.town-sidebar-layout .topbar { background:var(--rail-paper);border-bottom:2p
 .directory-list { flex:1;min-height:0;overflow:auto;scrollbar-width:thin; }
 .directory-person { display:flex;align-items:center;gap:10px;width:100%;padding:10px 2px;text-align:left;border:0;border-bottom:1px solid #bdc5ab80;background:none;color:var(--ink);cursor:pointer; }
 .directory-person:hover,.directory-person:focus-visible { background:#d0d9bc; }
-.directory-initials { display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border:1px solid #a9b697;background:#d6ddc4;font-size:10px; }
+.directory-initials { overflow:hidden;display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border:1px solid #a9b697;background:#d6ddc4;font-size:10px; }
 .directory-copy { flex:1;min-width:0; }
 .directory-copy strong { display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:600; }
 .directory-copy small { display:block;margin-top:4px;color:var(--muted);font-size:9px; }

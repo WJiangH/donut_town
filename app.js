@@ -166,7 +166,7 @@ function initialsFor(name) {
   return (parts.length > 1 ? `${parts[0][0]}${parts.at(-1)[0]}` : parts[0]?.slice(0, 2) || "?").toUpperCase();
 }
 
-function setSlackAvatar(element, person) {
+function setSlackAvatar(element, person, lazy = false) {
   element.replaceChildren();
   element.classList.toggle("has-photo", Boolean(person?.avatarUrl));
   if (!person?.avatarUrl) {
@@ -175,13 +175,15 @@ function setSlackAvatar(element, person) {
   }
   const image = document.createElement("img");
   image.className = "slack-avatar-image";
-  image.src = person.avatarUrl;
+  image.loading = lazy ? "lazy" : "eager";
+  image.decoding = "async";
   image.alt = "";
   image.referrerPolicy = "no-referrer";
   image.addEventListener("error", () => {
     element.classList.remove("has-photo");
     element.textContent = initialsFor(person?.displayName || person?.name || "Slack member");
   }, { once: true });
+  image.src = person.avatarUrl;
   element.append(image);
 }
 
@@ -225,14 +227,26 @@ function loadCharacterImage(url, width, height) {
 
 async function loadCharacterArt(character) {
   if (!character || !characterAssetUrlOk(character.url)) return null;
-  const urls = [character.url, ...(character.layers || [])];
+  // ponytail: load only the outfit we paint; actions load when first used.
+  const urls = character.layers || [character.url];
   if (urls.some(url => !characterAssetUrlOk(url))) return null;
+  if (Object.values(character.actions || {}).some(action => !characterAssetUrlOk(action.url))) return null;
   const walkOk = await Promise.all(urls.map(url => loadCharacterImage(url, character.imageWidth, character.imageHeight)));
   if (!walkOk.every(Boolean)) return null;
-  for (const action of Object.values(character.actions || {})) {
-    if (!characterAssetUrlOk(action.url) || !await loadCharacterImage(action.url, action.imageWidth, action.imageHeight)) return null;
-  }
   return character;
+}
+
+const characterActionLoads = new WeakMap();
+function characterActionReady(action) {
+  if (!characterActionLoads.has(action)) {
+    const state = { ready: false };
+    characterActionLoads.set(action, state);
+    void loadCharacterImage(action.url, action.imageWidth, action.imageHeight).then(ok => {
+      state.ready = ok;
+      if (ok) paintResidentCharacters(sceneLayer("residents") || layer);
+    });
+  }
+  return characterActionLoads.get(action).ready;
 }
 
 function wardrobeManifestUrl(character) {
@@ -246,7 +260,8 @@ function personalCharacterMarkup(character, className) {
 
 function paintPersonalCharacter(element, character, direction = "down", frame = 1, actionId = null) {
   if (!element || !character) return;
-  const action = actionId && character.actions?.[actionId];
+  let action = actionId && character.actions?.[actionId];
+  if (action && !characterActionReady(action)) { action = null; actionId = null; frame = 1; }
   const facing = action?.facing || direction;
   const source = action || character;
   const index = action ? frame % action.frames.length : (facing === "up" ? 2 : (facing === "left" || facing === "right") ? 1 : 0) * 3 + frame;
@@ -310,7 +325,7 @@ function refreshResidentPoses() {
 }
 
 function paintResidentCharacters(container) {
-  container.querySelectorAll(".resident-pin[data-id]").forEach(pin => {
+  container.querySelectorAll(".resident-pin[data-id]:not(.hidden)").forEach(pin => {
     const person = residents.find(item => item.id === Number(pin.dataset.id));
     if (!person?.character) return;
     const action = person.pose ? person.character.actions?.[person.pose] : null;
@@ -361,8 +376,12 @@ function renderNeighborDirectory() {
   const matches=residents.filter(person=>residentIsVisible(person)&&`${person.name} ${person.title||''}`.toLocaleLowerCase().includes(query))
     .sort((a,b)=>a.name.localeCompare(b.name));
   document.querySelector('#directoryCount').textContent=String(matches.length);
-  const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-initials" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small>${person.scene==='chemPod'?'Chem Pod':'Around town'}</small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
-  if(markup!==lastDirectoryMarkup){document.querySelector('#neighborDirectory').innerHTML=markup;lastDirectoryMarkup=markup;}
+  const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-initials" data-avatar="${escapeHtml(person.avatarUrl || '')}" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small>${person.scene==='chemPod'?'Chem Pod':'Around town'}</small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
+  if(markup!==lastDirectoryMarkup){
+    const directory=document.querySelector('#neighborDirectory');
+    directory.innerHTML=markup;lastDirectoryMarkup=markup;
+    directory.querySelectorAll('.directory-initials').forEach((avatar,index)=>setSlackAvatar(avatar,matches[index],true));
+  }
 }
 
 function renderResidents() {
@@ -1259,9 +1278,9 @@ restorePosition();
 
 residents.forEach((person, index) => Object.assign(person, populationSlot(residentSlots, index)));
 
-async function syncSlackResidents() {
+async function syncSlackResidents(response) {
   try {
-    const response = await fetch("/api/slack/members", { headers: { accept: "application/json" }, signal: AbortSignal.timeout(45000) });
+    response ||= await fetch("/api/slack/members", { headers: { accept: "application/json" }, signal: AbortSignal.timeout(45000) });
     if (!response.ok) throw new Error("Slack sync unavailable");
     const data = await response.json();
     if (!Array.isArray(data.members)) throw new Error("Invalid member response");
@@ -1864,12 +1883,18 @@ async function startTown() {
   const slow = setTimeout(() => { message.textContent = "Still connecting. The server may be waking up…"; }, 6000);
   let ready = false;
   try {
-    if(!assignTownActivities)({assignTownActivities}=await import('./town-activity-slots.mjs'));
-    if (!themeController) {
-      const {mountThemes} = await import('./town-themes/client.mjs');
-      themeController = await mountThemes({apply: applyTownTheme});
-    }
-    ready = await syncSlackResidents();
+    // Fetch members while the map loads; place them only after its mask is ready.
+    const [response] = await Promise.all([
+      fetch("/api/slack/members", { headers: { accept: "application/json" }, signal: AbortSignal.timeout(45000) }),
+      (async () => {
+        if(!assignTownActivities)({assignTownActivities}=await import('./town-activity-slots.mjs'));
+        if (!themeController) {
+          const {mountThemes} = await import('./town-themes/client.mjs');
+          themeController = await mountThemes({apply: applyTownTheme});
+        }
+      })()
+    ]);
+    ready = await syncSlackResidents(response);
   } catch { /* Keep the loading curtain until map and members are both ready. */ }
   clearTimeout(slow);
   if (ready) {
