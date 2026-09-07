@@ -7,6 +7,8 @@ description: Design, generate, validate, and integrate enterable pixel-art inter
 
 Create reusable, game-like building interiors that feel native to the approved Donut Town map.
 
+For an outdoor theme or replacement town layout, use [Donut Town Maps](../donut-town-maps/SKILL.md); it packages art, collision and activity points together.
+
 ## Reality check
 
 An interior background does not contain game behavior. Treat the room as three separate layers:

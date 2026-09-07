@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=45" />
+    <link rel="stylesheet" href="styles.css?v=46" />
+    <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
     <div class="loading-screen" id="loadingScreen" aria-live="polite">
@@ -29,6 +30,7 @@
         </div>
 
         <div class="profile-control">
+          <button class="town-settings-button" id="townSettingsButton" type="button" aria-label="Town settings" hidden>Settings</button>
           <button class="availability" id="availabilityButton" aria-pressed="true">
             <span class="status-light" aria-hidden="true"></span>
             <span id="availabilityText">Open to invites</span>
@@ -56,7 +58,7 @@
 
         <div class="map-wrap" id="mapWrap" data-camera-mode="overview">
           <div class="map-world" id="mapWorld">
-            <img class="town-map" src="assets/donut-town-map-v2.png" alt="A large pixel-art village with a donut cafe, fountain, science pods, farms, rivers, bridges and forest paths." />
+            <img class="town-map" alt="Pixel-art Donut Town" />
             <div class="residents-layer" id="residentsLayer" aria-live="polite"></div>
             <div class="pets-layer" id="townPetsLayer" aria-hidden="true"></div>
             <div class="live-players-layer" id="townLivePlayersLayer" aria-live="polite"></div>
@@ -264,13 +266,18 @@
       </section>
     </aside>
 
+    <dialog id="townSettings" class="town-settings" aria-labelledby="townSettingsTitle">
+      <header><div><small>Town settings</small><h2 id="townSettingsTitle">Choose a theme</h2></div><button type="button" data-themes="close">Close</button></header>
+      <div class="theme-grid" data-themes="grid"></div>
+      <p data-themes="status" role="status"></p>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
     <script src="assets/town-walkmask.js?v=3"></script>
     <script src="assets/chempod-walkmask.js?v=2"></script>
-    <script src="town-collision.js?v=3"></script>
+    <script src="town-collision.js?v=4"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
-    <script src="town-zones.js?v=4"></script>
-    <script src="app.js?v=53"></script>
+    <script src="town-zones.js?v=5"></script>
+    <script src="app.js?v=54"></script>
   </body>
 </html>

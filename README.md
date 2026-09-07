@@ -26,6 +26,10 @@ gardens and enter Chem Pod. Keep the whole town in view or let the camera follow
 you. Connected teammates move around in real time; supported characters settle
 into reading, coffee, gardening and other activities when they stop nearby.
 
+**A town that changes with the season.** Admins can preview and apply pixel map
+themes from Settings. Halloween comes with pumpkin lights, autumn woods and
+matching paths and activity spots. Add more with the [map-making skill](.agents/skills/donut-town-maps/SKILL.md).
+
 **A character that feels like you.** Start with a pixel resident, then use the
 included art workflow to create a character from your Slack avatar. Supported
 wardrobes let you change clothing colors, shoes and eyewear while keeping the

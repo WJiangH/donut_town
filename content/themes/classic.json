@@ -1,0 +1,3832 @@
+{
+  "schemaVersion": 1,
+  "id": "classic",
+  "name": "Classic",
+  "description": "Our everyday woodland town.",
+  "image": "/assets/donut-town-map-v2.png",
+  "imageSha256": "bfda128255cdc9c3c732d0b12e001720c3022c918db57cdcabaff666231e6592",
+  "imageSize": {
+    "width": 1536,
+    "height": 1024
+  },
+  "worldWidth": 3072,
+  "spawn": {
+    "x": 50,
+    "y": 59
+  },
+  "bounds": {
+    "minX": 0,
+    "maxX": 100,
+    "minY": 0,
+    "maxY": 100
+  },
+  "camera": {
+    "x": 50,
+    "y": 49
+  },
+  "entrances": {
+    "chemPod": {
+      "x": 6.4,
+      "y": 83.5,
+      "landing": {
+        "x": 6.4,
+        "y": 83.5
+      }
+    },
+    "donutShop": {
+      "x": 51,
+      "y": 41.5,
+      "landing": {
+        "x": 50,
+        "y": 50
+      }
+    }
+  },
+  "walkMask": {
+    "cols": 192,
+    "rows": 128,
+    "bits": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAABgAAAAAAAAAAAAgA8AAAAAAAAAAAAAAADwAAAAAAAAAAAAwA8AAAAAAAAAAAAAAADgAQAAAAAAAAAA8AcAAAAAQAAAAAAAAADAAwAAAAAAAADw/wcAAAAAwB8AAAAAAADA/wAgAAAAAAD4jwcAAAAAwB8AAAAAAADA/wBgAAAAAAD/jwcAAADg/38AAAAAAADw///gAAAAAAD/hx8AAADg/38AAAAAAAD4////AQAAAAB/hB8AAADg/38AAAAAAAD8//9DAAAAAAB/AH4AAADg/38AAAAAAAD4//8DAAAAAAB/ADwAAADg/38AAAAAAAAA/v8DAAAAAAD/ATwAAADg/38AAAAAAAAA/v8DAAAAAAD+AzwAAADg/38AAAAAAAAA/scDCAAAAAD+A/4BAADg/38AAAAAAADA/4cHGAAAAAD8B48AAADg/38AAAAAAADg/wOPGAAAAAD4/w8AAADg/38AADAAAADg/wD+PwAAAAD4/wcAAADg/38AAP4AAADg/wDw/wMAAAD4/wcAAADg//8HAB4AAADw/wDw/wEAAADg/wMAAADg/////x8AAAD4DwDw/wEAAADg/wMAAADg/////x8AAAD4BwDgPwAAAAAA/gEAAADg/////z8AAAD8AQDgPwAAAAAAfgAAAADg/////z8AAAB8AABgCAAAAAAAfgAAAADg/////z8AAAA+AIB/AAAAAAAAfgAAAADg/////38AAAAeAAAPAAAAAAAAfgAAAADg//////9jABAfAAAPAAAAPA4AfgAAAAAAAID///9/gB8fAAAPAgAA/A8AfoADAAAAAID//z98wP8fAAAPAwAA8A8Af4AHAAAAAID//x9gwP8/AAD/44EH8DHAf4A/AAAAAID//w9gAPz/AID///8/8DHEf4AxAAAACID//w9AAPz/A+D/H/g4+CHEf4DgAAAACID//w9AAPz/P8D/H/j4/wP8/4fgAAAAOID/Dw9AAPj/H8D/Hzj4BwD8//+AAAAAeID/DxxgAOD/HwD8fwD4A4T///8BB/AP+P//D/hwAOD/BwD8/wP4A/z///8BB/AH+P//B/gHAOD/BwD8/wP8Afz///8BB/AH+P//APgAAPD/BwD8////Afz///8BfvyH////ADwAAPj/PwD+////wf////8B/v//f/j/ADwAAP7/fwD+////4f////8B/v//P4D/ABgAAAYC/uP/w///////////////P4D/AAAAAAAA8P//A///////////////P4D/PwAAAAAAgP//A/7////////////Df8D/PwAAAAAAAH/8A/7//////////x+Af4DgPwAAAAAAAH/8Afj//////////w8A/ADgPwAAAAAAAH/4AOD///9//P///wAA/AHgHwAAAAAAAH84AID/P/4PAP///wAA+APgHwAAAAAAgP8IAAD+P/4DAP7//wAACADwHwAAAAAAhh8HAAD+P/4BAPz/HwAAAADwHwAAAAAA/B8AAAD+H/4BAPj/HwAAAADABwAAAAAA/B8AAAD+H/4AAPj/HwAAAADABwAAAAAA+H8AAAD+H38AAPj/PwAAAADABwAAAAAA4H8AAAD+H38AAPj/PwAAAADABwAAAAAAgH8ACID//38AAOD/PwAAAADAHwAAAHAAAH8AfPj//38AAOD/PwAAAAAAPgAAAPwAAH4AfPj//38AAOD/PwAAAAAAHgAAAPwHAP4AfPj///8AAPD/PwAAAAAAAAAAAPwHAP7////////hAPj/fwAAAAAAAAAAAP8HAPz////////jAPj/f2BgAAAAAAAAgP8DAPD/////////CPz//3jwAAAAAAAAwP8DAID//w///////////////wAAAAAA4P8DAID//wfw/////////////wAAAAAA4P8DAAD//wHw/////////////wAAAAAA4P8DAAD+/wDg////////8P///wAAAAAA4D8AAAD+fwDA//////9/IPz//wMAAAAA4B8AAAD+HwAA//////8BAIT//wMAAAAA8AcAAAD+DwAA/P////8AAAD//wMAAAAA/gMAAAD+DwAA/P///z8AAAD//wMAAAAA4gMADvD/DwAA/P///w8AAAD//xgAAAAA4gMADv7/DwAA/n/4/w8AAIDjfxgAAAAA4A/4H///DwAA/B/4/wMAAADCfzgAAAAA4B/4///HDwAAAB/4/wMAAADAfzgAAAAAwP/////DDwAAAB/4/wAQAADA/x8AAAAAwP///x/ADwAAAP//fwAQAADA/x8AAAAAwP///x/ADwABAP//fwAYAHDA/x8/AAAAwP///x/APwAHAP//fwAYAHDA//8/AAAAgB/////BPwAH8P//DwD4QXDA//8HAAAAAAQe///H/wMH/P//DwD8wfH///8DEAAAAAAQ/////+P/////DxD4A////8MDMAAAAAAA////////////jzH4B///HwAiOAAAAAAA/v/////////////4B/9/AAD+PwAAAAAA/v////////////////9/AAD+/wAAAAAA/v//H/7///////////8PAID//xAAAAAADhAOHvz///////////8DAAD//x8AAAAACAAADvj//////////8cDAADw/wcAAAAACAAADhA+/P///////wMAAADw+AcAAAAAAAAABwA+/P///////wEAAAAQwAcAAAAAAACABwA+/PH////w/wEAAAAYwAcAAAAAAAAABwA+4MH//x/w/wEAAAAIwA8AAAAAAAAADAB8gMH//x/w/wEAAAAAwD8AAAAAAAAADAD4gcf//x/w/wAAAAAAwB8AAAAAAAAAAAAYAOP//x//DwAAAAAAAB8AAAAAAAAAAAAYAuD/////DwAAAAAAAB8AAAAAAAAAAAAQHuD///+HDwAAAAAAAP8AAAAAAAAAAADwH8D//z+A/wEAAAAAgP8AAAAAAAAAAACAH8D//wOA4wEAAAAAgPADAAAAAAAAAAAAHgD//wEA4v8AAAAAQPAHAACAAwAAAgAAHAD+/wEA4P8BAHAAAPB/AAAAHwAAAgAAPAD8fwAA4P8D+PEAAPB/AAAAHwAAAwAAPATwHwAA4OED+P8AAPB/AAAAHwCABwAA/AfwHwDAccDH//8AAPh/AAAAHyDABwAA/APwHwAAP8D///8AAAx8AP6AH3jAAwAA/AHwHwAAPsD///8AAAB8APyBH/jAAwAA/AH8fwAAPID///8BAAB8APzBP/jgAx4A/OH/PwAAPAD8//8BAAB4APzx////jx8A/OH/PwAA/AF8/P8BAAB4Bvz//////x8A/P//BwAAPABA/P8BAABwfvz//////x/g////BwAAPAAA+P8BAABw/P///////x/h//9/AAAAPAAA+P8BAABg/P////////////9/OAAgPAAA+P8BAABgAP7///////////9/eADgDwAA/P8HAABgAP7//wH4/3/A////PwDhBwAA/v8PAABgAP7//wD4/z+A///jBwDhBwAA/v8/EABwACD4/wD4/z+A//9BAAD/BwAA////PwB+AAD4/wD4/z+A/w8AAAD+BwAA//8//gA+AAD4/wD8/z/4/w8AAAD+BwDA//8B/v8fAAD4/wH8/////w8AAAD+BwDA//8B/v8fAADw/wP//////z8AAAD+PwCA//8B/v8fAADw+P///x//gw8AAAD/PwCA//8B/v8HAADg+P///x//gQ8AAAD+fwCA//8B/z8AAAAA4P//Hx8AgA8AAAAMfgDw//j//wMAAAAA4P//Bx8AwD8AAAAMfgD+D/j/PwAAAAAA4Pj/AwMAwD8AADAMfoAfDvj/IQAAAAAAIPj/AwAAwD8AAOAP/oMfDvj/AQAAAAAAAAj/AwAA8D8AAIAP//8fAICHAAAAAAAAAAABAgAA8D8AAAD8//8/AAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  },
+  "zones": [
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 43.5,
+      "y": 47,
+      "note": "fountain west bench",
+      "seats": 1,
+      "anchor": {
+        "x": 43.5,
+        "y": 47
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 56.4,
+      "y": 47.1,
+      "note": "fountain east bench",
+      "seats": 1,
+      "anchor": {
+        "x": 56.4,
+        "y": 47.1
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 57.2,
+      "y": 34.3,
+      "note": "fountain north-east bench",
+      "seats": 1,
+      "anchor": {
+        "x": 57.2,
+        "y": 34.3
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 57.4,
+      "y": 54.5,
+      "note": "fountain south-east bench",
+      "seats": 1,
+      "anchor": {
+        "x": 56.1,
+        "y": 55
+      },
+      "reachable": true,
+      "facing": "right",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 54.3,
+      "y": 61.3,
+      "note": "south plaza bench",
+      "seats": 1,
+      "anchor": {
+        "x": 54.2,
+        "y": 62.7
+      },
+      "reachable": true,
+      "facing": "up",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 62.1,
+      "y": 63.4,
+      "note": "east lane bench",
+      "seats": 1,
+      "anchor": {
+        "x": 62.1,
+        "y": 63.4
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 63.1,
+      "y": 66.9,
+      "note": "east lane lower bench",
+      "seats": 1,
+      "anchor": {
+        "x": 63.1,
+        "y": 66.9
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 53.6,
+      "y": 73.1,
+      "note": "south lane bench",
+      "seats": 1,
+      "anchor": {
+        "x": 53.6,
+        "y": 73.1
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 33.5,
+      "y": 67.8,
+      "note": "science lane bench",
+      "seats": 1,
+      "anchor": {
+        "x": 34,
+        "y": 67.7
+      },
+      "reachable": true,
+      "facing": "left",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 45.6,
+      "y": 72.4,
+      "note": "mid south bench",
+      "seats": 1,
+      "anchor": {
+        "x": 45.6,
+        "y": 72.4
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 43.1,
+      "y": 26.1,
+      "note": "north lane bench",
+      "seats": 1,
+      "anchor": {
+        "x": 42.7,
+        "y": 26
+      },
+      "reachable": true,
+      "facing": "right",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 76.3,
+      "y": 78.2,
+      "note": "fire pit bench",
+      "seats": 1,
+      "anchor": {
+        "x": 76.8,
+        "y": 78.1
+      },
+      "reachable": true,
+      "facing": "left",
+      "resolved": true
+    },
+    {
+      "action": [
+        "sitChair",
+        "sitChair",
+        "read"
+      ],
+      "scene": "town",
+      "x": 79.4,
+      "y": 77,
+      "note": "fire pit bench",
+      "seats": 1,
+      "anchor": {
+        "x": 79.3,
+        "y": 77.5
+      },
+      "reachable": true,
+      "facing": "up",
+      "resolved": true
+    },
+    {
+      "action": "coffee",
+      "scene": "town",
+      "x": 29.3,
+      "y": 26.4,
+      "seats": 2,
+      "note": "cafe terrace table",
+      "anchor": {
+        "x": 28.6,
+        "y": 27.5
+      },
+      "reachable": true,
+      "facing": "up",
+      "resolved": true
+    },
+    {
+      "action": "coffee",
+      "scene": "town",
+      "x": 33.1,
+      "y": 26,
+      "seats": 2,
+      "note": "cafe terrace table",
+      "anchor": {
+        "x": 33.1,
+        "y": 26
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "coffee",
+      "scene": "town",
+      "x": 35.3,
+      "y": 23,
+      "seats": 2,
+      "note": "cafe upper table",
+      "anchor": {
+        "x": 34.6,
+        "y": 23.5
+      },
+      "reachable": true,
+      "facing": "right",
+      "resolved": true
+    },
+    {
+      "action": "coffee",
+      "scene": "town",
+      "x": 10.3,
+      "y": 88.2,
+      "seats": 2,
+      "note": "orchard picnic table",
+      "anchor": {
+        "x": 10.3,
+        "y": 88.2
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "coffee",
+      "scene": "town",
+      "x": 80.6,
+      "y": 88,
+      "seats": 3,
+      "note": "south-east umbrella table",
+      "anchor": {
+        "x": 80.6,
+        "y": 88
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "coffee",
+      "scene": "town",
+      "x": 88,
+      "y": 85.6,
+      "seats": 4,
+      "note": "pergola banquet table",
+      "anchor": {
+        "x": 86.4,
+        "y": 88.5
+      },
+      "reachable": true,
+      "facing": "up",
+      "resolved": true
+    },
+    {
+      "action": "read",
+      "scene": "town",
+      "x": 10.1,
+      "y": 25,
+      "seats": 2,
+      "note": "picnic blanket",
+      "anchor": {
+        "x": 10.1,
+        "y": 25
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "read",
+      "scene": "town",
+      "x": 51,
+      "y": 8,
+      "seats": 2,
+      "note": "gazebo",
+      "anchor": {
+        "x": 51.2,
+        "y": 8.5
+      },
+      "reachable": true,
+      "facing": "up",
+      "resolved": true
+    },
+    {
+      "action": "lookout",
+      "scene": "town",
+      "x": 13.5,
+      "y": 31.5,
+      "radius": 1.4,
+      "seats": 2,
+      "facing": "down",
+      "note": "west footbridge",
+      "anchor": {
+        "x": 13.5,
+        "y": 31.5
+      },
+      "resolved": true
+    },
+    {
+      "action": "lookout",
+      "scene": "town",
+      "x": 81,
+      "y": 60.3,
+      "radius": 1.7,
+      "seats": 2,
+      "facing": "down",
+      "note": "east arch bridge",
+      "anchor": {
+        "x": 81,
+        "y": 60.3
+      },
+      "resolved": true
+    },
+    {
+      "action": "lookout",
+      "scene": "town",
+      "x": 61.5,
+      "y": 72,
+      "radius": 1.7,
+      "seats": 2,
+      "facing": "down",
+      "note": "south-east plank bridge",
+      "anchor": {
+        "x": 61.5,
+        "y": 72
+      },
+      "resolved": true
+    },
+    {
+      "action": "lookout",
+      "scene": "town",
+      "x": 43,
+      "y": 93.5,
+      "radius": 1.4,
+      "seats": 2,
+      "facing": "down",
+      "note": "south stone bridge",
+      "anchor": {
+        "x": 43,
+        "y": 93.5
+      },
+      "resolved": true
+    },
+    {
+      "action": "lookout",
+      "scene": "town",
+      "x": 48.6,
+      "y": 11,
+      "radius": 1.4,
+      "seats": 2,
+      "facing": "down",
+      "note": "north bridge",
+      "anchor": {
+        "x": 48.6,
+        "y": 11
+      },
+      "resolved": true
+    },
+    {
+      "action": "lookout",
+      "scene": "town",
+      "x": 90.5,
+      "y": 44.5,
+      "seats": 2,
+      "note": "waterfall",
+      "anchor": {
+        "x": 90.1,
+        "y": 44.4
+      },
+      "reachable": true,
+      "facing": "right",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 76.6,
+      "y": 22,
+      "seats": 2,
+      "note": "farm plots",
+      "anchor": {
+        "x": 76.5,
+        "y": 21
+      },
+      "reachable": true,
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 18.2,
+      "y": 88.5,
+      "seats": 2,
+      "note": "village garden",
+      "anchor": {
+        "x": 16.6,
+        "y": 89
+      },
+      "reachable": true,
+      "facing": "right",
+      "resolved": true
+    },
+    {
+      "action": "dance",
+      "scene": "town",
+      "x": 50.5,
+      "y": 50.5,
+      "radius": 2.4,
+      "seats": 3,
+      "note": "fountain plaza south",
+      "anchor": {
+        "x": 50.5,
+        "y": 50.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "dance",
+      "scene": "town",
+      "x": 51,
+      "y": 66.5,
+      "radius": 2,
+      "seats": 3,
+      "note": "flowerbed circle",
+      "anchor": {
+        "x": 51,
+        "y": 66.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "dance",
+        "read"
+      ],
+      "scene": "town",
+      "x": 51,
+      "y": 7.6,
+      "radius": 1.6,
+      "seats": 2,
+      "note": "gazebo floor",
+      "anchor": {
+        "x": 51,
+        "y": 7.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "dance",
+      "scene": "town",
+      "x": 43.5,
+      "y": 44,
+      "radius": 1.8,
+      "seats": 2,
+      "note": "fountain plaza west",
+      "anchor": {
+        "x": 43.5,
+        "y": 44
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 62.8,
+      "y": 90.2,
+      "radius": 3,
+      "seats": 4,
+      "note": "south-east meadow",
+      "anchor": {
+        "x": 62.8,
+        "y": 90.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 26.3,
+      "y": 52.7,
+      "radius": 2.6,
+      "seats": 3,
+      "note": "west green",
+      "anchor": {
+        "x": 26.3,
+        "y": 52.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 38.8,
+      "y": 75.4,
+      "radius": 2.4,
+      "seats": 3,
+      "note": "south green",
+      "anchor": {
+        "x": 38.8,
+        "y": 75.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 34.1,
+      "y": 33.2,
+      "radius": 2.2,
+      "seats": 3,
+      "note": "cafe green",
+      "anchor": {
+        "x": 34.1,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 47.7,
+      "y": 27,
+      "radius": 2.2,
+      "seats": 3,
+      "note": "north green",
+      "anchor": {
+        "x": 47.7,
+        "y": 27
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 29.9,
+      "y": 90.2,
+      "radius": 2.2,
+      "seats": 3,
+      "note": "orchard green",
+      "anchor": {
+        "x": 29.9,
+        "y": 90.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 77.9,
+      "y": 48.8,
+      "radius": 2,
+      "seats": 2,
+      "note": "east green",
+      "anchor": {
+        "x": 77.9,
+        "y": 48.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 18,
+      "y": 45.7,
+      "radius": 2,
+      "seats": 2,
+      "note": "cottage green",
+      "anchor": {
+        "x": 18,
+        "y": 45.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 59.6,
+      "y": 33.2,
+      "radius": 2,
+      "seats": 2,
+      "note": "fountain green",
+      "anchor": {
+        "x": 59.6,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 69.5,
+      "y": 33.2,
+      "radius": 2,
+      "seats": 2,
+      "note": "east cottage green",
+      "anchor": {
+        "x": 69.5,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 51.8,
+      "y": 82.4,
+      "radius": 2,
+      "seats": 2,
+      "note": "south lane green",
+      "anchor": {
+        "x": 51.8,
+        "y": 82.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 48.2,
+      "y": 27.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 48.2,
+        "y": 27.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 29.9,
+      "y": 90.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 29.9,
+        "y": 90.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 79.4,
+      "y": 5.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 79.4,
+        "y": 5.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 56.5,
+      "y": 27.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 56.5,
+        "y": 27.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 34.1,
+      "y": 33.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 34.1,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 59.1,
+      "y": 33.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 59.1,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 40.9,
+      "y": 34,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 40.9,
+        "y": 34
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 75.8,
+      "y": 34,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 75.8,
+        "y": 34
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 64.3,
+      "y": 37.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 64.3,
+        "y": 37.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 34.6,
+      "y": 44.1,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 34.6,
+        "y": 44.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 77.9,
+      "y": 48.8,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 77.9,
+        "y": 48.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 3.9,
+      "y": 59,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 3.9,
+        "y": 59
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 15.4,
+      "y": 64.5,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 15.4,
+        "y": 64.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 38.8,
+      "y": 75.4,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 38.8,
+        "y": 75.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 39.8,
+      "y": 80.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 39.8,
+        "y": 80.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 62.8,
+      "y": 90.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 62.8,
+        "y": 90.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 76.3,
+      "y": 93.4,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 76.3,
+        "y": 93.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 66.9,
+      "y": 98,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 66.9,
+        "y": 98
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 54.9,
+      "y": 2.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 54.9,
+        "y": 2.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 12.2,
+      "y": 8.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 12.2,
+        "y": 8.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 17.4,
+      "y": 12.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 17.4,
+        "y": 12.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 43,
+      "y": 22.3,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 43,
+        "y": 22.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 5.5,
+      "y": 23.8,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 5.5,
+        "y": 23.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 11.2,
+      "y": 27.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 11.2,
+        "y": 27.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 43.5,
+      "y": 30.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 43.5,
+        "y": 30.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 69.5,
+      "y": 33.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 69.5,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 22.1,
+      "y": 34,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 22.1,
+        "y": 34
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 62.8,
+      "y": 34,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 62.8,
+        "y": 34
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 34.6,
+      "y": 38.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 34.6,
+        "y": 38.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 64.3,
+      "y": 43.4,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 64.3,
+        "y": 43.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 18,
+      "y": 45.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 18,
+        "y": 45.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 7.6,
+      "y": 47.3,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 7.6,
+        "y": 47.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 23.7,
+      "y": 47.3,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 23.7,
+        "y": 47.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 38.3,
+      "y": 48,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 38.3,
+        "y": 48
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 62.2,
+      "y": 49.6,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 62.2,
+        "y": 49.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 74.7,
+      "y": 50.4,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 74.7,
+        "y": 50.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 26.3,
+      "y": 52.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 26.3,
+        "y": 52.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 41.9,
+      "y": 52.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 41.9,
+        "y": 52.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 76.3,
+      "y": 55.1,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 76.3,
+        "y": 55.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 24.2,
+      "y": 55.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 24.2,
+        "y": 55.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 18.5,
+      "y": 58.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 18.5,
+        "y": 58.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 78.9,
+      "y": 58.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 78.9,
+        "y": 58.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 44,
+      "y": 59.8,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 44,
+        "y": 59.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 13.3,
+      "y": 60.5,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 13.3,
+        "y": 60.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 28.4,
+      "y": 62.1,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 28.4,
+        "y": 62.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 26.3,
+      "y": 66.8,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 26.3,
+        "y": 66.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 31.5,
+      "y": 66.8,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 31.5,
+        "y": 66.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 82.6,
+      "y": 78.5,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 82.6,
+        "y": 78.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 70.6,
+      "y": 80.1,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 70.6,
+        "y": 80.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 52.3,
+      "y": 81.6,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 52.3,
+        "y": 81.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 14.8,
+      "y": 83.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 14.8,
+        "y": 83.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 23.7,
+      "y": 83.2,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 23.7,
+        "y": 83.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 1.3,
+      "y": 84.8,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 1.3,
+        "y": 84.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 39.3,
+      "y": 85.5,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 39.3,
+        "y": 85.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 8.6,
+      "y": 87.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 8.6,
+        "y": 87.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 45.6,
+      "y": 87.9,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 45.6,
+        "y": 87.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 26.8,
+      "y": 88.7,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 26.8,
+        "y": 88.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 78.9,
+      "y": 91,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 78.9,
+        "y": 91
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 89.8,
+      "y": 91.8,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 89.8,
+        "y": 91.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 25.3,
+      "y": 92.6,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 25.3,
+        "y": 92.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 82,
+      "y": 92.6,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 82,
+        "y": 92.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 20.1,
+      "y": 96.5,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 20.1,
+        "y": 96.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "sitGrass",
+      "scene": "town",
+      "x": 71.6,
+      "y": 96.5,
+      "radius": 1.8,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 71.6,
+        "y": 96.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 12.2,
+      "y": 15.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 12.2,
+        "y": 15.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 44,
+      "y": 34,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 44,
+        "y": 34
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 40.4,
+      "y": 83.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 40.4,
+        "y": 83.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 20.6,
+      "y": 11.3,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 20.6,
+        "y": 11.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 83.6,
+      "y": 60.5,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 83.6,
+        "y": 60.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 65.9,
+      "y": 69.9,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 65.9,
+        "y": 69.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 93,
+      "y": 24.6,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 93,
+        "y": 24.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 15.4,
+      "y": 32.4,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 15.4,
+        "y": 32.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 10.2,
+      "y": 9,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 10.2,
+        "y": 9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 3.9,
+      "y": 23,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 3.9,
+        "y": 23
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 71.1,
+      "y": 33.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 71.1,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 75.3,
+      "y": 34,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 75.3,
+        "y": 34
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 89.8,
+      "y": 35.5,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 89.8,
+        "y": 35.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 54.9,
+      "y": 37.1,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 54.9,
+        "y": 37.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 14.3,
+      "y": 40.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 14.3,
+        "y": 40.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 89.8,
+      "y": 43.4,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 89.8,
+        "y": 43.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 9.1,
+      "y": 46.5,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 9.1,
+        "y": 46.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 39.3,
+      "y": 74.6,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 39.3,
+        "y": 74.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 24.7,
+      "y": 7.4,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 24.7,
+        "y": 7.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 73.7,
+      "y": 8.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 73.7,
+        "y": 8.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 26.8,
+      "y": 12.9,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 26.8,
+        "y": 12.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 16.4,
+      "y": 13.7,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 16.4,
+        "y": 13.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 47.7,
+      "y": 15.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 47.7,
+        "y": 15.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 54.4,
+      "y": 16.8,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 54.4,
+        "y": 16.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 96.6,
+      "y": 21.5,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 96.6,
+        "y": 21.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 52.9,
+      "y": 22.3,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 52.9,
+        "y": 22.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 58.1,
+      "y": 22.3,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 58.1,
+        "y": 22.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 27.9,
+      "y": 23.8,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 27.9,
+        "y": 23.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 19.5,
+      "y": 25.4,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 19.5,
+        "y": 25.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 15.4,
+      "y": 26.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 15.4,
+        "y": 26.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 99.2,
+      "y": 26.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 99.2,
+        "y": 26.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 93,
+      "y": 30.9,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 93,
+        "y": 30.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 10.2,
+      "y": 31.6,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 10.2,
+        "y": 31.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 82.6,
+      "y": 34,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 82.6,
+        "y": 34
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 47.7,
+      "y": 36.3,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 47.7,
+        "y": 36.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 85.7,
+      "y": 37.9,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 85.7,
+        "y": 37.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 18,
+      "y": 43.4,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 18,
+        "y": 43.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 5.5,
+      "y": 44.1,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 5.5,
+        "y": 44.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 48.7,
+      "y": 45.7,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 48.7,
+        "y": 45.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 73.7,
+      "y": 46.5,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 73.7,
+        "y": 46.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 79.9,
+      "y": 51.2,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 79.9,
+        "y": 51.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 60.7,
+      "y": 57.4,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 60.7,
+        "y": 57.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 77.3,
+      "y": 61.3,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 77.3,
+        "y": 61.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 10.7,
+      "y": 62.1,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 10.7,
+        "y": 62.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 19,
+      "y": 66,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 19,
+        "y": 66
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 71.6,
+      "y": 66,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 71.6,
+        "y": 66
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 44.5,
+      "y": 73.8,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 44.5,
+        "y": 73.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 57,
+      "y": 73.8,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 57,
+        "y": 73.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 62.2,
+      "y": 73.8,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 62.2,
+        "y": 73.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 6,
+      "y": 80.9,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 6,
+        "y": 80.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 52.9,
+      "y": 81.6,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 52.9,
+        "y": 81.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 72.1,
+      "y": 82.4,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 72.1,
+        "y": 82.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 74.2,
+      "y": 91,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 74.2,
+        "y": 91
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 44,
+      "y": 95.7,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 44,
+        "y": 95.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 57,
+      "y": 97.3,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 57,
+        "y": 97.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": [
+        "lookout",
+        "fish"
+      ],
+      "scene": "town",
+      "x": 39.8,
+      "y": 98,
+      "radius": 1.9,
+      "seats": 2,
+      "measured": true,
+      "anchor": {
+        "x": 39.8,
+        "y": 98
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 78.4,
+      "y": 13.7,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 78.4,
+        "y": 13.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 88.3,
+      "y": 20.7,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 88.3,
+        "y": 20.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 76.8,
+      "y": 11.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 76.8,
+        "y": 11.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 76.3,
+      "y": 15.2,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 76.3,
+        "y": 15.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 79.4,
+      "y": 16.8,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 79.4,
+        "y": 16.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 79.4,
+      "y": 10.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 79.4,
+        "y": 10.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 86.7,
+      "y": 23.8,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 86.7,
+        "y": 23.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 81,
+      "y": 12.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 81,
+        "y": 12.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 86.7,
+      "y": 18.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 86.7,
+        "y": 18.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 90.4,
+      "y": 18.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 90.4,
+        "y": 18.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 90.4,
+      "y": 22.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 90.4,
+        "y": 22.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 81.5,
+      "y": 9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 81.5,
+        "y": 9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 75.3,
+      "y": 18.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 75.3,
+        "y": 18.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 81.5,
+      "y": 18.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 81.5,
+        "y": 18.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 57.6,
+      "y": 35.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 57.6,
+        "y": 35.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 63.3,
+      "y": 73,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 63.3,
+        "y": 73
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 74.7,
+      "y": 12.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 74.7,
+        "y": 12.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 74.7,
+      "y": 8.2,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 74.7,
+        "y": 8.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 10.7,
+      "y": 9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 10.7,
+        "y": 9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 13.8,
+      "y": 11.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 13.8,
+        "y": 11.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 92.4,
+      "y": 24.6,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 92.4,
+        "y": 24.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 84.6,
+      "y": 25.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 84.6,
+        "y": 25.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 22.7,
+      "y": 29.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 22.7,
+        "y": 29.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 7,
+      "y": 30.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 7,
+        "y": 30.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 14.8,
+      "y": 31.6,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 14.8,
+        "y": 31.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 16.9,
+      "y": 33.2,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 16.9,
+        "y": 33.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 69.5,
+      "y": 59.8,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 69.5,
+        "y": 59.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 78.4,
+      "y": 61.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 78.4,
+        "y": 61.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 61.2,
+      "y": 70.7,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 61.2,
+        "y": 70.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 83.1,
+      "y": 84.8,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 83.1,
+        "y": 84.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 78.4,
+      "y": 19.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 78.4,
+        "y": 19.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 23.7,
+      "y": 36.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 23.7,
+        "y": 36.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 59.6,
+      "y": 73,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 59.6,
+        "y": 73
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 46.1,
+      "y": 75.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 46.1,
+        "y": 75.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 86.2,
+      "y": 89.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 86.2,
+        "y": 89.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 89.8,
+      "y": 89.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 89.8,
+        "y": 89.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 77.3,
+      "y": 7.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 77.3,
+        "y": 7.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 50.8,
+      "y": 11.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 50.8,
+        "y": 11.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 26.8,
+      "y": 12.1,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 26.8,
+        "y": 12.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 94,
+      "y": 13.7,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 94,
+        "y": 13.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 27.9,
+      "y": 15.2,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 27.9,
+        "y": 15.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 82.6,
+      "y": 15.2,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 82.6,
+        "y": 15.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 73.7,
+      "y": 16,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 73.7,
+        "y": 16
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 88.3,
+      "y": 16,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 88.3,
+        "y": 16
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 23.7,
+      "y": 17.6,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 23.7,
+        "y": 17.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 21.6,
+      "y": 19.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 21.6,
+        "y": 19.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 88.3,
+      "y": 26.2,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 88.3,
+        "y": 26.2
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 13.3,
+      "y": 28.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 13.3,
+        "y": 28.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 9.1,
+      "y": 32.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 9.1,
+        "y": 32.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 50.3,
+      "y": 35.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 50.3,
+        "y": 35.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 52.9,
+      "y": 35.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 52.9,
+        "y": 35.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 86.7,
+      "y": 42.6,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 86.7,
+        "y": 42.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 48.7,
+      "y": 45.7,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 48.7,
+        "y": 45.7
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 46.6,
+      "y": 47.3,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 46.6,
+        "y": 47.3
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 10.2,
+      "y": 55.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 10.2,
+        "y": 55.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 60.7,
+      "y": 57.4,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 60.7,
+        "y": 57.4
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 3.4,
+      "y": 59.8,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 3.4,
+        "y": 59.8
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 65.9,
+      "y": 60.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 65.9,
+        "y": 60.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 12.8,
+      "y": 62.1,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 12.8,
+        "y": 62.1
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 12.2,
+      "y": 77,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 12.2,
+        "y": 77
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 43,
+      "y": 78.5,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 43,
+        "y": 78.5
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 4.9,
+      "y": 80.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 4.9,
+        "y": 80.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 70.6,
+      "y": 81.6,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 70.6,
+        "y": 81.6
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 84.1,
+      "y": 87.9,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 84.1,
+        "y": 87.9
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 74.2,
+      "y": 91,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 74.2,
+        "y": 91
+      },
+      "facing": "down",
+      "resolved": true
+    },
+    {
+      "action": "garden",
+      "scene": "town",
+      "x": 17.4,
+      "y": 92.6,
+      "radius": 1.5,
+      "seats": 1,
+      "measured": true,
+      "anchor": {
+        "x": 17.4,
+        "y": 92.6
+      },
+      "facing": "down",
+      "resolved": true
+    }
+  ],
+  "stations": [
+    {
+      "x": 31,
+      "y": 31,
+      "left": {
+        "x": 28.385416666666668,
+        "y": 32.421875
+      },
+      "right": {
+        "x": 33.6,
+        "y": 33
+      }
+    },
+    {
+      "x": 42.44791666666667,
+      "y": 40.234375,
+      "left": {
+        "x": 39.4,
+        "y": 42
+      },
+      "right": {
+        "x": 44.6,
+        "y": 42
+      }
+    },
+    {
+      "x": 61,
+      "y": 40,
+      "left": {
+        "x": 58.4,
+        "y": 42
+      },
+      "right": {
+        "x": 63.6,
+        "y": 42
+      }
+    },
+    {
+      "x": 42,
+      "y": 53,
+      "left": {
+        "x": 39.4,
+        "y": 55
+      },
+      "right": {
+        "x": 44.6,
+        "y": 55
+      }
+    },
+    {
+      "x": 61.197916666666664,
+      "y": 51.171875,
+      "left": {
+        "x": 57.03125,
+        "y": 53.515625
+      },
+      "right": {
+        "x": 65.36458333333334,
+        "y": 51.171875
+      }
+    },
+    {
+      "x": 50,
+      "y": 67,
+      "left": {
+        "x": 47.4,
+        "y": 69
+      },
+      "right": {
+        "x": 52.6,
+        "y": 69
+      }
+    },
+    {
+      "x": 24,
+      "y": 51,
+      "left": {
+        "x": 21.4,
+        "y": 53
+      },
+      "right": {
+        "x": 26.6,
+        "y": 53
+      }
+    },
+    {
+      "x": 78,
+      "y": 51,
+      "left": {
+        "x": 75.4,
+        "y": 53
+      },
+      "right": {
+        "x": 79.94791666666666,
+        "y": 52.734375
+      }
+    },
+    {
+      "x": 26.822916666666668,
+      "y": 67.578125,
+      "left": {
+        "x": 26.4,
+        "y": 71
+      },
+      "right": {
+        "x": 31.510416666666668,
+        "y": 67.578125
+      }
+    },
+    {
+      "x": 71.61458333333334,
+      "y": 66.796875,
+      "left": {
+        "x": 70.57291666666666,
+        "y": 76.171875
+      },
+      "right": {
+        "x": 76.82291666666666,
+        "y": 77.734375
+      }
+    }
+  ]
+}

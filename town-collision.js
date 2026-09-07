@@ -181,6 +181,7 @@
     return collision;
   }
 
+  window.createTownCollision = buildCollision;
   window.TownCollision = buildCollision(window.TOWN_WALK_MASK);
   window.ChemPodCollision = buildCollision(window.CHEMPOD_WALK_MASK);
 

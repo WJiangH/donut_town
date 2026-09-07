@@ -90,6 +90,10 @@ snapped to valid ground after a map change; it is not cross-device location sync
 
 ## Architecture and state
 
+For complete seasonal maps, use the [map-theme workflow](map-themes.md). It
+packages artwork, navigation and actions together and adds candidates to the
+administrator's Settings menu without changing the active town.
+
 The browser renders the map, sprites, shop and Home. `server.mjs` handles Slack,
 authenticated APIs, signed callbacks, static asset streaming and WebSocket presence.
 One Node dependency (`ws`) is installed with the lockfile; there is no frontend build.
@@ -101,6 +105,7 @@ One Node dependency (`ws`) is installed with the lockfile; there is no frontend 
 | Outfits / shop / Home | Upstash, under keyed member identifiers |
 | Chat confirmations / friendships | Upstash; hashed participants, no chat text |
 | Position / pose preference | Browser storage |
+| Active town theme | Upstash, scoped to the configured channel |
 | Presence / used login tokens | Process memory |
 
 A confirmed Town chat needs both participants' attestations; it does not prove

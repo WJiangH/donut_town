@@ -57,6 +57,7 @@ export class SlackClient {
       const details = profile.profile || {};
       return [{
         id: profile.id,
+        isWorkspaceAdmin: profile.is_admin === true || profile.is_owner === true,
         displayName: details.display_name || profile.real_name || profile.name,
         realName: profile.real_name || details.real_name || "",
         avatarUrl: details.image_192 || details.image_72 || "",

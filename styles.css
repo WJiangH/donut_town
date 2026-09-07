@@ -89,6 +89,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offs
   will-change: transform;
 }
 .town-map { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; filter: saturate(.88) brightness(.99); }
+#mapWorld[data-theme="halloween"] .town-map { filter:none; }
 .town-stage::after, .interior-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 120px rgba(22, 49, 38, .18); }
 
 .map-toolbar { position: absolute; z-index: 8; left: 20px; top: 18px; display: flex; align-items: flex-start; gap: 10px; }

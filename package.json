@@ -8,6 +8,7 @@
     "setup": "node scripts/setup-town.mjs",
     "doctor": "node scripts/doctor-town.mjs",
     "privacy:check": "node scripts/check-public.mjs",
+    "themes:check": "node scripts/validate-map-themes.mjs",
     "export:public": "node scripts/export-public.mjs"
   },
   "engines": {

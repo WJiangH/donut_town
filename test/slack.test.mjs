@@ -40,6 +40,7 @@ test("channel members paginate and bots are excluded", async () => {
   assert.equal(requests[2].body.get("user"), "U1");
   assert.deepEqual(members, [{
     id: "U1",
+    isWorkspaceAdmin: false,
     displayName: "Maya C",
     realName: "Maya",
     avatarUrl: "large.png",

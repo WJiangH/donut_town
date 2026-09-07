@@ -7,6 +7,8 @@ description: Generate, validate, and integrate Donut Town pixel residents, direc
 
 Produce game-ready pixel characters that remain visually consistent with the approved Donut Town map and character direction.
 
+For an outdoor theme or replacement town layout, use [Donut Town Maps](../donut-town-maps/SKILL.md); it packages art, collision and activity points together.
+
 ## Reality check
 
 A single character image provides identity and visual style, but it does not contain hidden views or motion. Generated side and back views are inferred and must be reviewed. Treat one-shot output as a draft until direction, identity, loop continuity, transparency, and in-map scale are verified.

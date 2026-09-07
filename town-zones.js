@@ -92,6 +92,7 @@
 
   // Stand beside the furniture, on ground the walk mask allows, facing it.
   function resolveAnchor(zone) {
+    if (zone.resolved && zone.anchor) return;
     if (zone.radius) {
       const collision = zone.scene === "chemPod" ? window.ChemPodCollision : window.TownCollision;
       const centre = collision?.ready ? collision.nearestWalkable(zone.x, zone.y) : { x: zone.x, y: zone.y };
@@ -177,6 +178,14 @@
 
   zones.reset = function () {
     pending = null;
+  };
+
+  zones.setTown = function (list) {
+    const indoor = ZONES.filter(zone => zone.scene !== 'town');
+    ZONES.splice(0, ZONES.length, ...indoor, ...structuredClone(list));
+    pending = null;
+    zones.ready = false;
+    zones.prepare();
   };
 
   // Called every frame while the character is standing still. Returns the pose

@@ -12,6 +12,9 @@ import { HouseStore, HOUSE_GRID, validateLayout, homeOwned } from "./house/store
 import { houseLuxury } from "./house/luxury.mjs";
 import { ChatStore } from "./chats/store.mjs";
 import { ChatService } from "./chats/service.mjs";
+import { ThemeStore } from "./town-themes/store.mjs";
+import { ThemeService } from "./town-themes/service.mjs";
+import { validateTheme } from "./town-themes/contract.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
@@ -79,6 +82,19 @@ let invitationHydrationPromise = null;
 const ledgerMessageTsByInviter = new Map();
 const realtimeServer = new WebSocketServer({ noServer: true, maxPayload: 512 });
 const presenceHub = new PresenceHub();
+const themeCatalog = JSON.parse(await readFile(join(root,'content/themes/catalog.json'),'utf8'));
+for (const entry of themeCatalog) {
+  const theme=validateTheme(JSON.parse(await readFile(join(root,entry.manifest),'utf8')));
+  if (theme.id!==entry.id) throw new Error('Invalid theme catalog');
+}
+const themeService = new ThemeService({
+  store: new ThemeStore({url:config.upstashUrl,token:config.upstashToken,namespace:config.channelId}),
+  catalog:themeCatalog,
+  memberFor:async id=>(await getCachedChannelMembers()).find(member=>member.id===id),
+  keyFor:id=>memberCharacterKey(id,config.signingSecret),
+  adminKeys:process.env.TOWN_ADMIN_KEYS || '',
+  onChanged:current=>presenceHub.broadcast({type:'town-theme',...current})
+});
 
 const server = createServer(async (request, response) => {
   try {
@@ -112,6 +128,21 @@ const server = createServer(async (request, response) => {
     }
 
     renewSessionCookie(request, response);
+
+    if (url.pathname === '/api/town/theme') {
+      response.setHeader('cache-control','private, no-store');
+      const session=getSlackSession(request);
+      try {
+        if (request.method==='GET') return sendJson(response,200,await themeService.view(session?.sub));
+        if (request.method!=='POST') return sendJson(response,405,{error:'method_not_allowed'});
+        let body;
+        try { body=JSON.parse(await readBody(request)); } catch { return sendJson(response,400,{error:'invalid_theme'}); }
+        return sendJson(response,200,await themeService.change(session?.sub,body));
+      } catch (error) {
+        const statuses={slack_login_required:401,town_admin_required:403,invalid_theme:400,theme_conflict:409};
+        return sendJson(response,statuses[error.message] || 503,{error:statuses[error.message] ? error.message : 'theme_unavailable'});
+      }
+    }
 
     if (request.method === "GET" && url.pathname === "/api/slack/status") {
       const session = getSlackSession(request);
@@ -783,6 +814,7 @@ function contentType(extension) {
     ".mjs": "text/javascript; charset=utf-8",
     ".json": "application/json; charset=utf-8",
     ".png": "image/png",
+    ".webp": "image/webp",
     ".svg": "image/svg+xml"
   })[extension] || "application/octet-stream";
 }

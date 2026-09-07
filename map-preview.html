@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Map preview · Donut Town</title>
+<link rel="stylesheet" href="town-themes/preview.css"></head>
+<body><header><div><small>DONUT TOWN / MAP PREVIEW</small><h1 id="name">Loading map…</h1></div><div class="controls"><label><input id="paths" type="checkbox"> Walkable paths</label><label><input id="spots" type="checkbox"> Activity spots</label><button id="reset" type="button">Reset position</button></div></header>
+<p id="status" role="status">Preview only. The active town is unchanged.</p>
+<main id="world" tabindex="0" aria-label="Map preview. Click a path to walk, or use arrow keys."><img id="art" alt=""><canvas id="overlay" hidden></canvas><div id="zones" hidden></div><div id="doors"></div><div id="walker" aria-label="Preview resident"><i></i></div></main>
+<footer>Click to walk · Arrow keys / WASD · Stop by a marked spot to try its action</footer>
+<script src="town-collision.js?v=4"></script><script src="town-zones.js?v=5"></script><script type="module" src="town-themes/preview.mjs"></script></body>
+</html>

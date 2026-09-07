@@ -1,4 +1,6 @@
 let residents = [];
+let activeThemeId = 'classic';
+let themeController = null;
 // Feet positions on paved gathering places, spread across town before filling gaps.
 const residentSlots = [
   { x: 40, y: 38, activity: "plaza" },
@@ -116,7 +118,7 @@ function rememberPosition() {
   positionSaveTimer = setTimeout(() => {
     try {
       const spots = { ...scenePlayerPositions, [currentScene]: { x: player.x, y: player.y } };
-      window.localStorage?.setItem(POSITION_KEY, JSON.stringify({ scene: currentScene, spots }));
+      window.localStorage?.setItem(`${POSITION_KEY}:${activeThemeId}`, JSON.stringify({ scene: currentScene, spots }));
     } catch {
       // A browser that refuses storage simply starts from the fountain again.
     }
@@ -126,7 +128,7 @@ function rememberPosition() {
 // Only ground the town still allows: the map may have changed under a saved spot.
 function restorePosition() {
   let saved;
-  try { saved = JSON.parse(window.localStorage?.getItem(POSITION_KEY) || "null"); } catch { return; }
+  try { saved = JSON.parse(window.localStorage?.getItem(`${POSITION_KEY}:${activeThemeId}`) || (activeThemeId === 'classic' && window.localStorage?.getItem(POSITION_KEY)) || "null"); } catch { return; }
   if (!saved?.spots) return;
   for (const [scene, spot] of Object.entries(saved.spots)) {
     if (!scenePlayerPositions[scene] || !Number.isFinite(spot?.x) || !Number.isFinite(spot?.y)) continue;
@@ -474,6 +476,10 @@ function replaceRemotePlayers(players) {
 
 function upsertRemotePlayer(state, refreshResidents = true) {
   if (!state?.userId || state.userId === currentUser?.id) return;
+  if ((state.themeId || 'classic') !== activeThemeId) {
+    removeRemotePlayer(state.userId);
+    return;
+  }
   const x = Number(state.x);
   const y = Number(state.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) return;
@@ -548,6 +554,7 @@ function publishPresence(force = false, moving = false) {
   if (!force && !stateChanged && (!moving || now - lastPresenceSentAt < 125)) return;
   realtimeSocket.send(JSON.stringify({
     type: "state",
+    themeId: activeThemeId,
     scene: currentScene,
     x: player.x,
     y: player.y,
@@ -598,6 +605,7 @@ function connectRealtime() {
       publishPresence(true, false);
       return;
     }
+    if (message.type === 'town-theme') { themeController?.check(); return; }
     if (message.type === "snapshot") {
       replaceRemotePlayers(message.players);
       return;
@@ -997,6 +1005,10 @@ function transitionToScene(nextScene) {
 function gameLoop(timestamp) {
   const deltaSeconds = Math.max(0, Math.min((timestamp - lastGameTime) / 1000, 0.05));
   lastGameTime = timestamp;
+  if (window.townSettingsOpen) {
+    pressedKeys.clear(); clickPath = []; publishPresence(false, false);
+    window.requestAnimationFrame(gameLoop); return;
+  }
   if (currentScene === "donutShop") {
     publishPresence(false, false);
     window.requestAnimationFrame(gameLoop);
@@ -1751,6 +1763,36 @@ window.addEventListener("resize", () => {
   updateTownCamera(0, true);
 });
 
+function applyTownTheme(theme) {
+  activeThemeId = theme.id;
+  window.TownCollision = window.createTownCollision(theme.walkMask);
+  window.TownZones.setTown(theme.zones);
+  SCENES.town.bounds = theme.bounds;
+  const world = document.querySelector('#mapWorld');
+  world.style.width = `${theme.worldWidth}px`;
+  world.style.aspectRatio = `${theme.imageSize.width} / ${theme.imageSize.height}`;
+  world.dataset.theme = theme.id;
+  const art = world.querySelector('.town-map');
+  art.src = theme.image; art.alt = `${theme.name} pixel-art Donut Town`;
+  for (const [id,selector] of [['chemPod','#chemPodEntrance'],['donutShop','#shopEntrance']]) {
+    const entry=theme.entrances[id], button=document.querySelector(selector);
+    button.style.left=`${entry.x}%`;button.style.top=`${entry.y}%`;
+  }
+  Object.assign(player, theme.spawn);
+  scenePlayerPositions.town = {...theme.spawn};
+  donutStations.splice(0, donutStations.length, ...structuredClone(theme.stations));
+  snapTownAnchors();
+  spreadResidentSlots(residentSlots, window.TownCollision, 160, 4.2);
+  restorePosition();
+  overviewCenter.x=theme.worldWidth * theme.camera.x / 100;
+  overviewCenter.y=theme.worldWidth * theme.imageSize.height / theme.imageSize.width * theme.camera.y / 100;
+  townCameraMetrics=null; townCamera.ready=false;
+  if (new URLSearchParams(location.search).get('collision')==='1') {
+    world.querySelectorAll('canvas').forEach(canvas=>canvas.remove());
+    window.TownCollision.showOverlay('#mapWorld');
+  }
+}
+
 async function startTown() {
   const loading = document.querySelector("#loadingScreen");
   const message = document.querySelector("#loadingMessage");
@@ -1758,7 +1800,14 @@ async function startTown() {
   retry.hidden = true;
   message.textContent = "Loading Slack residents…";
   const slow = setTimeout(() => { message.textContent = "Still connecting. The server may be waking up…"; }, 6000);
-  const ready = await syncSlackResidents();
+  let ready = false;
+  try {
+    if (!themeController) {
+      const {mountThemes} = await import('./town-themes/client.mjs');
+      themeController = await mountThemes({apply: applyTownTheme});
+    }
+    ready = await syncSlackResidents();
+  } catch { /* Keep the loading curtain until map and members are both ready. */ }
   clearTimeout(slow);
   if (ready) {
       loading.classList.add("done");

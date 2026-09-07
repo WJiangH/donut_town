@@ -33,6 +33,8 @@ test("presence coordinates and enums are normalized", () => {
     updatedAt: 123
   });
   assert.equal(normalizePresenceState({ type: "state", scene: "secret", x: 1, y: 2 }), null);
+  assert.equal(normalizePresenceState({type:'state',scene:'town',x:1,y:2,themeId:'halloween'}).themeId,'halloween');
+  assert.equal(normalizePresenceState({type:'state',scene:'town',x:1,y:2,themeId:'../../secret'}).themeId,undefined);
 });
 
 test("presence updates retain online members across town scenes", () => {

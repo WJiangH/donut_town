@@ -1,0 +1,14 @@
+[
+  {
+    "id": "classic",
+    "name": "Classic",
+    "manifest": "/content/themes/classic.json",
+    "thumbnail": "/assets/themes/classic-thumb-31be024131e5.webp"
+  },
+  {
+    "id": "halloween",
+    "name": "Halloween",
+    "manifest": "/content/themes/halloween.json",
+    "thumbnail": "/assets/themes/halloween-thumb-c53568c64c47.webp"
+  }
+]
