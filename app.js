@@ -81,6 +81,8 @@ const scenePlayerPositions = {
 let currentScene = "town";
 let sceneTransitioning = false;
 let currentUser = null;
+let headwearPrototype = null;
+let headwearPrototypeLoad = null;
 let currentPairId = null;
 let pairActivities = [];
 const previewPairUserId = new URLSearchParams(window.location.search).get("previewPair");
@@ -256,6 +258,7 @@ function paintPersonalCharacter(element, character, direction = "down", frame = 
   const facing = action?.facing || direction;
   const source = action || character;
   const index = action ? frame % action.frames.length : (facing === "up" ? 2 : (facing === "left" || facing === "right") ? 1 : 0) * 3 + frame;
+  if (element.classList.contains("player-character")) headwearPrototype?.paint(element, character, facing, index, actionId);
   const urls = action ? [action.url] : (character.layers || [character.url]);
   const signature = `${urls.join("|")}:${actionId || "walk"}:${index}:${facing}`;
   if (element.dataset.pose === signature) return;
@@ -1411,6 +1414,9 @@ function openProfile() {
   document.querySelector("#profileScrim").hidden = false;
   document.querySelector("#profileButton").setAttribute("aria-expanded", "true");
   const wardrobe = document.querySelector("#profileWardrobe");
+  if (new URLSearchParams(location.search).get("accessories") === "1" && !headwearPrototypeLoad && currentUser?.character?.url === "/assets/residents/r-7f3a2c/walk-v1.png") {
+    headwearPrototypeLoad = import("./prototypes/headwear.mjs").then(module => module.attachTownPrototype(profileDrawer, currentUser.character)).then(prototype => { headwearPrototype = prototype; }).catch(() => { headwearPrototypeLoad = null; });
+  }
   if (!wardrobe.hidden && !wardrobeMount) {
     wardrobeMount = import("./profile-wardrobe.mjs").then(module => module.mountWardrobe(wardrobe, { manifestUrl: wardrobeManifestUrl(currentUser.character), initialOutfit: currentUser?.character?.outfit, onSaved: async character => {
       const loaded = await loadCharacterArt(character);

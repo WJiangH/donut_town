@@ -1,0 +1,829 @@
+{
+  "seed": 1159941166,
+  "selection": "random.sample of sorted nine-frame personalized rigs, excluding r-7f3a2c",
+  "status": "reviewed: four basic fits; two require source-specific handling",
+  "items": [
+    {
+      "id": "r-93c8e1",
+      "label": "Resident 1",
+      "heads": {
+        "walk": [
+          [
+            261,
+            36,
+            118
+          ],
+          [
+            633,
+            32,
+            118
+          ],
+          [
+            998,
+            37,
+            118
+          ],
+          [
+            248,
+            449,
+            101
+          ],
+          [
+            625,
+            448,
+            101
+          ],
+          [
+            996,
+            448,
+            101
+          ],
+          [
+            253,
+            832,
+            112
+          ],
+          [
+            631,
+            832,
+            112
+          ],
+          [
+            1002,
+            830,
+            112
+          ]
+        ],
+        "sitChair": [
+          [
+            147,
+            10,
+            117
+          ]
+        ],
+        "garden": [
+          [
+            413,
+            36,
+            122
+          ]
+        ],
+        "lookout": [
+          [
+            665,
+            10,
+            111
+          ]
+        ],
+        "read": [
+          [
+            980,
+            10,
+            110
+          ]
+        ],
+        "experiment": [
+          [
+            1274,
+            10,
+            110
+          ]
+        ],
+        "fish": [
+          [
+            1499,
+            10,
+            126
+          ]
+        ],
+        "coffee": [
+          [
+            138,
+            370,
+            110
+          ],
+          [
+            421,
+            370,
+            110
+          ]
+        ],
+        "sitGrass": [
+          [
+            676,
+            441,
+            123
+          ],
+          [
+            950,
+            442,
+            117
+          ]
+        ],
+        "dance": [
+          [
+            1254,
+            370,
+            138
+          ],
+          [
+            1544,
+            370,
+            111
+          ]
+        ]
+      },
+      "sourceHashes": {
+        "/assets/residents/r-93c8e1/walk-v1.png": "b9f4a9ae38225125b0be605c74b82b7e518ca7fe29a4ded4dfb894983f294604",
+        "/assets/residents/r-93c8e1/actions-v2.png": "391908a871ba48481f18e88efcf6707952d180e6f692bde56ee239717486388e"
+      },
+      "fitStatus": "sample-fit-ok",
+      "note": "Basic fit OK in sampled views and poses"
+    },
+    {
+      "id": "r-c74fc1",
+      "label": "Resident 2",
+      "heads": {
+        "walk": [
+          [
+            183,
+            27,
+            98
+          ],
+          [
+            512,
+            27,
+            98
+          ],
+          [
+            848,
+            27,
+            98
+          ],
+          [
+            177,
+            369,
+            106
+          ],
+          [
+            512,
+            365,
+            106
+          ],
+          [
+            857,
+            369,
+            106
+          ],
+          [
+            183,
+            707,
+            101
+          ],
+          [
+            512,
+            706,
+            101
+          ],
+          [
+            855,
+            707,
+            101
+          ]
+        ],
+        "sitChair": [
+          [
+            141,
+            10,
+            117
+          ]
+        ],
+        "garden": [
+          [
+            431,
+            11,
+            114
+          ]
+        ],
+        "lookout": [
+          [
+            698,
+            10,
+            130
+          ]
+        ],
+        "read": [
+          [
+            981,
+            10,
+            123
+          ]
+        ],
+        "experiment": [
+          [
+            1258,
+            10,
+            105
+          ]
+        ],
+        "fish": [
+          [
+            1566,
+            10,
+            117
+          ]
+        ],
+        "coffee": [
+          [
+            141,
+            370,
+            114
+          ],
+          [
+            439,
+            370,
+            115
+          ]
+        ],
+        "sitGrass": [
+          [
+            721,
+            370,
+            127
+          ],
+          [
+            1025,
+            370,
+            121
+          ]
+        ],
+        "dance": [
+          [
+            1260,
+            371,
+            125
+          ],
+          [
+            1537,
+            370,
+            115
+          ]
+        ]
+      },
+      "sourceHashes": {
+        "/assets/residents/r-c74fc1/walk-v1.png": "36eee9e17a846c82e2c5238ac13f8c037385576c1a950dd2e428fde13b543114",
+        "/assets/residents/r-c74fc1/actions-v2.png": "3f3196126a578dc6ff2edbb5a327ce138d88c1671e5ad48eb6de13a42a909e3e"
+      },
+      "fitStatus": "needs-direction-repair",
+      "note": "Side walk row mixes front and side views"
+    },
+    {
+      "id": "r-42218c",
+      "label": "Resident 3",
+      "heads": {
+        "walk": [
+          [
+            172,
+            21,
+            105
+          ],
+          [
+            512,
+            21,
+            105
+          ],
+          [
+            854,
+            21,
+            105
+          ],
+          [
+            168,
+            364,
+            110
+          ],
+          [
+            511,
+            363,
+            110
+          ],
+          [
+            852,
+            364,
+            110
+          ],
+          [
+            172,
+            705,
+            104
+          ],
+          [
+            512,
+            705,
+            104
+          ],
+          [
+            854,
+            705,
+            104
+          ]
+        ],
+        "sitChair": [
+          [
+            140,
+            10,
+            112
+          ]
+        ],
+        "garden": [
+          [
+            413,
+            96,
+            112
+          ]
+        ],
+        "lookout": [
+          [
+            663,
+            10,
+            111
+          ]
+        ],
+        "read": [
+          [
+            979,
+            10,
+            111
+          ]
+        ],
+        "experiment": [
+          [
+            1271,
+            10,
+            105
+          ]
+        ],
+        "fish": [
+          [
+            1503,
+            10,
+            111
+          ]
+        ],
+        "coffee": [
+          [
+            141,
+            370,
+            96
+          ],
+          [
+            423,
+            370,
+            95
+          ]
+        ],
+        "sitGrass": [
+          [
+            700,
+            379,
+            115
+          ],
+          [
+            980,
+            379,
+            115
+          ]
+        ],
+        "dance": [
+          [
+            1269,
+            370,
+            97
+          ],
+          [
+            1550,
+            370,
+            94
+          ]
+        ]
+      },
+      "sourceHashes": {
+        "/assets/residents/r-42218c/walk-v1.png": "b136ac7c0ba1aa82605490dede672abdfeb1d77a1e36fda591f5ff3172ba5247",
+        "/assets/residents/r-42218c/actions-v2.png": "66e2bd19add1db076084c30779b5205935506c2eeebc3a38ac9e727387e9cd5a"
+      },
+      "fitStatus": "sample-fit-ok",
+      "note": "Basic fit OK in sampled views and poses"
+    },
+    {
+      "id": "r-654fff",
+      "label": "Resident 4",
+      "heads": {
+        "walk": [
+          [
+            175,
+            37,
+            94
+          ],
+          [
+            512,
+            36,
+            94
+          ],
+          [
+            854,
+            37,
+            94
+          ],
+          [
+            172,
+            377,
+            91
+          ],
+          [
+            511,
+            377,
+            91
+          ],
+          [
+            852,
+            377,
+            91
+          ],
+          [
+            177,
+            700,
+            92
+          ],
+          [
+            512,
+            700,
+            92
+          ],
+          [
+            853,
+            700,
+            92
+          ]
+        ],
+        "sitChair": [
+          [
+            167,
+            10,
+            107
+          ]
+        ],
+        "garden": [
+          [
+            430,
+            10,
+            119
+          ]
+        ],
+        "lookout": [
+          [
+            706,
+            11,
+            110
+          ]
+        ],
+        "read": [
+          [
+            979,
+            48,
+            112
+          ]
+        ],
+        "experiment": [
+          [
+            1264,
+            10,
+            128
+          ]
+        ],
+        "fish": [
+          [
+            1561,
+            10,
+            115
+          ]
+        ],
+        "coffee": [
+          [
+            140,
+            394,
+            98
+          ],
+          [
+            422,
+            370,
+            106
+          ]
+        ],
+        "sitGrass": [
+          [
+            658,
+            416,
+            111
+          ],
+          [
+            1048,
+            439,
+            115
+          ]
+        ],
+        "dance": [
+          [
+            1244,
+            370,
+            106
+          ],
+          [
+            1524,
+            370,
+            106
+          ]
+        ]
+      },
+      "sourceHashes": {
+        "/assets/residents/r-654fff/walk-v1.png": "f6e546bb4e3009c63c47884ae06758441d0de532b843b673a0c5afdc6ee8d8e7",
+        "/assets/residents/r-654fff/actions-v2.png": "4b1aaf58ea109de0b71f7297419f7c3df192dec6ed366a4f9905d2bdf070c440"
+      },
+      "fitStatus": "needs-cap-mask",
+      "note": "Existing cap: replacement mask needed"
+    },
+    {
+      "id": "r-1043fe",
+      "label": "Resident 5",
+      "heads": {
+        "walk": [
+          [
+            175,
+            40,
+            91
+          ],
+          [
+            513,
+            40,
+            91
+          ],
+          [
+            854,
+            40,
+            91
+          ],
+          [
+            173,
+            381,
+            87
+          ],
+          [
+            510,
+            381,
+            87
+          ],
+          [
+            852,
+            381,
+            87
+          ],
+          [
+            176,
+            702,
+            90
+          ],
+          [
+            513,
+            702,
+            90
+          ],
+          [
+            853,
+            702,
+            90
+          ]
+        ],
+        "sitChair": [
+          [
+            106,
+            10,
+            113
+          ]
+        ],
+        "garden": [
+          [
+            412,
+            56,
+            127
+          ]
+        ],
+        "lookout": [
+          [
+            684,
+            10,
+            112
+          ]
+        ],
+        "read": [
+          [
+            982,
+            10,
+            109
+          ]
+        ],
+        "experiment": [
+          [
+            1250,
+            11,
+            104
+          ]
+        ],
+        "fish": [
+          [
+            1500,
+            10,
+            109
+          ]
+        ],
+        "coffee": [
+          [
+            141,
+            370,
+            109
+          ],
+          [
+            423,
+            370,
+            108
+          ]
+        ],
+        "sitGrass": [
+          [
+            701,
+            370,
+            127
+          ],
+          [
+            980,
+            370,
+            128
+          ]
+        ],
+        "dance": [
+          [
+            1256,
+            370,
+            106
+          ],
+          [
+            1533,
+            370,
+            106
+          ]
+        ]
+      },
+      "sourceHashes": {
+        "/assets/residents/r-1043fe/walk-v1.png": "be800d3cffee069ca2c601836f6e12a4438e836d16f96cf26dddd61feb0ecfc4",
+        "/assets/residents/r-1043fe/actions-v2.png": "ca274c88fae5d0f8e88fb40f6cfa9ac4486ad3742997b2e75ea1b97629ace1ce"
+      },
+      "fitStatus": "sample-fit-ok",
+      "note": "Basic fit OK in sampled views and poses"
+    },
+    {
+      "id": "r-275360",
+      "label": "Resident 6",
+      "heads": {
+        "walk": [
+          [
+            248,
+            56,
+            86
+          ],
+          [
+            520,
+            56,
+            86
+          ],
+          [
+            804,
+            56,
+            86
+          ],
+          [
+            249,
+            374,
+            88
+          ],
+          [
+            519,
+            374,
+            88
+          ],
+          [
+            802,
+            374,
+            88
+          ],
+          [
+            248,
+            686,
+            87
+          ],
+          [
+            519,
+            686,
+            87
+          ],
+          [
+            801,
+            686,
+            87
+          ]
+        ],
+        "sitChair": [
+          [
+            148,
+            10,
+            101
+          ]
+        ],
+        "garden": [
+          [
+            424,
+            10,
+            100
+          ]
+        ],
+        "lookout": [
+          [
+            707,
+            10,
+            125
+          ]
+        ],
+        "read": [
+          [
+            984,
+            10,
+            97
+          ]
+        ],
+        "experiment": [
+          [
+            1248,
+            10,
+            90
+          ]
+        ],
+        "fish": [
+          [
+            1494,
+            10,
+            98
+          ]
+        ],
+        "coffee": [
+          [
+            162,
+            370,
+            101
+          ],
+          [
+            423,
+            370,
+            101
+          ]
+        ],
+        "sitGrass": [
+          [
+            707,
+            370,
+            128
+          ],
+          [
+            986,
+            370,
+            131
+          ]
+        ],
+        "dance": [
+          [
+            1260,
+            408,
+            89
+          ],
+          [
+            1542,
+            447,
+            93
+          ]
+        ]
+      },
+      "sourceHashes": {
+        "/assets/residents/r-275360/walk-v1.png": "ce131e450203f323f85f518b778a4a0aac249098842c2b53138c3acc42ff2afc",
+        "/assets/residents/r-275360/actions-v2.png": "edb62ce8489bafbfb377741edae1ec142018107ac08427248de9f0dc8272adc2"
+      },
+      "fitStatus": "sample-fit-ok",
+      "note": "Basic fit OK in sampled views and poses"
+    }
+  ]
+}

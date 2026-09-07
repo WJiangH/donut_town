@@ -1,0 +1,14 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Donut Town · Felt hat fitting</title><style>body{margin:24px;background:#eee9d7;color:#283c30;font:15px monospace}h1{font-size:23px;margin:0 0 8px}p{margin:0 0 18px}main{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}article{text-align:center;background:#d9e2c6;border:2px solid #809373;padding:10px}canvas{width:180px;height:250px;max-width:100%;object-fit:contain;image-rendering:pixelated}strong{display:block}a{color:inherit}@media(max-width:620px){main{grid-template-columns:repeat(2,minmax(0,1fr))}}</style><h1>Felt hat · fitted to the original character</h1><p>Same character pixels. Separate hat layer. <a href="/prototypes/headwear.html">Try it on</a></p><main></main><script type="module">
+import{loadHatSprite,accessoryGeometry,drawAccessory}from'/characters/head-accessories.mjs';
+import{loadWardrobe,layerUrls}from'/characters/wardrobe/renderer.mjs';
+const ch=await(await fetch('/characters/r-7f3a2c.json')).json(),m=await(await fetch('/characters/wardrobe/r-7f3a2c.json')).json(),images=await loadWardrobe(m),hat=await loadHatSprite();
+for(const a of Object.values(ch.actions))if(!images.has(a.url)){const im=new Image();await new Promise((r,j)=>{im.onload=r;im.onerror=j;im.src=a.url});images.set(a.url,im)}
+for(const [label,direction,action,wear]of[['Original','down',null,false],['Front','down',null,true],['Side','right',null,true],['Back','up',null,true],['Left','left',null,true],['Sitting','down','sitChair',true],['On the grass','down','sitGrass',true],['Dancing','down','dance',true]]){
+ const article=document.createElement('article');article.innerHTML='<strong>'+label+'</strong><canvas width="180" height="250"></canvas>';document.querySelector('main').append(article);
+ const canvas=article.querySelector('canvas'),c=canvas.getContext('2d'),source=action?ch.actions[action]:ch,d=source.facing||direction,index=action?0:(d==='up'?7:d==='down'?1:4),g=accessoryGeometry(ch,index,action),[x,y,w,h]=g.frame,scale=175/source.frameHeight;
+ c.imageSmoothingEnabled=false;c.save();if(d==='left'){c.translate(180,0);c.scale(-1,1)}
+ for(const url of action?[source.url]:layerUrls(m,{}))c.drawImage(images.get(url),x,y,w,h,90-w*scale/2,235-h*scale,w*scale,h*scale);
+ const layer=document.createElement('canvas');drawAccessory(layer,{hat:wear},d,hat);const ratio=g.headWidth/112*scale;c.drawImage(layer,90+(g.x-w/2)*scale-96*ratio,235-(h-g.y)*scale-96*ratio,192*ratio,150*ratio);c.restore();
+}
+document.title='Felt hat fitting · ready';
+</script></html>

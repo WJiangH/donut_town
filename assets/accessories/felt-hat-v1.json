@@ -1,0 +1,51 @@
+{
+  "url": "/assets/accessories/felt-hat-2ad3f3cc5755.png",
+  "width": 480,
+  "height": 112,
+  "frames": {
+    "front": [
+      2,
+      19,
+      156,
+      91
+    ],
+    "side": [
+      162,
+      24,
+      156,
+      86
+    ],
+    "back": [
+      322,
+      19,
+      156,
+      91
+    ]
+  },
+  "bytes": 60568,
+  "sha256": "2ad3f3cc57553ab5cee59a576ec1184b1e48c913810a69e78b107bb74243e0b3",
+  "source": "art-source/accessories/felt-hat-v1.png",
+  "sourceSha256": "6e794e1e72a14a420775629af5e233789eb4065f04feafdf01288b0d9b42a3f4",
+  "sourceBounds": {
+    "front": [
+      119,
+      188,
+      666,
+      507
+    ],
+    "side": [
+      80,
+      183,
+      631,
+      488
+    ],
+    "back": [
+      57,
+      190,
+      598,
+      507
+    ]
+  },
+  "generator": "built-in imagegen; transparent-background extraction follow-up",
+  "prompt": "Three directional views of a charcoal-brown felt trilby; fine RPG sprite detail matching r-7f3a2c, brown ribbon, curved brim, upper-left light. Isolated hats only, front/right/back, transparent alpha. Preserve the character."
+}
