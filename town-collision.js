@@ -73,6 +73,8 @@
     return false;
   }
 
+  collision.lineIsClear = (from, to) => lineIsClear(from.x,from.y,to.x,to.y);
+
   // A* across the mask, then pull the corners straight so walking looks natural.
   collision.findPath = function (start, goal) {
     const from = collision.nearestWalkable(start.x, start.y);

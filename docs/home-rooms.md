@@ -2,9 +2,11 @@
 
 Everyone starts in Cozy Cottage with the same free chair, lamp, and rug. Buy Modern Loft (12 donuts) or Moonlight Suite (18 donuts) in **Shop → Rooms**, then choose it with **My Home → Room**. Switching rooms keeps furniture and Luxury unchanged. Only placed decorations contribute Luxury.
 
-Rooms open as a full-viewport scene without stretching the artwork. Drag empty ground to look around; walking keeps your resident in view. **Room overview** shows the complete room and **Fill screen** restores the immersive view. Exit, room selection, and Luxury stay at the screen edges.
+Home uses one fixed, complete-room view. Its surrounding wall and floor background matches the selected room; controls and the decoration shelf have their own space. Home has no camera zoom or panning.
 
 Decorate mode supports drag and drop, selecting an item then clicking the floor, and quarter-cell arrow-key nudges (Shift + arrow moves one full cell). Done decorating returns to walking. The clear floor near the back wall is usable; wall surfaces are not furniture slots.
+
+Home, inventory, wallet, outfits, and pets belong to the member, not the outdoor theme. Every theme opens the same `/api/house` and `/api/shop` records using the same authenticated member hash. Do not copy these records into theme packages or create theme-specific save keys. An incoming theme change waits until Home saves and closes before reloading the outdoor map.
 
 ## Adding another room
 

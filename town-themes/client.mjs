@@ -68,11 +68,12 @@ export async function mountThemes({apply}) {
   dialog.addEventListener('close',()=>{window.townSettingsOpen=false;});
   dialog.addEventListener('cancel',event=>{if(applying)event.preventDefault();});
   async function check() {
-    if (checking || applying || document.hidden) return;
+    // A theme changes the outdoor scene, never the member's Home editing session.
+    if (checking || applying || document.hidden || window.townHouseOpen) return;
     checking=true;
     try {
       const next=await json('/api/town/theme');
-      if (next.current.revision!==loadedRevision) location.reload();
+      if (next.current.revision!==loadedRevision && !window.townHouseOpen) location.reload();
     } catch { /* Keep the last loaded map through a temporary outage. */ }
     finally {checking=false;}
   }

@@ -1,6 +1,8 @@
 let residents = [];
 let activeThemeId = 'classic';
 let themeController = null;
+let assignTownActivities=null;
+let activeTownZones=[];
 // Feet positions on paved gathering places, spread across town before filling gaps.
 const residentSlots = [
   { x: 40, y: 38, activity: "plaza" },
@@ -103,10 +105,6 @@ let lastPresenceSignature = "";
 const townCamera = { x: 0, y: 0, scale: 1, ready: false };
 let townCameraMetrics = null;
 let cameraMode = "overview";
-// World pixels, independent of the viewport and total map extent.
-const overviewCenter = { x: 1536, y: 1004 };
-let mapDrag = null;
-let suppressMapClick = false;
 
 // Where a member was last standing, kept in their browser so a refresh puts
 // them back rather than at the fountain.
@@ -142,7 +140,7 @@ function restorePosition() {
 }
 
 function clampCameraOffset(offset, viewportSize, worldSize) {
-  return Math.max(viewportSize - worldSize, Math.min(0, offset));
+  return worldSize <= viewportSize ? (viewportSize-worldSize)/2 : Math.max(viewportSize - worldSize, Math.min(0, offset));
 }
 
 const layer = document.querySelector("#residentsLayer");
@@ -769,36 +767,36 @@ function updateTownCamera(deltaSeconds = 0, immediate = false) {
   if (!townCameraMetrics) refreshTownCameraMetrics();
   const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
   const coverScale = Math.max(viewportWidth / worldWidth, viewportHeight / worldHeight);
-  const targetScale = Math.max(cameraMode === "overview" ? 0.65 : 1, coverScale);
-  const centerX = cameraMode === "overview" ? overviewCenter.x : worldWidth * player.x / 100;
-  const centerY = cameraMode === "overview" ? overviewCenter.y : worldHeight * player.y / 100;
-  const targetX = clampCameraOffset(viewportWidth / 2 - centerX * targetScale, viewportWidth, worldWidth * targetScale);
-  const targetY = clampCameraOffset(viewportHeight / 2 - centerY * targetScale, viewportHeight, worldHeight * targetScale);
+  const targetScale = cameraMode === "overview" ? Math.max(.001,Math.min((viewportWidth-24)/worldWidth,(viewportHeight-206)/worldHeight)) : Math.max(1,coverScale);
+  const centerX = cameraMode === "overview" ? worldWidth/2 : worldWidth * player.x / 100;
+  const centerY = cameraMode === "overview" ? worldHeight/2 : worldHeight * player.y / 100;
+  const targetX = cameraMode === "overview" ? (viewportWidth-worldWidth*targetScale)/2 : clampCameraOffset(viewportWidth / 2 - centerX * targetScale, viewportWidth, worldWidth * targetScale);
+  const targetY = cameraMode === "overview" ? 96+(viewportHeight-206-worldHeight*targetScale)/2 : clampCameraOffset(viewportHeight / 2 - centerY * targetScale, viewportHeight, worldHeight * targetScale);
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const blend = immediate || reducedMotion || !townCamera.ready ? 1 : 1 - Math.exp(-8 * deltaSeconds);
   townCamera.x += (targetX - townCamera.x) * blend;
   townCamera.y += (targetY - townCamera.y) * blend;
   townCamera.scale += (targetScale - townCamera.scale) * blend;
-  // Clamp even during zoom transitions and viewport changes: never reveal empty space.
-  townCamera.scale = Math.max(townCamera.scale, coverScale);
-  townCamera.x = clampCameraOffset(townCamera.x, viewportWidth, worldWidth * townCamera.scale);
-  townCamera.y = clampCameraOffset(townCamera.y, viewportHeight, worldHeight * townCamera.scale);
+  // Overview always contains the whole map; Follow me retains close character framing.
+  if(cameraMode === "overview")townCamera.scale=targetScale;
+  else townCamera.scale=Math.max(townCamera.scale,coverScale);
+  townCamera.x = cameraMode === "overview" ? targetX : clampCameraOffset(townCamera.x, viewportWidth, worldWidth * townCamera.scale);
+  townCamera.y = cameraMode === "overview" ? targetY : clampCameraOffset(townCamera.y, viewportHeight, worldHeight * townCamera.scale);
   townCamera.ready = true;
   document.querySelector("#mapWorld").style.transform = `translate3d(${townCamera.x}px, ${townCamera.y}px, 0) scale(${townCamera.scale})`;
 }
 
 function setCameraMode(nextMode, announce = false) {
   if (!['overview', 'follow'].includes(nextMode)) return;
-  finishMapDrag();
   cameraMode = nextMode;
   document.querySelector("#mapWrap").dataset.cameraMode = cameraMode;
   document.querySelector("#townMovementHelp").textContent = cameraMode === "overview"
-    ? "Drag to explore · Click to walk · Stop somewhere and see what you do"
+    ? "Whole town · Click to walk · Follow me for a closer view"
     : "Click a path or use WASD · Stop somewhere and see what you do";
   document.querySelectorAll("[data-camera-mode]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.cameraMode === cameraMode));
   });
-  if (announce) showToast(cameraMode === "overview" ? "Drag to explore. Your view stays where you leave it." : "The camera is following you.");
+  if (announce) showToast(cameraMode === "overview" ? "The whole town stays in view while you walk." : "The camera is following you.");
 }
 
 // A seat with somebody already on it is taken, so look for another one.
@@ -1250,13 +1248,14 @@ async function syncSlackResidents() {
       .sort((left, right) => stableMemberScore(left) - stableMemberScore(right) || left.id.localeCompare(right.id));
     renderCurrentProfile();
     const chemPodIds = assignedChemPodIds(neighbors);
+    const townSlots=assignTownActivities?.(neighbors.filter(m=>!chemPodIds.has(m.id)),activeTownZones,residentSlots,window.TownCollision);
     let townIndex = 0;
     let chemPodIndex = 0;
     residents = neighbors.map((member, index) => {
       const homeScene = chemPodIds.has(member.id) ? "chemPod" : "town";
       const slot = homeScene === "chemPod"
         ? populationSlot(chemPodResidentSlots, chemPodIndex++)
-        : populationSlot(residentSlots, townIndex++);
+        : (townIndex++,townSlots?.get(member.id)||populationSlot(residentSlots,townIndex-1));
       return {
       id: index + 1,
       slackId: member.id,
@@ -1506,52 +1505,6 @@ document.querySelector("#dockHandle").addEventListener("click", () => {
   document.querySelector("#dockHandle").setAttribute("aria-expanded", String(!body.hidden));
 });
 
-function finishMapDrag() {
-  const viewport = document.querySelector("#mapWrap");
-  if (mapDrag && viewport.hasPointerCapture(mapDrag.id)) viewport.releasePointerCapture(mapDrag.id);
-  mapDrag = null;
-  viewport.classList.remove("is-dragging");
-}
-
-const mapViewport = document.querySelector("#mapWrap");
-mapViewport.addEventListener("pointerdown", event => {
-  if (cameraMode !== "overview" || event.button !== 0 || !event.isPrimary || event.target.closest("button")) return;
-  finishMapDrag();
-  suppressMapClick = false;
-  mapDrag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, x: event.clientX, y: event.clientY, active: false };
-});
-mapViewport.addEventListener("pointermove", event => {
-  if (!mapDrag || mapDrag.id !== event.pointerId) return;
-  if (!event.buttons) { finishMapDrag(); return; }
-  if (!mapDrag.active && Math.hypot(event.clientX - mapDrag.startX, event.clientY - mapDrag.startY) < 6) return;
-  if (!mapDrag.active) {
-    mapDrag.active = true;
-    mapViewport.setPointerCapture(event.pointerId);
-    mapViewport.classList.add("is-dragging");
-  }
-  suppressMapClick = true;
-  const { viewportWidth, viewportHeight, worldWidth, worldHeight } = townCameraMetrics;
-  const x = clampCameraOffset(townCamera.x + event.clientX - mapDrag.x, viewportWidth, worldWidth * townCamera.scale);
-  const y = clampCameraOffset(townCamera.y + event.clientY - mapDrag.y, viewportHeight, worldHeight * townCamera.scale);
-  overviewCenter.x = (viewportWidth / 2 - x) / townCamera.scale;
-  overviewCenter.y = (viewportHeight / 2 - y) / townCamera.scale;
-  mapDrag.x = event.clientX;
-  mapDrag.y = event.clientY;
-  updateTownCamera(0, true);
-});
-for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
-  mapViewport.addEventListener(type, event => {
-    if (mapDrag?.id === event.pointerId) finishMapDrag();
-  });
-}
-// A drag ends with a browser click; consume it before it can start a walk.
-mapViewport.addEventListener("click", event => {
-  if (!suppressMapClick) return;
-  suppressMapClick = false;
-  event.preventDefault();
-  event.stopPropagation();
-}, true);
-
 function movePlayerFromMapClick(event) {
   if (event.target.closest("button")) return;
   const bounds = event.currentTarget.getBoundingClientRect();
@@ -1570,6 +1523,11 @@ document.querySelector("#shopEntrance").addEventListener("click", event => {
   transitionToScene("donutShop");
 });
 document.querySelector("#leaveShop").addEventListener("click", () => transitionToScene("town"));
+document.querySelector('.brand').addEventListener('click', async event => {
+  event.preventDefault();closeDrawer();closeProfile();
+  if(window.townHouseOpen){await closeHouse();return;}
+  transitionToScene('town');
+});
 
 let petsModule = null;
 function setEquippedPet(petId) {
@@ -1588,11 +1546,17 @@ function updatePetFollowers(deltaSeconds, ownerMoving) {
   const owners = [];
   if (equippedPet) owners.push({ id: "you", x: player.x, y: player.y, scene: currentScene, pet: equippedPet, moving: ownerMoving });
   for (const remote of remotePlayers.values()) {
-    if (remote.pet) owners.push({ id: remote.userId, x: remote.x, y: remote.y, scene: remote.scene, pet: remote.pet, moving: remote.moving });
+    if (remote.pet && remote.scene === currentScene) owners.push({ id: remote.userId, x: remote.x, y: remote.y, scene: remote.scene, pet: remote.pet, moving: remote.moving });
   }
   petsApi.updatePets(owners, {
     deltaSeconds,
     layerFor: name => sceneLayer("pets", name),
+    geometryFor: name => {
+      const collision=scene(name).collision(),world=sceneLayer('pets',name)?.parentElement;
+      return {key:name==='town'?activeThemeId:name,width:world?.offsetWidth,height:world?.offsetHeight,
+        figureScale:name==='chemPod'?(world?.offsetWidth||1000)/1000:1,
+        lineIsClear:collision?.lineIsClear,findPath:collision?.findPath};
+    },
     isWalkable: (x, y, name) => name === "chemPod" ? isChemPodWalkable(x,y) : name === "donutShop" ? isShopWalkable(x,y) : isTownWalkable(x,y)
   });
 }
@@ -1684,6 +1648,7 @@ async function closeHouse(returnToTown = true) {
   document.querySelector("#houseView").hidden = true;
   window.townHouseOpen = false;
   panel?.pause();
+  void themeController?.check();
   if (returnToTown && currentScene !== "town") transitionToScene("town");
   return true;
 }
@@ -1761,13 +1726,6 @@ document.addEventListener("keydown", event => {
   }
   if (currentScene === "donutShop" || drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open")) return;
   const key = event.key.toLowerCase();
-  if (currentScene === "town" && cameraMode === "overview" && event.shiftKey && key.startsWith("arrow")) {
-    event.preventDefault();
-    const { viewportWidth, viewportHeight } = townCameraMetrics;
-    overviewCenter.x = (viewportWidth / 2 - townCamera.x) / townCamera.scale + (key === "arrowright" ? 80 : key === "arrowleft" ? -80 : 0);
-    overviewCenter.y = (viewportHeight / 2 - townCamera.y) / townCamera.scale + (key === "arrowdown" ? 80 : key === "arrowup" ? -80 : 0);
-    return;
-  }
   if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
     event.preventDefault();
     pressedKeys.add(key);
@@ -1775,7 +1733,7 @@ document.addEventListener("keydown", event => {
 });
 
 document.addEventListener("keyup", event => pressedKeys.delete(event.key.toLowerCase()));
-window.addEventListener("blur", () => { pressedKeys.clear(); finishMapDrag(); });
+window.addEventListener("blur", () => { pressedKeys.clear(); });
 let chemRoomCamera=null;
 import('./interior-camera.mjs').then(({mountInteriorCamera})=>{
   const world=document.querySelector('#chemPodWorld');
@@ -1788,7 +1746,6 @@ new ResizeObserver(([entry]) => {
 }).observe(document.querySelector("#chemPodWorld"));
 
 window.addEventListener("resize", () => {
-  finishMapDrag();
   townCameraMetrics = null;
   townCamera.ready = false;
   updateTownCamera(0, true);
@@ -1796,6 +1753,7 @@ window.addEventListener("resize", () => {
 
 function applyTownTheme(theme) {
   activeThemeId = theme.id;
+  activeTownZones=theme.zones;
   window.TownCollision = window.createTownCollision(theme.walkMask);
   window.TownZones.setTown(theme.zones);
   SCENES.town.bounds = theme.bounds;
@@ -1815,8 +1773,6 @@ function applyTownTheme(theme) {
   snapTownAnchors();
   spreadResidentSlots(residentSlots, window.TownCollision, 160, 4.2);
   restorePosition();
-  overviewCenter.x=theme.worldWidth * theme.camera.x / 100;
-  overviewCenter.y=theme.worldWidth * theme.imageSize.height / theme.imageSize.width * theme.camera.y / 100;
   townCameraMetrics=null; townCamera.ready=false;
   if (new URLSearchParams(location.search).get('collision')==='1') {
     world.querySelectorAll('canvas').forEach(canvas=>canvas.remove());
@@ -1833,6 +1789,7 @@ async function startTown() {
   const slow = setTimeout(() => { message.textContent = "Still connecting. The server may be waking up…"; }, 6000);
   let ready = false;
   try {
+    if(!assignTownActivities)({assignTownActivities}=await import('./town-activity-slots.mjs'));
     if (!themeController) {
       const {mountThemes} = await import('./town-themes/client.mjs');
       themeController = await mountThemes({apply: applyTownTheme});

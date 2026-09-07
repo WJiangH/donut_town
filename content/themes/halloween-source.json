@@ -967,8 +967,8 @@
         "x": 50,
         "y": 52
       },
-      "radius": 3,
-      "seats": 1,
+      "radius": 7,
+      "seats": 10,
       "note": "festival dance square",
       "facing": "down"
     },
@@ -1032,8 +1032,8 @@
         "x": 22,
         "y": 65
       },
-      "radius": 1,
-      "seats": 1,
+      "radius": 3,
+      "seats": 3,
       "note": "pumpkin patch north aisle",
       "facing": "down"
     },
@@ -1045,8 +1045,8 @@
         "x": 20.2,
         "y": 73
       },
-      "radius": 1,
-      "seats": 1,
+      "radius": 3,
+      "seats": 3,
       "note": "pumpkin patch south aisle",
       "facing": "down"
     },
@@ -1100,6 +1100,77 @@
       "radius": 0.8,
       "seats": 1,
       "note": "riverbank grass",
+      "facing": "down"
+    },
+    {
+      "x": 50,
+      "y": 36,
+      "anchor": {
+        "x": 50,
+        "y": 36
+      },
+      "radius": 5,
+      "seats": 5,
+      "action": "lookout",
+      "note": "manor promenade",
+      "facing": "down"
+    },
+    {
+      "x": 42,
+      "y": 58,
+      "anchor": {
+        "x": 42,
+        "y": 58
+      },
+      "radius": 4,
+      "seats": 4,
+      "action": [
+        "coffee",
+        "read"
+      ],
+      "note": "festival west social area",
+      "facing": "down"
+    },
+    {
+      "x": 58,
+      "y": 58,
+      "anchor": {
+        "x": 58,
+        "y": 58
+      },
+      "radius": 4,
+      "seats": 4,
+      "action": [
+        "coffee",
+        "lookout"
+      ],
+      "note": "festival east social area",
+      "facing": "down"
+    },
+    {
+      "x": 76.76,
+      "y": 64.49,
+      "anchor": {
+        "x": 76.76,
+        "y": 64.49
+      },
+      "radius": 3,
+      "seats": 3,
+      "action": "garden",
+      "note": "orchard north aisle",
+      "facing": "down"
+    },
+    {
+      "x": 50,
+      "y": 70,
+      "anchor": {
+        "x": 50,
+        "y": 70
+      },
+      "radius": 4,
+      "seats": 4,
+      "action": "lookout",
+      "note": "river approach promenade",
       "facing": "down"
     }
   ]

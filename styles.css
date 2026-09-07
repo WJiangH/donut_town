@@ -901,40 +901,41 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
  .house-mode { margin-left:0; }
  .house-room,.house-view:not(.decorating) .house-room { width:100%; }
 }
-/* Immersive interiors: camera plane below compact, fixed edge controls. */
-.house-view { display:block;padding:0;overflow:hidden;background:#151c17; }
-.house-viewport { position:absolute;inset:0;overflow:hidden;touch-action:none; }
-.house-view .house-room,.house-view:not(.decorating) .house-room {
-  position:absolute;left:0;top:0;max-width:none;min-width:0;margin:0;border:0;border-radius:0;box-shadow:none;transform-origin:0 0;will-change:transform;
+/* One fixed Home view, framed by matching indoor materials. */
+.house-view {
+ --home-wall:#34433c;--home-trim:#695139;--home-floor:#4c392b;
+ display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:12px 16px;gap:10px;overflow:hidden;
+ background:linear-gradient(0deg,#0004,#0000 60%),repeating-linear-gradient(0deg,transparent 0 42px,#0002 43px 45px),linear-gradient(var(--home-wall) 0 calc(var(--home-horizon,34vh) - 10px),var(--home-trim) calc(var(--home-horizon,34vh) - 10px) var(--home-horizon,34vh),var(--home-floor) var(--home-horizon,34vh) 100%);
 }
-.house-bar { position:absolute;z-index:120;top:14px;left:16px;right:16px;display:flex;gap:8px;pointer-events:none; }
-.house-bar>* { pointer-events:auto; }
-.house-bar>div:nth-child(2),.house-room-choice { background:#f5eddaed;padding:8px 12px;border:2px solid #756448;border-radius:4px; }
-.house-bar .house-luxury { margin-left:auto;width:205px; }
-.house-bar .house-status { position:fixed;right:18px;bottom:12px;background:#f5eddaed;padding:6px 10px;max-width:280px; }
-.house-room-choice { position:fixed;left:16px;top:70px;font-size:12px; }
-.house-room-choice select { padding:4px; }
-.house-mode { position:fixed;left:16px;bottom:16px;margin:0;display:flex;gap:8px; }
+.house-view[data-room="room-modern-loft"] { --home-wall:#a69378;--home-trim:#403b33;--home-floor:#a98963; }
+.house-view[data-room="room-moonlight-suite"] { --home-wall:#173039;--home-trim:#9b7541;--home-floor:#b6a27f; }
+.house-bar { display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 12px;background:#f2ead9ed;border:2px solid #726249;border-radius:4px; }
+.house-bar>div:nth-child(2) { margin-right:auto; }
+.house-bar .house-luxury { margin:0;width:180px;padding:8px;box-shadow:none; }
+.house-bar .house-luxury progress,.house-bar [data-house="luxury-next"] { display:none; }
+.house-bar .house-status { flex-basis:auto;order:10;font-size:9px;max-width:190px; }
+.house-room-choice { font-size:12px; }
+.house-room-choice select { max-width:170px;padding:5px; }
+.house-mode { margin:0; }
 .house-mode span { display:none; }
 .house-mode button,.room-camera-button { padding:9px 12px;border:2px solid #756448;background:#f5edda;color:#273e2d;font:inherit;font-size:11px;cursor:pointer; }
-.house-shelf-wrap { position:absolute;z-index:110;bottom:65px;left:16px;right:16px;max-height:180px;overflow:auto;background:#efe5cfed;border:2px solid #756448;padding:10px; }
-.house-shelf { min-height:40px;max-height:80px; }
+.house-viewport { position:relative;min-height:0;overflow:hidden;container-type:size; }
+.house-view .house-room,.house-view:not(.decorating) .house-room { position:absolute;left:50%;top:50%;width:min(100cqw,150cqh);height:auto;aspect-ratio:3/2;transform:translate(-50%,-50%);margin:0;border:0;border-radius:0;box-shadow:0 0 0 4px #231d1580; }
 .house-floor .house-resident { transform:translate(-50%,-100%) scale(var(--home-figure,1));transform-origin:bottom center; }
+.house-shelf-wrap { padding:8px;background:#f2ead9ed;border:2px solid #726249;max-height:160px;overflow:auto; }
+.house-shelf { min-height:40px;max-height:70px; }
 #chemPodWorld { left:0;top:0;max-width:none;transform-origin:0 0;will-change:transform; }
 #chemPodView .map-wrap { touch-action:none; }
 #chemPodView .room-toolbar { z-index:120; }
+.town-stage { background:#17281e; }
 @media(max-width:760px){
- .house-bar { top:10px;left:10px;right:10px;gap:6px; }
- .house-bar>div:nth-child(2) { display:none; }
- .house-bar .house-luxury { width:160px;padding:8px; }
- .house-luxury progress,.house-luxury [data-house="luxury-next"] { display:none; }
- .house-room-choice { left:10px;top:66px;padding:5px 8px; }
- .house-mode { left:10px;bottom:12px; }
- .house-bar .house-status { bottom:56px;right:10px;font-size:8px;max-width:180px; }
- .house-shelf-wrap { left:10px;right:10px;bottom:88px;max-height:150px; }
+ .house-view { padding:8px;gap:8px; }
+ .house-bar { padding:7px;gap:6px; }
+ .house-bar>div:nth-child(2),.house-bar .house-status { display:none; }
+ .house-bar .house-luxury { width:auto;margin-left:auto; }
+ .house-room-choice { flex:1; }
+ .house-room-choice select { max-width:150px; }
+ .house-shelf-wrap { max-height:160px; }
  #chemPodView .room-toolbar { top:10px;left:10px;gap:7px; }
- #chemPodView .room-toolbar>div { display:none; }
- #chemPodView .room-movement-help { display:none; }
+ #chemPodView .room-toolbar>div,#chemPodView .room-movement-help { display:none; }
 }
-.house-view.decorating .house-viewport { bottom:200px; }
-@media(max-width:760px){.house-view.decorating .house-viewport { bottom:240px; }}
