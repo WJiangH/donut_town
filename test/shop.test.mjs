@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadCatalog, walletFor, ownedIds, checkPurchase, ShopStore } from '../shop/store.mjs';
+import { loadCatalog, walletFor, ownedIds, checkPurchase, equippedPet, ShopStore } from '../shop/store.mjs';
 
 const catalog = loadCatalog();
 
@@ -95,4 +95,21 @@ test('every shop refusal the server can send has words for the member', () => {
     if (code === 'method_not_allowed') continue;
     assert.ok(messages.includes(`${code}:`), `no message for ${code}`);
   }
+});
+
+test('only a pet you have bought can be out with you', () => {
+  const purse = { owned: [{ id: 'pet-duck', price: 5 }, { id: 'deco-rug', price: 2 }] };
+  assert.equal(equippedPet({ ...purse, pet: 'pet-duck' }, catalog), 'pet-duck');
+  assert.equal(equippedPet({ ...purse, pet: 'pet-cat' }, catalog), null, 'not owned');
+  assert.equal(equippedPet({ ...purse, pet: 'deco-rug' }, catalog), null, 'a rug is not a pet');
+  assert.equal(equippedPet({ ...purse, pet: null }, catalog), null);
+  assert.equal(equippedPet(null, catalog), null);
+});
+
+test('a purse remembers which pet is out, and forgets a forged one', () => {
+  assert.equal(ShopStore.validPurse({ owned: [{ id: 'pet-frog', price: 4 }], pet: 'pet-frog' }, catalog).pet, 'pet-frog');
+  assert.equal(ShopStore.validPurse({ owned: [], pet: 42 }, catalog).pet, null);
+  // A pet nobody owns is stored but never equipped.
+  const purse = ShopStore.validPurse({ owned: [], pet: 'pet-cat' }, catalog);
+  assert.equal(equippedPet(purse, catalog), null);
 });

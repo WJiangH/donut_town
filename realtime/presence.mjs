@@ -1,6 +1,9 @@
 const ALLOWED_SCENES = new Set(["town", "chemPod"]);
 const ALLOWED_DIRECTIONS = new Set(["up", "down", "left", "right"]);
 const ALLOWED_ACTIONS = new Set(["sitChair", "sitGrass", "garden", "lookout", "read", "coffee", "experiment"]);
+// A pet id is only ever relayed, never trusted as proof of ownership: the
+// worst a forged one can do is show a sprite that does not exist.
+const PET_ID = /^pet-[a-z0-9-]{2,30}$/;
 
 export function normalizePresenceState(input, now = Date.now()) {
   if (!input || input.type !== "state" || !ALLOWED_SCENES.has(input.scene)) return null;
@@ -14,6 +17,7 @@ export function normalizePresenceState(input, now = Date.now()) {
     direction: ALLOWED_DIRECTIONS.has(input.direction) ? input.direction : "down",
     moving: input.moving === true,
     action: ALLOWED_ACTIONS.has(input.action) ? input.action : null,
+    pet: typeof input.pet === "string" && PET_ID.test(input.pet) ? input.pet : null,
     updatedAt: now
   };
 }

@@ -166,6 +166,20 @@ Still to build on top of this: pets as followers that walk behind their owner,
 and a member's own donut house, entered from the profile, where bought
 decorations are dragged into place. Both read the same ownership records.
 
+### Pets that follow their owner
+
+A pet bought at the fountain can be taken out from the shop drawer. It walks
+the ground its owner walked, a step or two behind, hurries when it falls
+behind, waits at their heel when they stop, and never steps somewhere the walk
+mask forbids. Which pet is out travels with presence, so other members see it
+following you around town.
+
+The sprites in `assets/pets/` are placeholders drawn by
+`scripts/build-pixel-icons.mjs`: a three frame side-on walk, 24 pixels square,
+facing right and mirrored in code. Replace the files with real art of the same
+shape - or point `petArt()` in `pets.mjs` at new names - and nothing else
+changes.
+
 ### A member's own donut house
 
 The profile has a door to a member's own room. It starts bare; decorations

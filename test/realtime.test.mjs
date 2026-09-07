@@ -29,6 +29,7 @@ test("presence coordinates and enums are normalized", () => {
     direction: "down",
     moving: true,
     action: null,
+    pet: null,
     updatedAt: 123
   });
   assert.equal(normalizePresenceState({ type: "state", scene: "secret", x: 1, y: 2 }), null);
@@ -87,4 +88,12 @@ test("a newer session replaces the old socket without leaving a ghost player", (
   assert.equal(hub.clients.has(oldSocket), false);
   assert.equal(hub.clientsByUser.get("UMEMBER"), newSocket);
   assert.ok(observer.sent.some(message => message.type === "state" && message.userId === "UMEMBER" && message.x === 22));
+});
+
+test('a pet is relayed when it looks like one, and dropped when it does not', () => {
+  const base = { type: 'state', scene: 'town', x: 10, y: 10 };
+  assert.equal(normalizePresenceState({ ...base, pet: 'pet-cat' }).pet, 'pet-cat');
+  for (const forged of ['deco-rug', '../../etc/passwd', 'pet-' + 'x'.repeat(40), 42, null, undefined]) {
+    assert.equal(normalizePresenceState({ ...base, pet: forged }).pet, null);
+  }
 });

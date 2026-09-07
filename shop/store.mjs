@@ -27,6 +27,13 @@ export function ownedIds(purse) {
   return (purse?.owned || []).map(entry => entry.id);
 }
 
+// One pet is out at a time, and only if it has been bought.
+export function equippedPet(purse, catalog) {
+  const pet = purse?.pet;
+  if (!pet || !ownedIds(purse).includes(pet)) return null;
+  return catalog.items.some(item => item.id === pet && item.kind === 'pet') ? pet : null;
+}
+
 // What a purchase would do, without touching the store: the same rules the
 // server applies, kept pure so they can be tested and reused by the client.
 export function checkPurchase({ item, purse, earned }) {
@@ -77,7 +84,7 @@ export class ShopStore {
         owned.push({ id: item.id, price: Number.isInteger(entry.price) ? entry.price : item.price, at: entry.at || null });
       }
     }
-    return { owned };
+    return { owned, pet: typeof value?.pet === 'string' ? value.pet : null };
   }
   async purse(key, catalog) {
     if (!/^[a-f0-9]{64}$/.test(key || '')) throw new Error('invalid_member_key');
@@ -87,7 +94,13 @@ export class ShopStore {
   }
   async buy(key, item, purse) {
     if (!/^[a-f0-9]{64}$/.test(key || '')) throw new Error('invalid_member_key');
-    const next = { owned: [...purse.owned, { id: item.id, price: item.price, at: new Date().toISOString() }] };
+    const next = { owned: [...purse.owned, { id: item.id, price: item.price, at: new Date().toISOString() }], pet: purse.pet || null };
+    await this.command(['HSET', this.key, key, JSON.stringify(next)]);
+    return next;
+  }
+  async equip(key, purse, petId) {
+    if (!/^[a-f0-9]{64}$/.test(key || '')) throw new Error('invalid_member_key');
+    const next = { owned: purse.owned, pet: petId };
     await this.command(['HSET', this.key, key, JSON.stringify(next)]);
     return next;
   }

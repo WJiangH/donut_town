@@ -5,7 +5,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { OutfitStore, equippedCharacter, validateOutfit, wardrobeSupported, wardrobeCharacters } from "./characters/wardrobe/store.mjs";
-import { ShopStore, loadCatalog, walletFor, ownedIds, checkPurchase } from "./shop/store.mjs";
+import { ShopStore, loadCatalog, walletFor, ownedIds, checkPurchase, equippedPet } from "./shop/store.mjs";
 import { HouseStore, HOUSE_GRID, validateLayout } from "./house/store.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
@@ -192,7 +192,7 @@ const server = createServer(async (request, response) => {
 
     // The donut fountain is the shop. Donuts earned from pairings are the
     // currency, so a wallet is what you have earned less what you have spent.
-    if (url.pathname === "/api/shop" || url.pathname === "/api/shop/purchase") {
+    if (url.pathname === "/api/shop" || url.pathname === "/api/shop/purchase" || url.pathname === "/api/shop/equip") {
       response.setHeader("cache-control", "private, no-store");
       const session = getSlackSession(request);
       if (!session?.sub) return sendJson(response, 401, { error: "slack_login_required" });
@@ -210,10 +210,25 @@ const server = createServer(async (request, response) => {
           currency: shopCatalog.currency,
           items: shopCatalog.items,
           owned: ownedIds(purse),
+          pet: equippedPet(purse, shopCatalog),
           wallet: walletFor({ earned, purse })
         });
       }
-      if (request.method !== "POST" || url.pathname !== "/api/shop/purchase") return sendJson(response, 405, { error: "method_not_allowed" });
+      if (request.method !== "POST") return sendJson(response, 405, { error: "method_not_allowed" });
+
+      // Take a pet out, or leave it at home.
+      if (url.pathname === "/api/shop/equip") {
+        let petId;
+        try {
+          const body = JSON.parse(await readBody(request));
+          if (Object.keys(body).length !== 1 || !("petId" in body)) throw new Error("invalid_pet");
+          petId = body.petId === null ? null : String(body.petId);
+        } catch { return sendJson(response, 400, { error: "invalid_pet" }); }
+        if (petId && !equippedPet({ ...purse, pet: petId }, shopCatalog)) return sendJson(response, 409, { error: "pet_not_owned" });
+        let next;
+        try { next = await shopStore.equip(key, purse, petId); } catch { return sendJson(response, 503, { error: "shop_purchase_failed" }); }
+        return sendJson(response, 200, { pet: equippedPet(next, shopCatalog), owned: ownedIds(next), wallet: walletFor({ earned, purse: next }) });
+      }
 
       let item;
       try {
@@ -225,7 +240,7 @@ const server = createServer(async (request, response) => {
       if (verdict.error) return sendJson(response, verdict.error === "item_not_found" ? 404 : 409, { error: verdict.error });
       let next;
       try { next = await shopStore.buy(key, item, purse); } catch { return sendJson(response, 503, { error: "shop_purchase_failed" }); }
-      return sendJson(response, 200, { item, owned: ownedIds(next), wallet: walletFor({ earned, purse: next }) });
+      return sendJson(response, 200, { item, owned: ownedIds(next), pet: equippedPet(next, shopCatalog), wallet: walletFor({ earned, purse: next }) });
     }
 
     // A member's own room: the decorations they own, and where they put them.

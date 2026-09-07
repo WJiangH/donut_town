@@ -439,7 +439,8 @@ function upsertRemotePlayer(state, refreshResidents = true) {
     targetY: y,
     direction: ["up", "down", "left", "right"].includes(state.direction) ? state.direction : "down",
     moving: state.moving === true,
-    action: typeof state.action === "string" && state.action ? state.action : null
+    action: typeof state.action === "string" && state.action ? state.action : null,
+    pet: typeof state.pet === "string" && state.pet ? state.pet : null
   });
   if (refreshResidents && !previous) renderCurrentScene();
 }
@@ -494,7 +495,7 @@ function renderLivePlayers(deltaSeconds) {
 function publishPresence(force = false, moving = false) {
   if (!realtimeSocket || realtimeSocket.readyState !== WebSocket.OPEN || !currentUser?.id) return;
   const now = performance.now();
-  const signature = `${currentScene}|${playerDirection}|${moving}|${playerAction || ""}`;
+  const signature = `${currentScene}|${playerDirection}|${moving}|${playerAction || ""}|${equippedPet || ""}`;
   const stateChanged = signature !== lastPresenceSignature;
   if (!force && !stateChanged && (!moving || now - lastPresenceSentAt < 125)) return;
   realtimeSocket.send(JSON.stringify({
@@ -504,7 +505,8 @@ function publishPresence(force = false, moving = false) {
     y: player.y,
     direction: playerDirection,
     moving,
-    action: moving ? null : playerAction
+    action: moving ? null : playerAction,
+    pet: equippedPet
   }));
   lastPresenceSentAt = now;
   lastPresenceSignature = signature;
@@ -937,7 +939,7 @@ function transitionToScene(nextScene) {
 }
 
 function gameLoop(timestamp) {
-  const deltaSeconds = Math.min((timestamp - lastGameTime) / 1000, 0.05);
+  const deltaSeconds = Math.max(0, Math.min((timestamp - lastGameTime) / 1000, 0.05));
   lastGameTime = timestamp;
   let dx = 0;
   let dy = 0;
@@ -1027,6 +1029,7 @@ function gameLoop(timestamp) {
   // Only worth a frame of work when somebody's pose actually moves.
   if (residentPosesAnimate) paintResidentCharacters(currentScene === "chemPod" ? document.querySelector("#chemPodResidentsLayer") : layer);
   updateTownCamera(deltaSeconds);
+  updatePetFollowers(deltaSeconds, isMoving);
   publishPresence(false, isMoving);
   renderLivePlayers(deltaSeconds);
   window.requestAnimationFrame(gameLoop);
@@ -1482,7 +1485,10 @@ function openShop() {
   document.querySelector("#shopScrim").hidden = false;
   if (!shopPanel) {
     shopPanel = import("./shop-panel.mjs")
-      .then(module => module.mountShop(drawer, { onOwnedChange: owned => { ownedShopItems = owned; } }))
+      .then(module => module.mountShop(drawer, {
+        onOwnedChange: owned => { ownedShopItems = owned; },
+        onPetChange: setEquippedPet
+      }))
       .catch(() => {
         drawer.querySelector('[data-shop="status"]').textContent = "Shop unavailable. Close and try again.";
         shopPanel = null;
@@ -1502,6 +1508,38 @@ document.querySelector("#shopEntrance").addEventListener("click", event => {
   if (currentScene === "town") clickPath = findWalkPath(player, { x: 51, y: 47 });
   openShop();
 });
+// The pet a member has taken out with them, learned from the shop.
+let equippedPet = null;
+let petsModule = null;
+function setEquippedPet(petId) {
+  equippedPet = petId || null;
+  publishPresence(true, false);
+}
+
+let petsApi = null;
+function updatePetFollowers(deltaSeconds, ownerMoving) {
+  if (!petsApi) {
+    if (petsModule || (!equippedPet && !remotePlayerHasPet())) return;
+    petsModule = import("./pets.mjs").then(async module => { await module.loadPetSprites(); petsApi = module; }).catch(() => null);
+    return;
+  }
+  const owners = [];
+  if (equippedPet) owners.push({ id: "you", x: player.x, y: player.y, scene: currentScene, pet: equippedPet, moving: ownerMoving });
+  for (const remote of remotePlayers.values()) {
+    if (remote.pet) owners.push({ id: remote.userId, x: remote.x, y: remote.y, scene: remote.scene, pet: remote.pet, moving: remote.moving });
+  }
+  petsApi.updatePets(owners, {
+    deltaSeconds,
+    layerFor: scene => document.querySelector(scene === "chemPod" ? "#chemPodPetsLayer" : "#townPetsLayer"),
+    isWalkable: (x, y) => isWalkable(x, y)
+  });
+}
+
+function remotePlayerHasPet() {
+  for (const remote of remotePlayers.values()) if (remote.pet) return true;
+  return false;
+}
+
 // A member's own room, entered from their profile.
 let housePanel = null;
 function openHouse() {
