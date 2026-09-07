@@ -53,13 +53,24 @@
   };
 
   function lineIsClear(fromX, fromY, toX, toY) {
-    const steps = Math.ceil(Math.hypot(toX - fromX, toY - fromY) / 0.25);
-    for (let step = 1; step < steps; step++) {
-      const x = fromX + ((toX - fromX) * step) / steps;
-      const y = fromY + ((toY - fromY) * step) / steps;
-      if (!collision.isWalkable(x, y)) return false;
+    // Traverse every intersected cell. Fixed-distance samples can skip a thin
+    // corner of a blocked cell and produce a path the movement loop cannot follow.
+    const x0=fromX/100*cols,y0=fromY/100*rows,x1=toX/100*cols,y1=toY/100*rows;
+    let col=Math.floor(x0),row=Math.floor(y0);
+    const endCol=Math.floor(x1),endRow=Math.floor(y1),dx=x1-x0,dy=y1-y0;
+    const sx=Math.sign(dx),sy=Math.sign(dy),tx=dx?Math.abs(1/dx):Infinity,ty=dy?Math.abs(1/dy):Infinity;
+    let nextX=dx?((sx>0?col+1:col)-x0)/dx:Infinity;
+    let nextY=dy?((sy>0?row+1:row)-y0)/dy:Infinity;
+    for(let i=0;i<cols+rows+2;i++) {
+      if(!isWalkableCell(col,row))return false;
+      if(col===endCol&&row===endRow)return true;
+      if(Math.abs(nextX-nextY)<1e-10){
+        if(!isWalkableCell(col+sx,row)||!isWalkableCell(col,row+sy))return false;
+        col+=sx;row+=sy;nextX+=tx;nextY+=ty;
+      } else if(nextX<nextY){col+=sx;nextX+=tx;}
+      else {row+=sy;nextY+=ty;}
     }
-    return true;
+    return false;
   }
 
   // A* across the mask, then pull the corners straight so walking looks natural.

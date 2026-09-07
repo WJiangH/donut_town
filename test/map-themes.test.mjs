@@ -16,9 +16,12 @@ test('Halloween scenery blocks are respected and baseline theme remains unchange
   const base=JSON.parse(readFileSync('content/themes/classic.json'));
   const theme=JSON.parse(readFileSync('content/themes/halloween.json'));
   assert.notEqual(base.walkMask.bits,theme.walkMask.bits);
+  assert.equal(theme.navigation.base,null,'New layouts must not inherit Classic geometry');
+  assert.notDeepEqual(theme.entrances,base.entrances);
+  for(const p of [{x:50,y:52},{x:50,y:83},{x:22,y:65},{x:83.7,y:53.7}])assert(collisionFor(theme).isWalkable(p.x,p.y));
   assert.equal(new ThemeStore().configured,false);
   const c=collisionFor(theme);
-  for (const [x,y] of [[50,44],[22,42],[69,39],[93,42],[2,61.5],[39.9,78.9]]) assert(!c.isWalkable(x,y));
+  for (const [x,y] of [[50,18],[12,36],[85,40],[13,70],[60,86],[35.5,46]]) assert(!c.isWalkable(x,y));
   const malformed=structuredClone(theme);malformed.image='https://untrusted.example/image.png';
   assert.throws(()=>validateTheme(malformed),/invalid_theme/);
   malformed.image=theme.image;malformed.walkMask.bits='AAAA';
@@ -62,4 +65,17 @@ test('theme survives a new store instance and stale administrators cannot overwr
   assert.equal((await new ThemeStore(config).load()).id,'halloween');
   await b.save('classic',first.revision);
   assert.equal((await a.load()).id,'classic');
+});
+
+test('every Halloween activity-to-activity route can actually be walked without clipping a blocked corner',()=>{
+ const theme=JSON.parse(readFileSync('content/themes/halloween.json')),c=collisionFor(theme);
+ const points=[theme.spawn,...theme.zones.map(z=>z.anchor),...Object.values(theme.entrances).map(e=>e.landing)];
+ for(const start of points)for(const goal of points){
+  const route=c.findPath(start,goal);assert(route.length);let from=start;
+  for(const to of route){
+   const steps=Math.ceil(Math.hypot(to.x-from.x,to.y-from.y)/.025);
+   for(let i=1;i<=steps;i++){const x=from.x+(to.x-from.x)*i/steps,y=from.y+(to.y-from.y)*i/steps;assert(c.isWalkable(x,y),`Blocked route ${JSON.stringify(start)} -> ${JSON.stringify(goal)} at ${x},${y}`);}
+   from=to;
+  }
+ }
 });

@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { OutfitStore, equippedCharacter, validateOutfit, wardrobeSupported, wardrobeCharacters } from "./characters/wardrobe/store.mjs";
 import { ShopStore, loadCatalog, walletFor, ownedIds, checkPurchase, equippedPet } from "./shop/store.mjs";
+import { grantedDonuts } from "./shop/grants.mjs";
 import { HouseStore, HOUSE_GRID, validateLayout, homeOwned } from "./house/store.mjs";
 import { houseLuxury } from "./house/luxury.mjs";
 import { ChatStore } from "./chats/store.mjs";
@@ -243,7 +244,7 @@ const server = createServer(async (request, response) => {
       if (!member) return sendJson(response, 403, { error: "member_not_found" });
       if (!shopStore.configured) return sendJson(response, 503, { error: "shop_store_unavailable" });
       const key = memberCharacterKey(session.sub, config.signingSecret);
-      const earned = shopCatalog.starterDonuts + (Number.isInteger(member.donutCount) ? member.donutCount : 0);
+      const earned = shopCatalog.starterDonuts + grantedDonuts(key) + (Number.isInteger(member.donutCount) ? member.donutCount : 0);
       let purse;
       try { purse = await shopStore.purse(key, shopCatalog); } catch { return sendJson(response, 503, { error: "shop_store_unavailable" }); }
 

@@ -40,8 +40,15 @@ current balance calculation; it is not a one-time grant ledger. Earn-from-chat
 rewards and historical Lottery imports are not connected. Preview content must
 not imply that those systems already exist.
 
-Owned Home decorations appear in the inventory. Drag them onto the floor, or
-select and place them; arrow keys nudge a selection. Only owned decorations,
+For fixed member-specific testing credits, `shop/grants.json` maps an existing
+server-derived character HMAC to additional lifetime donuts. An empty object is
+valid for a new workspace. Credits are added to earnings before purchase checks;
+refreshing or deploying again does not restore spent donuts. Do not put names,
+raw Slack IDs or credentials in the file, and do not lower grants after spending.
+
+Home starts in walking mode: click the floor or use WASD/arrows. **Decorate** opens
+the owned decoration inventory. Drag items onto the floor, or select and place
+them; arrow keys nudge a selection. Only owned decorations,
 valid cells and non-overlapping footprints can be saved. Starters add 0 Luxury.
 Placed non-starter decorations contribute their fixed `luxury` catalog value;
 removing them subtracts it, and moving/saving cannot farm points. Thresholds:

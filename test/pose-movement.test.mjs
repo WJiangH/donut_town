@@ -35,3 +35,10 @@ test('browsing the shop pauses movement and preserves the selected pose',()=>{
  g.context.currentScene='town';g.context.gameLoop(48);
  assert.notDeepEqual(g.context.player,position,'town movement resumes');
 });
+
+test('walking or decorating inside Home never moves the hidden town player',()=>{
+ const g=game(),position={...g.context.player};g.context.window.townHouseOpen=true;
+ g.context.gameLoop(32);assert.deepEqual(g.context.player,position);assert.equal(g.context.pressedKeys.size,0);
+ g.context.window.townHouseOpen=false;g.context.pressedKeys.add('w');g.context.gameLoop(48);
+ assert.notDeepEqual(g.context.player,position);
+});

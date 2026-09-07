@@ -17,6 +17,8 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
   let category = "all";
   let page = 0;
   let busy = false;
+  let loading = null;
+  let mutation = 0;
 
   const stock = () => state.items.filter(item => !item.starter && (category === "all" || item.category === category));
 
@@ -73,21 +75,37 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
 
   function select(itemId) {
     selected = itemId;
-    render();
+    shelves.querySelectorAll('[data-slot]').forEach(button => {
+      const active = button.dataset.slot === selected;
+      button.classList.toggle('selected', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    renderBar();
   }
 
-  async function load() {
-    status.textContent = "Opening the shop…";
+  function load() {
+    if (loading) return loading;
+    loading = loadStock().finally(() => { loading = null; });
+    return loading;
+  }
+  async function loadStock() {
+    const version = mutation;
+    if (!state.items.length) status.textContent = "Opening the shop…";
     try {
       const payload = await shopRequest("/api/shop");
-      state = { items: payload.items || [], owned: payload.owned || [], pet: payload.pet || null, wallet: payload.wallet };
+      if (version !== mutation) return;
+      const next = { items: payload.items || [], owned: payload.owned || [], pet: payload.pet || null, wallet: payload.wallet };
+      const changed = JSON.stringify(state) !== JSON.stringify(next);
+      state = next;
       status.textContent = "Select an item to see more.";
-      render();
+      if (changed) render();
       onOwnedChange(state.owned);
       onPetChange(state.pet);
     } catch (error) {
+      if (version !== mutation) return;
       // A shop window is worth looking at even when the till will not serve you.
       status.textContent = SHOP_MESSAGES[error.code] || "The shop is closed right now.";
+      if (state.items.length) return;
       try {
         const catalogue = await (await fetch("/content/shop.json", { signal: AbortSignal.timeout(10000) })).json();
         state = { items: catalogue.items || [], owned: [], pet: null, wallet: null };
@@ -101,6 +119,7 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
   async function buy(itemId) {
     if (busy) return;
     busy = true;
+    mutation++;
     status.textContent = "Wrapping it up…";
     renderBar();
     try {
@@ -119,6 +138,7 @@ export function mountShopRoom(root, { onOwnedChange = () => {}, onPetChange = ()
   async function equip(petId) {
     if (busy) return;
     busy = true;
+    mutation++;
     renderBar();
     try {
       const payload = await shopRequest("/api/shop/equip", { petId });

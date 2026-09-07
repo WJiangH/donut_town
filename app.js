@@ -433,7 +433,6 @@ function renderShopRoom() {
         return null;
       });
   }
-  shopRoom?.then(room => room?.load());
   updatePlayerElement(false);
   renderLivePlayers(0);
 }
@@ -977,7 +976,10 @@ function setScene(nextScene) {
     if (view) view.hidden = name !== currentScene;
   }
   document.querySelector("#sceneTitle").textContent = scene().title;
-  if (currentScene !== "town") renderCurrentScene();
+  if (currentScene !== "town") {
+    renderCurrentScene();
+    if (currentScene === "donutShop") shopRoom?.then(room => room?.load());
+  }
   else {
     renderResidents();
     townCameraMetrics = null;
@@ -993,19 +995,23 @@ function transitionToScene(nextScene) {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   sceneCurtain.classList.add("active");
   window.setTimeout(() => {
-    setScene(nextScene);
-    showToast(nextScene === "chemPod" ? "Welcome to Chem Pod." : "Back in Donut Town.");
-    window.setTimeout(() => {
-      sceneCurtain.classList.remove("active");
-      sceneTransitioning = false;
-    }, reducedMotion ? 0 : 120);
+    try {
+      pressedKeys.clear();
+      setScene(nextScene);
+      showToast(nextScene === "town" ? "Back in Donut Town." : `Welcome to ${scene().title}.`);
+    } finally {
+      window.setTimeout(() => {
+        sceneCurtain.classList.remove("active");
+        sceneTransitioning = false;
+      }, reducedMotion ? 0 : 120);
+    }
   }, reducedMotion ? 0 : 130);
 }
 
 function gameLoop(timestamp) {
   const deltaSeconds = Math.max(0, Math.min((timestamp - lastGameTime) / 1000, 0.05));
   lastGameTime = timestamp;
-  if (window.townSettingsOpen) {
+  if (window.townSettingsOpen || window.townHouseOpen) {
     pressedKeys.clear(); clickPath = []; publishPresence(false, false);
     window.requestAnimationFrame(gameLoop); return;
   }
@@ -1640,14 +1646,26 @@ let housePanel = null;
 function openHouse() {
   const view = document.querySelector("#houseView");
   view.hidden = false;
+  window.townHouseOpen = true;
+  pressedKeys.clear(); clickPath = [];
   closeProfile();
   if (!housePanel) {
     housePanel = import("./house.mjs")
       .then(module => module.mountHouse(view, {
-        paintCharacter: element => {
-          if (!currentUser?.character) return;
-          element.innerHTML = personalCharacterMarkup(currentUser.character, "house-character");
-          paintPersonalCharacter(element.firstElementChild, currentUser.character, "down");
+        onMove: () => { if (chosenPose) setChosenPose(null); },
+        paintCharacter: (element, direction = "down", frame = 1) => {
+          if (currentUser?.character) {
+            if (!element.firstElementChild) element.innerHTML = personalCharacterMarkup(currentUser.character, "house-character");
+            paintPersonalCharacter(element.firstElementChild, currentUser.character, direction, frame);
+          } else {
+            if (!element.firstElementChild) element.innerHTML = playerMarkup();
+            const sprite = element.querySelector('.player-character');
+            if (sprite) {
+              sprite.style.setProperty('--frame-x', `${[0,50,100][frame]}%`);
+              sprite.style.setProperty('--direction-y', `${{down:0,left:33.333,right:33.333,up:100}[direction]}%`);
+              sprite.classList.toggle('facing-left', direction === 'left');
+            }
+          }
         }
       }))
       .catch(() => {
@@ -1658,14 +1676,17 @@ function openHouse() {
   }
   housePanel?.then(panel => panel?.load());
 }
-async function closeHouse() {
+async function closeHouse(returnToTown = true) {
   const panel = await housePanel;
   if (panel && !(await panel.flush())) return false;
   document.querySelector("#houseView").hidden = true;
+  window.townHouseOpen = false;
+  panel?.pause();
+  if (returnToTown && currentScene !== "town") transitionToScene("town");
   return true;
 }
 document.querySelector("#houseShop").addEventListener("click", async () => {
-  if (await closeHouse()) transitionToScene("donutShop");
+  if (await closeHouse(false)) transitionToScene("donutShop");
 });
 document.querySelector("#openHouse").addEventListener("click", openHouse);
 document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
@@ -1729,9 +1750,11 @@ function invitationErrorMessage(error) {
 }
 
 document.addEventListener("keydown", event => {
+  if (window.townHouseOpen || window.townSettingsOpen) return;
   if (event.key === "Escape") {
     closeDrawer();
     closeProfile();
+    if (currentScene === "donutShop") transitionToScene("town");
   }
   if (currentScene === "donutShop" || drawer.classList.contains("open") || document.querySelector("#profileDrawer").classList.contains("open")) return;
   const key = event.key.toLowerCase();

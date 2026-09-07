@@ -865,3 +865,17 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
  .house-luxury { grid-column:1/-1; width:100%; }
  .house-luxury-tiers summary { padding:8px; }
 }
+
+/* Keep the exit accessible even after scrolling a long product wall. */
+#shopView .shop-wall-heading { position:sticky;top:0;z-index:20;padding:12px 0;background:#815a39;box-shadow:0 5px 0 #573c28; }
+.house-mode { grid-column:1/-1;display:flex;align-items:center;gap:16px; }
+.house-mode button { padding:9px 16px;border:2px solid #534735;background:#f0e4cb;color:#3b392a;font:inherit;font-size:11px;cursor:pointer; }
+.house-mode button[aria-pressed="true"] { background:#344e38;color:#fff2ce; }
+.house-mode span { font-size:10px;color:#514939; }
+.house-view:not(.decorating) .house-floor { background-image:none;cursor:crosshair; }
+.house-view:not(.decorating) .house-tile { pointer-events:none; }
+.house-floor .house-resident { width:62px;height:90px;bottom:auto;transform:translate(-50%,-100%); }
+.house-resident .sprite-name { display:none; }
+.house-view:not(.decorating) .house-room { width:min(100%,calc((100dvh - 220px)*1.5)); }
+@media(max-width:760px) { #shopView .shop-wall-heading { top:0; }.house-mode { flex-wrap:wrap;gap:8px; }.house-floor .house-resident { transform:translate(-50%,-100%) scale(.65);transform-origin:bottom center; } }
+.house-resident .resident-label, .house-resident .resident-state { display:none; }

@@ -44,9 +44,10 @@ last map. Conflicting admin writes are rejected instead of overwriting each othe
 
 Use [Donut Town Maps](../.agents/skills/donut-town-maps/SKILL.md). The worked example
 is [`halloween-source.json`](../content/themes/halloween-source.json), compiled to
-[`halloween.json`](../content/themes/halloween.json). Its image is a layout-preserving
-edit of Classic, with separately measured blockers for lantern stands and pumpkin
-clusters. The old palette-based automatic classifier is specific to Classic.
+[`halloween.json`](../content/themes/halloween.json). It is a new layout: a manor,
+bakery terrace, alchemy lab, pumpkin patch, reading orchard and southern bridge.
+Its measured geometry starts from an empty mask; it inherits no Classic paths or
+activity anchors. The old palette-based automatic classifier is specific to Classic.
 
 ```sh
 node scripts/build-map-theme.mjs content/themes/halloween-source.json

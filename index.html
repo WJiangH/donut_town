@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=46" />
+    <link rel="stylesheet" href="styles.css?v=47" />
     <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
@@ -190,13 +190,14 @@
           <small data-house="luxury-next">Place decorations to add Luxury</small>
         </div>
         <p class="house-status" role="status" data-house="status">Opening the door…</p>
+        <div class="house-mode"><button type="button" data-house="mode" aria-pressed="false">Decorate</button><span data-house="help">Click the floor or use WASD / arrows to walk</span></div>
       </div>
       <div class="house-room">
         <img class="room-art" src="/assets/donut-home-interior-v1.png" alt="" draggable="false" />
-        <div class="house-floor" data-house="floor"></div>
+        <div class="house-floor" data-house="floor" tabindex="0" role="group" aria-label="Home floor"></div>
         <div class="house-resident" data-house="resident" aria-hidden="true"></div>
       </div>
-      <div class="house-shelf-wrap">
+      <div class="house-shelf-wrap" data-house="editor" hidden>
         <div class="house-tools"><strong data-house="selected">Select a decoration</strong><button data-house="remove" disabled>Put away</button><button data-house="retry" hidden>Retry save</button><button id="houseShop">Visit shop</button></div>
         <span>Your decorations</span>
         <div class="house-shelf" data-house="shelf"></div>
@@ -275,9 +276,9 @@
     <div class="scene-curtain" id="sceneCurtain" aria-hidden="true"></div>
     <script src="assets/town-walkmask.js?v=3"></script>
     <script src="assets/chempod-walkmask.js?v=2"></script>
-    <script src="town-collision.js?v=4"></script>
+    <script src="town-collision.js?v=5"></script>
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=5"></script>
-    <script src="app.js?v=54"></script>
+    <script src="app.js?v=55"></script>
   </body>
 </html>

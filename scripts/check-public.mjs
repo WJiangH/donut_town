@@ -13,7 +13,7 @@ const patterns = [
   ['email', /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g],
   ['Slack ID', /\b[UWCGD][A-Z0-9]{8,13}\b/g]
 ];
-const examples = new Set(['C0123456789','U0123456789','U01234567890','U123456789','U1234567890','UOBSERVER','UOUTSIDER','CFAKECHANNEL','USLACKBOT','WEDNESDAY','CONFIGURATION','CONSTRAINT','DETERMINE','CATEGORIES','CONDITIONS','DISTRIBUTION','WARRANTIES']);
+const examples = new Set(['C0123456789','U0123456789','U01234567890','U123456789','U1234567890','UOBSERVER','UOUTSIDER','CFAKECHANNEL','USLACKBOT','WEDNESDAY','CONFIGURATION','CONSTRAINT','COMPOSITION','DETERMINE','CATEGORIES','CONDITIONS','DISTRIBUTION','WARRANTIES']);
 export function textFindings(text, privateTerms = []) {
   const hits = [];
   for (const [kind, pattern] of patterns) {
