@@ -14,14 +14,14 @@ async function port(){const s=createServer();await new Promise(r=>s.listen(0,'12
 test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and isolate DMs',{skip:!redis,timeout:30000},async()=>{
  assert(['127.0.0.1','localhost'].includes(new URL(redis).hostname));
  const namespace='C'+randomUUID().replaceAll('-','').toUpperCase(),secret=randomUUID(),dir=await mkdtemp(join(tmpdir(),'town-social-test-'));
- const loader=join(dir,'fixture.mjs'),cardLog=join(dir,'cards.jsonl'),threadLog=join(dir,'threads.jsonl');
+ const loader=join(dir,'fixture.mjs'),cardLog=join(dir,'cards.jsonl'),threadLog=join(dir,'threads.jsonl'),dmLog=join(dir,'dms.jsonl');
  await writeFile(loader,`import {appendFileSync} from 'node:fs';const original=fetch;globalThis.fetch=async(url,options={})=>{
   if(String(url).startsWith('https://slack.com/api/')){
    const method=String(url).split('/').pop();let data;
    if(method==='conversations.members')data={ok:true,members:['U1','U2','U3','U4','U5','U6','U7'],response_metadata:{next_cursor:''}};
    else if(method==='users.info'){const id=options.body.get('user');data={ok:true,user:{id,real_name:'Test neighbor '+id,profile:{}}};}
-   else if(method==='conversations.open')data={ok:true,channel:{id:'DTEST'}};
-   else if(method==='chat.postMessage'||method==='chat.update'){data={ok:true,ts:String(Date.now())};if(method==='chat.update')appendFileSync(${JSON.stringify(cardLog)},JSON.stringify(JSON.parse(options.body.get('blocks')))+'\\n');if(options.body.get('thread_ts'))appendFileSync(${JSON.stringify(threadLog)},JSON.stringify(Object.fromEntries(options.body))+'\\n');}
+   else if(method==='conversations.open')data={ok:true,channel:{id:'D'+options.body.get('users')}};
+   else if(method==='chat.postMessage'||method==='chat.update'){data={ok:true,ts:String(Date.now())};if(method==='chat.update')appendFileSync(${JSON.stringify(cardLog)},JSON.stringify(JSON.parse(options.body.get('blocks')))+'\\n');if(method==='chat.postMessage'&&!options.body.get('thread_ts'))appendFileSync(${JSON.stringify(dmLog)},JSON.stringify(Object.fromEntries(options.body))+'\\n');if(options.body.get('thread_ts'))appendFileSync(${JSON.stringify(threadLog)},JSON.stringify(Object.fromEntries(options.body))+'\\n');}
    else throw Error('Unexpected Slack method');
    return Response.json(data);
   }
@@ -61,12 +61,33 @@ test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and 
   const initial=await balance(1);
   const invitation=(await api(1,'/api/slack/invitations',{inviteeId:'U2'})).data.invitation;
   assert(invitation?.id);
+  const competingB=(await api(3,'/api/slack/invitations',{inviteeId:'U2'})).data.invitation;
+  const competingC=(await api(4,'/api/slack/invitations',{inviteeId:'U2'})).data.invitation;
+  const unrelated=(await api(3,'/api/slack/invitations',{inviteeId:'U7'})).data.invitation;
   assert.equal((await api(3,'/api/slack/invitations/respond',{id:invitation.id,status:'accepted'},1)).status,409);
-  assert.equal((await api(2,'/api/slack/invitation-states',null,1)).data.incomingInvitations.length,1);
+  assert.equal((await api(2,'/api/slack/invitation-states',null,1)).data.incomingInvitations.length,3);
   const accepted=await api(2,'/api/slack/invitations/respond',{id:invitation.id,status:'accepted'},1);
   assert.equal(accepted.status,200,JSON.stringify(accepted));
   let firstState;for(let i=0;i<30;i++){firstState=(await api(1,'/api/slack/invitation-states')).data.states.U1;if(firstState.status==='booked')break;await delay(50);}
   assert.equal(firstState.partnerId,'U2');
+  const followups=async()=>{try{return (await readFile(dmLog,'utf8')).trim().split('\n').map(JSON.parse).filter(item=>item.text.includes('Feel free to invite'));}catch{return [];}};
+  for(let i=0;i<40&&(await followups()).length<2;i++)await delay(50);
+  let followupMessages=await followups();
+  assert.deepEqual(followupMessages.map(item=>item.channel).sort(),['DU3','DU4']);
+  assert(followupMessages.every(item=>item.text.includes('<@U2> has accepted another Donut invitation')&&!item.text.includes('<@U1>')));
+  for(const [user,invite] of [[3,competingB],[4,competingC]]){
+    const view=(await api(user,'/api/slack/invitation-states',null,1)).data;
+    assert.equal(view.invitationNotices.length,1);assert.equal(view.invitationNotices[0].id,invite.id);
+    assert.match(view.invitationNotices[0].message,/Test neighbor U2 has accepted another/);
+    assert.match(view.invitationNotices[0].message,/next week/);
+    assert.equal(view.outgoingInvitations.some(item=>item.id===invite.id),false);
+    assert.equal((await api(user,'/api/slack/members')).data.invitationNotices.length,1,'notice survives a fresh Town load');
+  }
+  assert.equal((await api(1,'/api/slack/members')).data.invitationNotices.length,0,'notices are private to other inviters');
+  assert((await api(3,'/api/slack/invitation-states')).data.outgoingInvitations.some(item=>item.id===unrelated.id));
+  assert.equal((await api(2,'/api/slack/invitations/respond',{id:competingB.id,status:'accepted'})).status,409);
+  assert.equal((await api(7,'/api/slack/invitations/respond',{id:unrelated.id,status:'declined'})).status,200);
+  assert.equal((await followups()).length,2,'declining an unrelated invitation sends no paired notice');
   assert.deepEqual((await lottery('pool',{},1)).data.bookedIds.sort(),['U1','U2']);
   assert.equal((await lottery('commit',{pairs:[['U1','U3'],['U4','U5']]},1)).data.error,'already_booked');
   assert.equal(await balance(1),initial+5);assert.equal(await balance(2),initial+5);
@@ -77,9 +98,17 @@ test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and 
    return fetch(urls[0]+'/slack/interactions',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded','x-slack-request-timestamp':timestamp,'x-slack-signature':signature},body});
   }
   assert.equal((await slackAccept(invitation.id,'U2')).status,200);
+  assert.equal((await api(2,'/api/slack/invitations/respond',{id:invitation.id,status:'accepted'})).status,200);
+  const slackCompeting=(await api(5,'/api/slack/invitations',{inviteeId:'U4'})).data.invitation;
   const second=(await api(3,'/api/slack/invitations',{inviteeId:'U4'})).data.invitation;
   assert.equal((await slackAccept(second.id,'U4')).status,200);
   let state;for(let i=0;i<40;i++){state=(await api(4,'/api/slack/invitation-states',null,1)).data.states.U4;if(state.status==='booked')break;await delay(50);}
+  for(let i=0;i<40&&(await followups()).length<3;i++)await delay(50);
+  followupMessages=await followups();
+  assert.equal(followupMessages.length,3,'duplicate acceptance does not repeat follow-ups');
+  assert.equal(followupMessages[2].channel,'DU5');
+  assert.match(followupMessages[2].text,/<@U4> has accepted another/);
+  assert.equal((await api(5,'/api/slack/members')).data.invitationNotices[0].id,slackCompeting.id);
   assert.equal(state.status,'booked');assert.equal(await balance(4),initial+5);assert.equal(await balance(2),initial+5);
   let notices=[];
   for(let i=0;i<40;i++){try{notices=(await readFile(threadLog,'utf8')).trim().split('\n').map(JSON.parse);}catch{}if(notices.length===2)break;await delay(50);}

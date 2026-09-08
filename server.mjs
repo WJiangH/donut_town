@@ -21,7 +21,7 @@ import { validateTheme } from "./town-themes/contract.mjs";
 import { characterForMember, memberCharacterKey } from "./characters/catalog.mjs";
 import { PresenceHub } from "./realtime/presence.mjs";
 import { SlackClient } from "./slack/client.mjs";
-import { activeInvitations, activeRoundId, getInvitation, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
+import { activeInvitations, activeRoundId, getInvitation, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationNoticesFor, pairedElsewhereMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "./slack/invitations.mjs";
 import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "./slack/ledger.mjs";
 import { UpstashInvitationStore } from "./slack/upstash-store.mjs";
 import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackIdToken } from "./slack/oidc.mjs";
@@ -202,6 +202,7 @@ const server = createServer(async (request, response) => {
         currentUserFound,
         profileConnected: false,
         incomingInvitations: incomingFor(currentUserId),
+        invitationNotices: noticesFor(currentUserId),
         outgoingInvitations: currentUserId ? pendingInvitationsFor(currentUserId).map(invitation => ({
           id: invitation.id,
           inviteeId: invitation.inviteeId,
@@ -227,6 +228,7 @@ const server = createServer(async (request, response) => {
       response.setHeader("cache-control", "private, no-store");
       return sendJson(response, 200, {
         incomingInvitations: incomingFor(session?.sub),
+        invitationNotices: noticesFor(session?.sub),
         states: Object.fromEntries(members.map(member => [member.id, invitationStateFor(member.id)])),
         outgoingInvitations: session?.sub ? pendingInvitationsFor(session.sub).map(invitation => ({
           id: invitation.id,
@@ -623,6 +625,13 @@ async function getCachedChannelMembers() {
   return memberSyncPromise;
 }
 
+function noticesFor(userId) {
+  return invitationNoticesFor(userId).map(notice => ({
+    ...notice,
+    message: pairedElsewhereMessage((memberCache || []).find(member => member.id === notice.inviteeId)?.displayName || 'Your neighbor')
+  }));
+}
+
 function incomingFor(userId) {
   return activeInvitations().filter(i=>i.inviteeId===userId&&i.status==='pending').map(i=>({id:i.id,inviterId:i.inviterId,createdAt:i.createdAt}));
 }
@@ -643,6 +652,16 @@ async function respondToInvitation(id,status,responder) {
     catch(error){if(['invitation_not_active','already_booked'].includes(error.code))return null;throw error;}
     restoreInvitationSnapshots(snapshots);
     getInvitation(id).duplicateResponse=!snapshots.changed;
+    if (status === 'accepted' && snapshots.changed && config.allowSend && slack) {
+      const closed = snapshots.flatMap(snapshot => snapshot.invitations || [])
+        .filter(item => item.closedByInvitationId === id && item.closedReason === 'invitee_paired');
+      void Promise.allSettled(closed.map(async item => {
+        const channel = await slack.openDm(item.inviterId);
+        await slack.postMessage(channel, { text: pairedElsewhereMessage(`<@${item.inviteeId}>`) });
+      })).then(results => {
+        if (results.some(result => result.status === 'rejected')) console.error('Invitation follow-up notification failed');
+      });
+    }
   }else{
     if(status==='accepted')throw Error('shop_store_unavailable');
     const answer=answerInvitation(id,status,responder);

@@ -55,6 +55,16 @@ export function pendingInvitationsFor(inviterId) {
   return [...invitations.values()].filter(invitation => !invitation.selfTest && invitation.roundId === roundId && invitation.inviterId === inviterId && invitation.status === "pending");
 }
 
+export function invitationNoticesFor(userId) {
+  return activeInvitations()
+    .filter(invitation => invitation.inviterId === userId && invitation.status === 'cancelled' && invitation.closedReason === 'invitee_paired')
+    .map(invitation => ({ id: invitation.id, inviteeId: invitation.inviteeId, answeredAt: invitation.answeredAt }));
+}
+
+export function pairedElsewhereMessage(name) {
+  return `Thanks for reaching out! ${name} has accepted another Donut invitation for this week. Feel free to invite them again next week. 🍩`;
+}
+
 export function invitationStateFor(userId) {
   const roundId = ensureActiveRound();
   const related = [...invitations.values()].filter(invitation =>
@@ -95,7 +105,9 @@ export function invitationSnapshotFor(inviterId) {
         priority: invitation.priority,
         status: invitation.status,
         createdAt: invitation.createdAt,
-        answeredAt: invitation.answeredAt || null
+        answeredAt: invitation.answeredAt || null,
+        closedReason: invitation.closedReason || null,
+        closedByInvitationId: invitation.closedByInvitationId || null
       }))
   };
 }
@@ -158,6 +170,10 @@ export function answerInvitation(id, status, responderId) {
       if (bookedIds.has(other.inviterId) || bookedIds.has(other.inviteeId)) {
         other.status = "cancelled";
         other.answeredAt = invitation.answeredAt;
+        if (!bookedIds.has(other.inviterId)) {
+          other.closedReason = 'invitee_paired';
+          other.closedByInvitationId = invitation.id;
+        }
       }
     }
   }

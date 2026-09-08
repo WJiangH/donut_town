@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHmac, generateKeyPairSync, sign as rsaSign } from "node:crypto";
 import test from "node:test";
 import { SlackClient } from "../slack/client.mjs";
-import { activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "../slack/invitations.mjs";
+import { activeRoundId, answerInvitation, appearanceIndexFor, createInvitation, discardInvitation, invitationMessage, invitationNoticesFor, invitationSnapshotFor, invitationStateFor, pendingInvitationsFor, resolveInvitationActors, restoreInvitationSnapshots } from "../slack/invitations.mjs";
 import { decodeLedgerSnapshot, encodeLedgerSnapshot } from "../slack/ledger.mjs";
 import { buildSlackAuthorizeUrl, verifySlackIdToken } from "../slack/oidc.mjs";
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken, shouldRenewSession, SESSION_TTL_SECONDS } from "../slack/session.mjs";
@@ -280,4 +280,25 @@ test('a town session lasts a month and slides while somebody keeps visiting', ()
   assert.equal(shouldRenewSession(null, { now }), false);
   // A month of silence still ends the session.
   assert.equal(verifyTownToken(token, { signingSecret: 'secret', expectedType: 'session', expectedChannelId: 'C1', now: now + 31 * 86400e3 }), null);
+});
+
+
+test('other inviters retain a private next-week notice after snapshot restore', () => {
+  const accepted = createInvitation({ inviterId: 'UN1', inviteeId: 'UN2', inviterName: 'A' });
+  const other = createInvitation({ inviterId: 'UN3', inviteeId: 'UN2', inviterName: 'B' });
+  const outgoing = createInvitation({ inviterId: 'UN2', inviteeId: 'UN4', inviterName: 'Recipient' });
+  try {
+    answerInvitation(accepted.id, 'accepted', 'UN2');
+    assert.deepEqual(invitationNoticesFor('UN3').map(notice => notice.id), [other.id]);
+    assert.deepEqual(invitationNoticesFor('UN2'), []);
+    assert.deepEqual(invitationNoticesFor('UN4'), []);
+    const snapshot = invitationSnapshotFor('UN3');
+    discardInvitation(other.id);
+    restoreInvitationSnapshots([snapshot]);
+    assert.equal(invitationNoticesFor('UN3')[0].inviteeId, 'UN2');
+    assert.deepEqual(pendingInvitationsFor('UN3'), []);
+    assert.equal(answerInvitation(other.id, 'accepted', 'UN2'), null);
+  } finally {
+    for (const invitation of [accepted, other, outgoing]) discardInvitation(invitation.id);
+  }
 });

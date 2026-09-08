@@ -76,7 +76,12 @@ else
   end
   for _,entry in ipairs(purses) do redis.call('HSET',KEYS[2],entry.key,entry.value) end
   for _,snap in ipairs(data.snapshots) do for _,inv in ipairs(snap.invitations) do
-   if inv.status=='pending' and inv.id~=target.id and (inv.inviterId==target.inviterId or inv.inviteeId==target.inviterId or inv.inviterId==target.inviteeId or inv.inviteeId==target.inviteeId) then inv.status='cancelled' end
+   if inv.status=='pending' and inv.id~=target.id and (inv.inviterId==target.inviterId or inv.inviteeId==target.inviterId or inv.inviterId==target.inviteeId or inv.inviteeId==target.inviteeId) then
+    inv.status='cancelled';inv.answeredAt=ARGV[6]
+    if inv.inviterId~=target.inviterId and inv.inviterId~=target.inviteeId then
+     inv.closedByInvitationId=target.id;inv.closedReason='invitee_paired'
+    end
+   end
   end end
  end
  target.status=input.status;target.answeredAt=ARGV[6]

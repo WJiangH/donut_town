@@ -55,6 +55,8 @@ const mapObstacles = [
 
 let outgoingInvitations = [];
 let incomingInvitations = [];
+let invitationNotices = [];
+let invitationNoticeMarkupCache = null;
 let respondingInvitation = null;
 let incomingMarkupCache = null;
 let selectedResident = null;
@@ -1342,6 +1344,7 @@ async function syncSlackResidents(response) {
     await Promise.all(data.members.map(async member => { member.character = await loadCharacterArt(member.character); }));
     const summary = document.querySelector("#neighborSummary");
     incomingInvitations = Array.isArray(data.incomingInvitations) ? data.incomingInvitations : [];
+    invitationNotices = Array.isArray(data.invitationNotices) ? data.invitationNotices : [];
     outgoingInvitations = Array.isArray(data.outgoingInvitations) ? data.outgoingInvitations : [];
     currentUser = data.members.find(member => member.isCurrentUser) || null;
     const neighbors = data.members
@@ -1456,8 +1459,9 @@ async function syncInvitationStates() {
   try {
     const response = await fetch("/api/slack/invitation-states", { headers: { accept: "application/json" } });
     if (!response.ok) return;
-    const { states, incomingInvitations: incoming, outgoingInvitations: nextOutgoingInvitations } = await response.json();
+    const { states, incomingInvitations: incoming, invitationNotices: notices, outgoingInvitations: nextOutgoingInvitations } = await response.json();
     incomingInvitations = Array.isArray(incoming) ? incoming : [];
+    invitationNotices = Array.isArray(notices) ? notices : [];
     outgoingInvitations = Array.isArray(nextOutgoingInvitations) ? nextOutgoingInvitations : [];
     residents.forEach(person => Object.assign(person, states[person.slackId] || { status: "open", partnerId: null, pairId: null }));
     if(currentUser && currentUser.pairId!==states[currentUser.id]?.pairId)void refreshWallet();
@@ -1593,6 +1597,13 @@ function renderInvitationDock() {
   const incomingMarkup=incomingInvitations.map(i=>{const p=residents.find(r=>r.slackId===i.inviterId);return `<li><strong>${escapeHtml(p?.name||'Neighbor')}</strong><small>Invited you to a Donut Chat · +5 donuts each</small><div><button data-answer="accepted" data-invitation="${escapeHtml(i.id)}" ${respondingInvitation?'disabled':''}>Accept</button><button data-answer="declined" data-invitation="${escapeHtml(i.id)}" ${respondingInvitation?'disabled':''}>Decline</button></div></li>`;}).join('');
   if(incomingMarkupCache!==incomingMarkup){incomingList.innerHTML=incomingMarkup;incomingMarkupCache=incomingMarkup;}
   document.querySelector('#dockHandle>span').textContent=incomingInvitations.length?`${incomingInvitations.length} incoming invite${incomingInvitations.length===1?'':'s'}`:'My invitations';
+  const noticeMarkup = invitationNotices.map(notice =>
+    `<li class="invitation-notice">${escapeHtml(notice.message)}</li>`
+  ).join('');
+  if (invitationNoticeMarkupCache !== noticeMarkup) {
+    document.querySelector('#invitationNoticeList').innerHTML = noticeMarkup;
+    invitationNoticeMarkupCache = noticeMarkup;
+  }
   renderPairBoard();
   const available = Math.max(0, 3 - outgoingInvitations.length);
   const booked = currentUser?.status === "booked";
