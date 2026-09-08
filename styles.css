@@ -24,7 +24,7 @@ button, a { font: inherit; }
 button { color: inherit; }
 button:focus-visible, a:focus-visible { outline: 3px solid #173126; outline-offset: 3px; }
 
-.app-shell { min-height: 100dvh; overflow: hidden; }
+.app-shell { min-height: 100dvh; overflow: hidden; isolation: isolate; }
 
 .topbar {
   height: 72px;

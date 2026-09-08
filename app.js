@@ -1668,7 +1668,7 @@ document.querySelector("#shopEntrance").addEventListener("click", event => {
 document.querySelector("#leaveShop").addEventListener("click", () => transitionToScene("town"));
 document.querySelector('.brand').addEventListener('click', async event => {
   event.preventDefault();closeDrawer();closeProfile();
-  if(window.townHouseOpen){await closeHouse();return;}
+  if(window.townHouseOpen){await closeHouse(true);return;}
   transitionToScene('town');
 });
 
@@ -1758,6 +1758,10 @@ function openHouse(owner=null) {
   const view = document.querySelector("#houseView");
   view.hidden = false;
   window.townHouseOpen = true;
+  document.querySelector('.app-shell').inert = true;
+  const back = document.querySelector('#leaveHouse');
+  back.textContent = `Back to ${currentScene === 'town' ? 'town' : scene().title}`;
+  back.focus({preventScroll:true});
   updateTownSidebar();
   pressedKeys.clear(); clickPath = [];
   closeProfile();
@@ -1789,11 +1793,12 @@ function openHouse(owner=null) {
   }
   housePanel?.then(panel => panel?.load(owner));
 }
-async function closeHouse(returnToTown = true) {
+async function closeHouse(returnToTown = false) {
   const panel = await housePanel;
   if (panel && !(await panel.flush())) return false;
   document.querySelector("#houseView").hidden = true;
   window.townHouseOpen = false;
+  document.querySelector('.app-shell').inert = false;
   updateTownSidebar();
   panel?.pause();
   void themeController?.check();
@@ -1819,7 +1824,7 @@ document.querySelector('#railHome').addEventListener('click',openHouse);
 document.querySelector('#railShop').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('donutShop');});
 document.querySelector('#railChem').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('chemPod');});
 document.querySelector("#shopHome").addEventListener("click", openHouse);
-document.querySelector("#leaveHouse").addEventListener("click", closeHouse);
+document.querySelector("#leaveHouse").addEventListener("click", () => closeHouse());
 document.querySelector("#chemPodEntrance").addEventListener("click", () => transitionToScene("chemPod"));
 document.querySelector("#chemPodExit").addEventListener("click", () => transitionToScene("town"));
 document.querySelector('#factoryEntrance').onclick=()=>{requestedFactory=0;transitionToScene('donutFactory');};
