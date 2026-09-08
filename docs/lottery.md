@@ -71,8 +71,10 @@ rewards; the next tick rebuilds the pool. Script retries resume a saved batch
 instead of drawing or rewarding again. Random pairs appear in Town, including
 the Factory, through the same invitation-state feed.
 
-Successful pairs are announced in the original thread, without broadcasting
-each reply into the channel. This uses Slack's standard
+Town invitation pairs are announced in the original thread, without broadcasting
+each reply into the channel. Random results still use the existing Sheet
+`processGuessWhoResults()` message, thread, odd-person rule and audit row; the
+Town service does not publish a second random-pair summary. Town replies use Slack's standard
 [`thread_ts` message field](https://docs.slack.dev/reference/methods/chat.postmessage).
 The next tick retries failed reminders, even after the signup message is marked
 done. Sent notices are recorded, and a short Redis lease prevents simultaneous
@@ -80,10 +82,14 @@ workers from sending the same notice. A lost Slack response after actual deliver
 can still cause a duplicate reminder on retry; pair booking and rewards remain
 idempotent. Notifications may be delayed by Slack failures or Render startup.
 
-With sync enabled, an odd remaining member stays available to find a partner in
-Town; the legacy “join any pair as a trio” message is not used because Town
-currently represents pairs of two. The original trio behavior is unchanged when
-sync is disabled. This does not change the separate new-hire lottery.
+The random pool is exactly the eligible members who reacted to the signup
+message (Group D), minus those already booked this week. An accepted Town pair
+only removes its members who are in Group D; it never adds non-reactors. Pending
+and declined invitations do not remove anyone. Fewer than two remaining members
+follow the existing skip rule. The original odd-person Lottery winner and
+“join any pair as a trio” announcement are preserved. The unassigned third person
+has no chosen partner in the script data; only actual two-person pairs are
+currently synchronized as booked in Town. This does not change the new-hire lottery.
 
 Town's existing round boundary is **Monday 00:00 UTC**. Signup must open and close
 in the same UTC week, with one canonical signup announcement per channel/week.

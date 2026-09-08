@@ -62,7 +62,7 @@ test('Lottery and Town share atomic bookings, rewards and retryable thread annou
   await assert.rejects(add('blocked',lotteryPair.inviteeId,'U10'),{code:'already_booked'});
   failDelivery=false;
   await Promise.all([bridge.notify(),other.notify()]);
-  const count=deliveries.length;assert(count>=2);
+  const count=deliveries.length;assert.equal(count,data.invitations.filter(i=>i.status==='accepted'&&i.source!=='lottery').length,'only Town pairs get bridge reminders; the Sheet announces random results');
   await bridge.notify();assert.equal(deliveries.length,count,'sent thread notices are not posted again');
   for(const {channel,payload} of deliveries){assert.equal(channel,channelId);assert.equal(payload.thread_ts,messageTs);assert.equal(payload.reply_broadcast,false);}
   const fresh=new SocialStore(shop,channelId+'X'),empty=new LotteryBridge({...options,social:fresh,channelId:channelId+'X'});

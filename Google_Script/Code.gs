@@ -438,8 +438,8 @@ function processGuessWhoResults(msg, pairs, leftover) {
   messageText += "\n\nPlease reach out to your partner(s) to schedule a time!";
 
   postToSlack(messageText, msg.ts);
-  markAsDone(msg.ts);
   logToGuessWhoSheet(msg.ts, pairStringsForSheet.join(", "), winnerName);
+  markAsDone(msg.ts);
 }
 
 function logToGuessWhoSheet(ts, pairsString, winnerName) {
@@ -499,11 +499,14 @@ function getUserName(userId) {
 
 function postToSlack(text, threadTs) {
   var payload = { channel: getDonutConfig_().CHANNEL_ID, text: text, thread_ts: threadTs };
-  UrlFetchApp.fetch("https://slack.com/api/chat.postMessage", {
+  var response = UrlFetchApp.fetch("https://slack.com/api/chat.postMessage", {
     method: "post",
     headers: { Authorization: "Bearer " + SLACK_TOKEN, "Content-Type": "application/json" },
-    payload: JSON.stringify(payload)
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
   });
+  var result = JSON.parse(response.getContentText());
+  if (!result.ok) throw new Error("Slack chat.postMessage failed: " + result.error);
 }
 
 function markAsDone(ts) {
@@ -596,22 +599,22 @@ function runTownConnectedPairing_(config, msg, pastPairs) {
     var validIds = Array.from(new Set(fetchReactors(msg.ts))).filter(function (id) {
       return /^[UW][A-Z0-9]+$/.test(id) && eligible.has(id) && !booked.has(id);
     });
-    // Remaining odd members stay available; a trio cannot be represented as a Town pair.
+    // Group D minus booked members; preserve the original minimum size and odd-person rules.
+    if (validIds.length < 2) return;
     var leftover = validIds.length % 2 ? pickLotteryWinner(validIds, config.ASSIGNED_WINNER_SLACK_ID) : null;
     var pool = validIds.filter(function (id) { return id !== leftover; });
     var match = pool.length ? buildConstrainedPairs(pool, getDonutMemberDirectory_(), pastPairs) : {pairs: []};
-    if (!match) throw new Error('No valid pairing satisfies the team leader rules. Pairing paused.');
+    if (!match) {
+      postToSlack("⚠️ I couldn't find a valid pairing that satisfies the team leader rules. Please check the roster or try with different participants.", msg.ts);
+      return;
+    }
     // One atomic commit; if somebody just accepted in Town, next tick reloads the pool.
     result = townPairingRequest_(config, {action: 'commit', messageTs: msg.ts, pairs: match.pairs, leftover: leftover});
   }
-  var notification = townPairingRequest_(config, {action: 'notify'});
-  if (notification.notifications.pending) throw new Error('Pairs saved. Thread notice will retry next tick.');
   var pairs = Array.isArray(result.pairs) ? result.pairs : [];
   // Sheet is an audit copy; retries resume the server's committed result, never re-draw.
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('GuessWho');
   var logged = sheet && sheet.getLastRow() > 1 && sheet.getRange(2,2,sheet.getLastRow()-1,1).getValues().some(function (row) { return String(row[0]) === String(msg.ts); });
-  if (!logged) logToGuessWhoSheet(msg.ts, pairs.map(function (pair) {
-    return getUserName(pair[0]) + ' & ' + getUserName(pair[1]) + ' (' + pair[0] + '-' + pair[1] + ')';
-  }).join(', '), result.leftover ? getUserName(result.leftover) : 'N/A');
-  markAsDone(msg.ts);
+  if (!logged) processGuessWhoResults(msg, pairs, result.leftover || null);
+  else markAsDone(msg.ts);
 }

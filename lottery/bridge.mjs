@@ -77,13 +77,6 @@ export class LotteryBridge {
       if(invitation.status!=='accepted'||invitation.selfTest||invitation.source==='lottery')continue;
       jobs.push({id:invitation.id,text:`:doughnut: <@${invitation.inviterId}> + <@${invitation.inviteeId}> paired up in Donut Town! You each earned 5 donuts. You're all set for this week's chat and won't be included in the random pairing.`});
     }
-    const batch=data.lotteries[messageTs];
-    if(batch) {
-      const pairs=Array.isArray(batch.pairs)?batch.pairs:[];
-      jobs.push({id:'batch-'+messageTs,text:pairs.length
-        ? `:doughnut: *The donuts are served!*\n${pairs.map(p=>`• <@${p[0]}> + <@${p[1]}>`).join('\n')}\nEach pair earned 5 donuts per person. Reach out to your partner to schedule a chat.${batch.leftover?`\n<@${batch.leftover}> is still available to find a partner in Town.`:''}`
-        : `:doughnut: Random pairing is complete. No additional pairs this round.${batch.leftover?` <@${batch.leftover}> is still available to find a partner in Town.`:''}`});
-    }
     let sent=0,pending=false;
     for(const job of jobs) {
       const noticeKey=rootKey+':notice:'+job.id;

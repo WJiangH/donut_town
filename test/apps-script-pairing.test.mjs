@@ -34,10 +34,10 @@ test('connected script excludes booked reactors before pairing and retries from 
     getDonutMemberDirectory_:()=>({}),getUserName:id=>id,
     buildConstrainedPairs:pool=>{draws++;assert.deepEqual([...pool],['U3','U4','U5','U6']);return {pairs:[['U3','U4'],['U5','U6']]};},
     SpreadsheetApp:{getActiveSpreadsheet:()=>({getSheetByName:()=>logged?{getLastRow:()=>2,getRange:()=>({getValues:()=>[['100.000001']]})}:null})},
-    logToGuessWhoSheet:()=>{logged=true;},markAsDone:ts=>marks.push(ts),
+    logToGuessWhoSheet:()=>{logged=true;},markAsDone:ts=>marks.push(ts),postToSlack(){},
     townPairingRequest_:(config,input)=>{
       requests.push(input);
-      if(input.action==='pool'){if(failRead)throw Error('offline');return {bookedIds:['U1','U2'],eligibleIds:['U1','U2','U3','U4','U5','U6'],committed};}
+      if(input.action==='pool'){if(failRead)throw Error('offline');return {bookedIds:['U1','U2','U8','U9'],eligibleIds:['U1','U2','U3','U4','U5','U6'],committed};}
       if(input.action==='commit'){if(conflict)throw Error('already_booked');committed={pairs:input.pairs,leftover:input.leftover};return committed;}
       return {notifications:{pending:false}};
     }
@@ -48,19 +48,31 @@ test('connected script excludes booked reactors before pairing and retries from 
   c.runTownConnectedPairing_({}, {ts:'100.000001'}, []);assert.equal(draws,2,'a rerun resumes the committed batch without another draw');
 });
 
-test('after exclusions, an empty or odd pool completes without pairing an already-booked person',()=>{
+test('Group D subtraction preserves the original small-pool, odd-person and result-message rules',()=>{
   const c=vm.createContext({console,Set,PropertiesService:{getScriptProperties:()=>({getProperty:()=>''})}});vm.runInContext(source,c);
   let reactors=['U1','U2','U3'],committed;
-  Object.assign(c,{fetchReactors:()=>reactors,pickLotteryWinner:ids=>ids[0],getUserName:id=>id,
+  const messages=[];
+  Object.assign(c,{fetchReactors:()=>reactors,getUserName:id=>id,getDonutMemberDirectory_:()=>({}),
     SpreadsheetApp:{getActiveSpreadsheet:()=>({getSheetByName:()=>null})},logToGuessWhoSheet(){},markAsDone(){},
+    postToSlack:(text,ts)=>messages.push({text,ts}),
     townPairingRequest_:(config,input)=>{
-      if(input.action==='pool')return {bookedIds:['U1','U2'],eligibleIds:['U1','U2','U3']};
+      if(input.action==='pool')return {bookedIds:['U1','U2','U9'],eligibleIds:['U1','U2','U3','U4','U5','U9']};
       if(input.action==='commit'){committed=input;return input;}
-      return {notifications:{pending:false}};
+      throw Error('Random result messages must remain in the Sheet workflow');
     }
   });
   c.runTownConnectedPairing_({}, {ts:'100.000001'}, []);
-  assert.equal(committed.pairs.length,0);assert.equal(committed.leftover,'U3');
+  assert.equal(committed,undefined,'one remaining member follows the original skip rule');
   reactors=['U1','U2'];c.runTownConnectedPairing_({}, {ts:'100.000001'}, []);
-  assert.equal(committed.pairs.length,0);assert.equal(committed.leftover,null);
+  assert.equal(committed,undefined);assert.equal(messages.length,0);
+  reactors=['U1','U2','U3','U4','U5'];
+  c.runTownConnectedPairing_({ASSIGNED_WINNER_SLACK_ID:'U3'}, {ts:'100.000001'}, []);
+  assert.equal(committed.leftover,'U3');assert.deepEqual([...committed.pairs[0]].sort(),['U4','U5']);
+  assert.equal(messages[0].ts,'100.000001');
+  assert.match(messages[0].text,/The Donuts are Served!/);
+  assert.match(messages[0].text,/join them for a trio chat/);
+  assert(!messages[0].text.includes('<@U9>'),'someone outside Group D never enters the random pool');
+  const original=messages[0].text;messages.length=0;
+  c.processGuessWhoResults({ts:'100.000001'},committed.pairs,committed.leftover);
+  assert.equal(messages[0].text,original,'connected draws use the original result formatter');
 });
