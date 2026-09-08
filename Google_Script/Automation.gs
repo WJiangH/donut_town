@@ -4,6 +4,8 @@
 var DONUT_CONFIG_SHEET = "Configs";
 var DONUT_ROUNDS_SHEET = "Rounds";
 var DONUT_AUTOMATION_HANDLER = "donutAutomationTick";
+var DONUT_WEEKLY_MESSAGE_TEMPLATE = "Guess Who will be your donut partner! Please react to this message with a :{EMOJI}: emoji if you are interested to participate. Sign ups open for *{SIGNUP_HOURS} hours* before running the lottery. After the draw, the workflow will randomly pair participants for donut chats. If we end up with an odd number of participants, the lucky *“Lottery Winner”* will have the privilege of picking any existing pair to join for a *3 person donut chat*!";
+var DONUT_LEGACY_MESSAGE_TEMPLATE = "React with :{EMOJI}: within {SIGNUP_HOURS} hours to join the random pairing, or enter Donut Town to invite someone directly. Signup closes around {CLOSE_TIME} ({TIMEZONE}).";
 var DONUT_MEMBER_HEADERS = [
   "Slack ID", "Display Name", "Email", "Team", "Manager Slack ID",
   "In Channel", "Invites Enabled", "Last Synced At", "Specialty",
@@ -27,7 +29,7 @@ function donutConfigDefaults_() {
     ["WINNERS_COUNT", "3", "Number of new-hire lottery winners"],
     ["ASSIGNED_WINNER_SLACK_ID", "", "Optional Slack ID forced as the odd-person lottery winner"],
     ["MEMBER_SYNC_HOURS", "24", "How often the channel roster is refreshed"],
-    ["WEEKLY_MESSAGE_TEMPLATE", "React with :{EMOJI}: within {SIGNUP_HOURS} hours to join the random pairing, or enter Donut Town to invite someone directly. Signup closes around {CLOSE_TIME} ({TIMEZONE}).", "Supports {EMOJI}, {SIGNUP_HOURS}, {CLOSE_TIME}, and {TIMEZONE}"],
+    ["WEEKLY_MESSAGE_TEMPLATE", DONUT_WEEKLY_MESSAGE_TEMPLATE, "Signup paragraph; Town introduction, entrance link and channel mention are appended automatically. Supports {EMOJI}, {SIGNUP_HOURS}, {CLOSE_TIME}, and {TIMEZONE}"],
   ];
 }
 
@@ -109,23 +111,26 @@ function postWeeklyDonutRound_(config, now, source, roundId) {
     if (townWeek_(now) !== townWeek_(closesAt)) throw new Error('Signup must close in the same UTC week as Town. Choose an earlier posting time.');
   }
   var closeTime = Utilities.formatDate(closesAt, config.TIMEZONE, "EEE MMM d, h:mm a");
-  var message = config.WEEKLY_MESSAGE_TEMPLATE
+  var template = config.WEEKLY_MESSAGE_TEMPLATE === DONUT_LEGACY_MESSAGE_TEMPLATE ? DONUT_WEEKLY_MESSAGE_TEMPLATE : config.WEEKLY_MESSAGE_TEMPLATE;
+  var message = template
     .replace(/\{EMOJI\}/g, config.TARGET_EMOJI)
     .replace(/\{SIGNUP_HOURS\}/g, String(config.SIGNUP_HOURS))
     .replace(/\{CLOSE_TIME\}/g, closeTime)
-    .replace(/\{TIMEZONE\}/g, config.TIMEZONE);
+    .replace(/\{TIMEZONE\}/g, config.TIMEZONE)
+    .replace(/(?:<!channel>|@channel)\s*$/, '').trim();
+  message += "\n\n:house_with_garden: *Our Donut Town is open!*\nTake a stroll, visit your neighbors’ homes, and find someone you’d like to get to know! You can invite a neighbor to a donut chat directly in Town—no need to wait for the lottery.";
   if (config.TOWN_SYNC_ENABLED) {
-    message += "\nPair up in Town before signup closes and you will be left out of the random draw. Successful pairs earn 5 donuts each and appear in this thread.";
+    message += "\n\nPair up with a neighbor, earn your donuts, and watch your friendship grow! :doughnut: We’ll share your match in this thread and take care of the rest.";
   }
-  message += "\n<" + config.TOWN_URL + "|Enter Donut Town>";
+  message += "\n\n:point_right: <" + config.TOWN_URL + "|Enter Donut Town>\n\n<!channel>";
 
   var payload = {
     channel: config.CHANNEL_ID,
-    text: config.GUESS_WHO_TARGET_TEXT + ". " + message,
+    text: "Time to Bring Your Donut! :doughnut:\n\n" + (message.includes(config.GUESS_WHO_TARGET_TEXT) ? "" : config.GUESS_WHO_TARGET_TEXT + "!\n") + message,
     blocks: [
       {
         type: "section",
-        text: { type: "mrkdwn", text: "*Time to Bring Your Donut!* :doughnut:\n" + message }
+        text: { type: "mrkdwn", text: "*Time to Bring Your Donut!* :doughnut:\n\n" + message }
       },
       {
         type: "actions",
