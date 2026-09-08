@@ -14,6 +14,7 @@ function donutConfigDefaults_() {
   return [
     ["CHANNEL_ID", "", "Slack channel ID; keep workspace-specific values in this private sheet"],
     ["TOWN_URL", "", "Public one-click Donut Town entrance URL"],
+    ["TOWN_SYNC_ENABLED", "FALSE", "TRUE shares pairing state with Town; requires LOTTERY_SYNC_SECRET in Script Properties and Render"],
     ["AUTO_POST_ENABLED", "TRUE", "TRUE enables the weekly Bot message"],
     ["WEEKLY_POST_DAY", "MONDAY", "MONDAY through SUNDAY"],
     ["WEEKLY_POST_TIME", "09:00", "Local 24-hour time; checked every 15 minutes"],
@@ -101,12 +102,22 @@ function localWeekday_(date, timezone) {
 
 function postWeeklyDonutRound_(config, now, source, roundId) {
   var closesAt = new Date(now.getTime() + config.SIGNUP_HOURS * 60 * 60 * 1000);
+  if (config.TOWN_SYNC_ENABLED) {
+    var connection = townPairingRequest_(config, {action: 'status'});
+    if (!connection.notificationsEnabled) throw new Error('Enable SLACK_ALLOW_SEND on Render before posting.');
+    if (connection.registered) throw new Error('This Town week already has a signup announcement.');
+    if (townWeek_(now) !== townWeek_(closesAt)) throw new Error('Signup must close in the same UTC week as Town. Choose an earlier posting time.');
+  }
   var closeTime = Utilities.formatDate(closesAt, config.TIMEZONE, "EEE MMM d, h:mm a");
   var message = config.WEEKLY_MESSAGE_TEMPLATE
     .replace(/\{EMOJI\}/g, config.TARGET_EMOJI)
     .replace(/\{SIGNUP_HOURS\}/g, String(config.SIGNUP_HOURS))
     .replace(/\{CLOSE_TIME\}/g, closeTime)
     .replace(/\{TIMEZONE\}/g, config.TIMEZONE);
+  if (config.TOWN_SYNC_ENABLED) {
+    message += "\nPair up in Town before signup closes and you will be left out of the random draw. Successful pairs earn 5 donuts each and appear in this thread.";
+  }
+  message += "\n<" + config.TOWN_URL + "|Enter Donut Town>";
 
   var payload = {
     channel: config.CHANNEL_ID,
@@ -145,6 +156,7 @@ function postWeeklyDonutRound_(config, now, source, roundId) {
 
   var id = roundId || source + ":" + config.CHANNEL_ID + ":" + result.ts;
   logDonutRound_(id, source, config, result.ts, now, closesAt);
+  if (config.TOWN_SYNC_ENABLED) registerTownRound_(config, result.ts);
   return result.ts;
 }
 
@@ -166,6 +178,7 @@ function getDonutConfig_() {
   var config = {
     CHANNEL_ID: String(raw.CHANNEL_ID || "").trim(),
     TOWN_URL: String(raw.TOWN_URL || "").trim(),
+    TOWN_SYNC_ENABLED: String(raw.TOWN_SYNC_ENABLED).toUpperCase() === "TRUE",
     AUTO_POST_ENABLED: String(raw.AUTO_POST_ENABLED).toUpperCase() === "TRUE",
     WEEKLY_POST_DAY: String(raw.WEEKLY_POST_DAY || "").trim().toUpperCase(),
     WEEKLY_POST_TIME: String(raw.WEEKLY_POST_TIME),
@@ -406,4 +419,48 @@ function logDonutRound_(roundId, source, config, messageTs, openedAt, closesAt) 
     closesAt,
     "open"
   ]);
+}
+
+// Only the automation service gets this dedicated credential; never put it in Configs.
+function townPairingRequest_(config, input) {
+  var secret = PropertiesService.getScriptProperties().getProperty('LOTTERY_SYNC_SECRET');
+  if (!secret || secret.length < 32) throw new Error('Town sync requires LOTTERY_SYNC_SECRET (32+ characters) in Script Properties and Render.');
+  var origin = String(config.TOWN_URL).match(/^https:\/\/[^/?#]+/);
+  if (!origin) throw new Error('TOWN_URL must use HTTPS.');
+  var body = JSON.stringify(Object.assign({channelId: config.CHANNEL_ID}, input));
+  var timestamp = String(Math.floor(Date.now() / 1000));
+  var signature = Utilities.computeHmacSha256Signature(timestamp + '.' + body, secret, Utilities.Charset.UTF_8)
+    .map(function (byte) { return ('0' + ((byte + 256) % 256).toString(16)).slice(-2); }).join('');
+  var response = UrlFetchApp.fetch(origin[0] + '/api/lottery', {
+    method: 'post', contentType: 'application/json', followRedirects: false,
+    headers: {'X-Town-Timestamp': timestamp, 'X-Town-Signature': signature},
+    payload: body, muteHttpExceptions: true
+  });
+  var result;
+  try { result = JSON.parse(response.getContentText()); } catch (e) { throw new Error('Town sync unavailable. Pairing paused; retry next tick.'); }
+  if (response.getResponseCode() !== 200 || !result.ok) {
+    var error = new Error('Town sync: ' + (result.error || 'unavailable') + '. Pairing paused.');
+    error.code = result.error;
+    throw error;
+  }
+  return result;
+}
+
+function registerTownRound_(config, messageTs) {
+  return townPairingRequest_(config, {action: 'register', messageTs: String(messageTs),
+    closesAt: new Date(Number(messageTs) * 1000 + config.SIGNUP_HOURS * 3600000).toISOString()});
+}
+
+// Read-only connectivity check: no announcement, pairing, or rewards are created.
+function checkTownPairingConnection() {
+  var config = getDonutConfig_();
+  var status = townPairingRequest_(config, {action: 'status'});
+  if (!status.notificationsEnabled) throw new Error('Connection ready; enable SLACK_ALLOW_SEND on Render for thread notices.');
+  return 'Town pairing connection is ready.';
+}
+
+function townWeek_(date) {
+  var d = new Date(date); d.setUTCHours(0,0,0,0);
+  d.setUTCDate(d.getUTCDate() - (d.getUTCDay()+6)%7);
+  return d.toISOString();
 }

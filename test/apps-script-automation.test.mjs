@@ -128,3 +128,20 @@ test("weekly entrance button opens the configured one-click Slack URL", () => {
   assert.equal(button.action_id, "enter_donut_town");
   assert.equal(button.value, "one_click_oauth");
 });
+
+test('connected announcement includes a Town link, explains exclusion, and registers its own thread',()=>{
+  const requests=[],posts=[];
+  const context=loadAutomation({SLACK_TOKEN:'test',Utilities:{formatDate:()=>''},UrlFetchApp:{fetch:(url,options)=>{
+    posts.push(JSON.parse(options.payload));return {getContentText:()=>JSON.stringify({ok:true,ts:'1788800400.000001'})};
+  }}});
+  context.townPairingRequest_=(config,input)=>{requests.push(input);return {ok:true,notificationsEnabled:true,registered:null};};
+  context.logDonutRound_=()=>{};
+  const config={CHANNEL_ID:'CTEST',TOWN_URL:'https://example.com/auth/slack/start',TOWN_SYNC_ENABLED:true,SIGNUP_HOURS:24,TIMEZONE:'UTC',TARGET_EMOJI:'doughnut',WEEKLY_MESSAGE_TEMPLATE:'React to join.',GUESS_WHO_TARGET_TEXT:'Guess Who'};
+  context.postWeeklyDonutRound_(config,new Date('2026-09-07T16:00:00Z'),'manual');
+  assert.match(posts[0].text,/<https:\/\/example.com\/auth\/slack\/start\|Enter Donut Town>/);
+  assert.match(posts[0].text,/left out of the random draw/);
+  assert.equal(requests[1].messageTs,'1788800400.000001');
+  assert.equal(requests[1].action,'register');
+  assert.throws(()=>context.postWeeklyDonutRound_(config,new Date('2026-09-13T16:00:00Z'),'manual'),/same UTC week/);
+  assert.equal(posts.length,1,'a crossing window must be rejected before posting');
+});

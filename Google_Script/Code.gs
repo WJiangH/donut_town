@@ -176,6 +176,7 @@ function getRecentWinnerIds() {
 function runGuessWhoLottery() {
   var config = getDonutConfig_();
   console.log("🎲 Starting Guess Who search...");
+  if (config.TOWN_SYNC_ENABLED) townPairingRequest_(config, {action: 'notify'});
 
   var messages = fetchRecentMessages();
   if (!messages || messages.length === 0) return;
@@ -199,11 +200,21 @@ function runGuessWhoLottery() {
   targets.forEach(function (msg, index) {
     var msgTime = new Date(msg.ts * 1000).getTime();
     var hoursDiff = (new Date().getTime() - msgTime) / (1000 * 60 * 60);
+    if (config.TOWN_SYNC_ENABLED) {
+      // Old unprocessed announcements cannot book people into a different Town week.
+      if (townWeek_(msgTime) !== townWeek_(Date.now())) return;
+      registerTownRound_(config, msg.ts);
+      townPairingRequest_(config, {action: 'notify'});
+    }
 
     console.log("\n--- Processing Guess Who #" + (index + 1) + " (Age: " + hoursDiff.toFixed(2) + "h) ---");
 
     if (hoursDiff < config.GUESS_WHO_WAIT_HOURS) {
       console.log("   -> Too new! Waiting...");
+      return;
+    }
+    if (config.TOWN_SYNC_ENABLED) {
+      runTownConnectedPairing_(config, msg, pastPairs);
       return;
     }
 
@@ -573,4 +584,34 @@ function postDonutTownEntrance() {
   var result = JSON.parse(response.getContentText());
   if (!result.ok) throw new Error("Slack chat.postMessage failed: " + result.error);
   return result.ts;
+}
+
+function runTownConnectedPairing_(config, msg, pastPairs) {
+  var state = townPairingRequest_(config, {action: 'pool', messageTs: msg.ts});
+  var result = state.committed;
+  if (!result) {
+    if (!Array.isArray(state.bookedIds) || !Array.isArray(state.eligibleIds)) throw new Error('Incomplete Town member state. Pairing paused.');
+    var booked = new Set(state.bookedIds);
+    var eligible = new Set(state.eligibleIds);
+    var validIds = Array.from(new Set(fetchReactors(msg.ts))).filter(function (id) {
+      return /^[UW][A-Z0-9]+$/.test(id) && eligible.has(id) && !booked.has(id);
+    });
+    // Remaining odd members stay available; a trio cannot be represented as a Town pair.
+    var leftover = validIds.length % 2 ? pickLotteryWinner(validIds, config.ASSIGNED_WINNER_SLACK_ID) : null;
+    var pool = validIds.filter(function (id) { return id !== leftover; });
+    var match = pool.length ? buildConstrainedPairs(pool, getDonutMemberDirectory_(), pastPairs) : {pairs: []};
+    if (!match) throw new Error('No valid pairing satisfies the team leader rules. Pairing paused.');
+    // One atomic commit; if somebody just accepted in Town, next tick reloads the pool.
+    result = townPairingRequest_(config, {action: 'commit', messageTs: msg.ts, pairs: match.pairs, leftover: leftover});
+  }
+  var notification = townPairingRequest_(config, {action: 'notify'});
+  if (notification.notifications.pending) throw new Error('Pairs saved. Thread notice will retry next tick.');
+  var pairs = Array.isArray(result.pairs) ? result.pairs : [];
+  // Sheet is an audit copy; retries resume the server's committed result, never re-draw.
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('GuessWho');
+  var logged = sheet && sheet.getLastRow() > 1 && sheet.getRange(2,2,sheet.getLastRow()-1,1).getValues().some(function (row) { return String(row[0]) === String(msg.ts); });
+  if (!logged) logToGuessWhoSheet(msg.ts, pairs.map(function (pair) {
+    return getUserName(pair[0]) + ' & ' + getUserName(pair[1]) + ' (' + pair[0] + '-' + pair[1] + ')';
+  }).join(', '), result.leftover ? getUserName(result.leftover) : 'N/A');
+  markAsDone(msg.ts);
 }

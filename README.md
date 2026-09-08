@@ -117,7 +117,7 @@ Give me the channel entrance URL and any checks that remain unverified.
 
 - Connected players have real-time presence. Other resident placements represent the channel roster and do not mean those people are online.
 - Personalized artwork is optional and prepared with the art skill. New workspaces receive starter appearances; wardrobe and pose support depend on each character's assets.
-- Donuts start at the catalog's configured allowance. New accepted Town/Slack invitation pairs earn 5 donuts per person, once per pair; Lottery history sync is still to come. Some shop items are previews.
+- New pairs earn **5 donuts per person**. The optional [Sheet Lottery connection](docs/lottery.md#connect-the-24-hour-pairing-to-town) excludes already-paired neighbors from the 24-hour draw and announces matches in the signup thread. Historical Lottery records are not imported. Some shop items are previews.
 - Friendship points require both participants to confirm a chat. They record those confirmations, not independently verified attendance.
 - Home visits, guestbooks, gifts and private Town messages require Redis. Guestbooks and conversations retain their latest 100 entries. See [interaction and storage rules](docs/town-social.md).
 - Render's free instance sleeps after inactivity. Use an always-on instance for reliable Slack callbacks; see [hosting notes](docs/deploy.md#hosting-and-cost).

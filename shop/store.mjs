@@ -108,7 +108,7 @@ export class ShopStore {
     if (!response.ok) throw new Error('shop_store_unavailable');
     const result = await response.json();
     if (result.error) {
-      const code = ['not_enough_donuts','pet_not_owned','invitation_not_active','already_booked','invitation_already_pending','pending_invitation_limit','try_again_later','request_conflict'].find(code => result.error.includes(code));
+      const code = ['not_enough_donuts','pet_not_owned','invitation_not_active','already_booked','invitation_already_pending','pending_invitation_limit','try_again_later','request_conflict','lottery_already_committed'].find(code => result.error.includes(code));
       throw Object.assign(new Error(code || 'shop_store_unavailable'), {code});
     }
     return result.result;

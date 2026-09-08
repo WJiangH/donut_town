@@ -13,6 +13,7 @@ import { HouseStore, HOUSE_GRID, validateLayout, homeOwned } from "./house/store
 import { houseLuxury } from "./house/luxury.mjs";
 import { ChatStore } from "./chats/store.mjs";
 import { SocialStore, socialInput } from "./social/store.mjs";
+import {LotteryBridge, verifyLotteryRequest} from './lottery/bridge.mjs';
 import { ChatService } from "./chats/service.mjs";
 import { ThemeStore } from "./town-themes/store.mjs";
 import { ThemeService } from "./town-themes/service.mjs";
@@ -64,6 +65,11 @@ const outfitStore = new OutfitStore({ url: config.upstashUrl, token: config.upst
 const shopStore = new ShopStore({ url: config.upstashUrl, token: config.upstashToken });
 const shopCatalog = loadCatalog();
 const socialStore = new SocialStore(shopStore, config.channelId);
+const lotterySecret=process.env.LOTTERY_SYNC_SECRET || '';
+const lotteryBridge=new LotteryBridge({social:socialStore,channelId:config.channelId,slack,
+  keyFor:id=>memberCharacterKey(id,config.signingSecret),members:()=>getCachedChannelMembers(),allowSend:config.allowSend,
+  onChanged:()=>{invitationReadAt=0;presenceHub.broadcast({type:'invitations-changed'});}
+});
 const houseStore = new HouseStore({ url: config.upstashUrl, token: config.upstashToken });
 const chatService = new ChatService({
   invitationStore,
@@ -104,6 +110,17 @@ const themeService = new ThemeService({
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
+
+    if (url.pathname === '/api/lottery') {
+      response.setHeader('cache-control','no-store');
+      if(request.method!=='POST')return sendJson(response,405,{error:'method_not_allowed'});
+      const raw=await readBody(request);
+      if(!verifyLotteryRequest(lotterySecret,request.headers,raw))return sendJson(response,401,{error:'lottery_auth_required'});
+      if(!invitationStore.configured)return sendJson(response,503,{error:'lottery_storage_required'});
+      try{return sendJson(response,200,await lotteryBridge.handle(JSON.parse(raw)));}
+      catch(error){const known=['wrong_channel','invalid_round','invalid_round_window','round_conflict','round_not_registered','signup_still_open','invalid_pairs','invalid_action','already_booked','lottery_already_committed'];
+        return sendJson(response,known.includes(error.code)?409:503,{error:known.includes(error.code)?error.code:'lottery_unavailable'});}
+    }
 
     if (request.method === "GET" && url.pathname === "/api/health") {
       // `storage` says whether Upstash is wired up, so wardrobe and shop
@@ -633,6 +650,7 @@ async function respondToInvitation(id,status,responder) {
     await persistInvitationSnapshots(activeInvitations().map(i=>i.inviterId));
   }
   presenceHub.broadcast({type:'invitations-changed'});
+  if(status==='accepted'&&lotterySecret)void lotteryBridge.notify().catch(()=>console.error('Pair thread notification will retry on the next Lottery tick'));
   return getInvitation(id);
 }
 

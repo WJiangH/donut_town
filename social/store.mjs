@@ -9,7 +9,38 @@ local target=nil
 for _,snap in ipairs(data.snapshots) do
  for _,inv in ipairs(snap.invitations) do if inv.id==input.id then target=inv end end
 end
-if action=='add' then
+if action=='lottery' then
+ data.lotteries=data.lotteries or {}
+ local prior=data.lotteries[input.messageTs]
+ if prior then
+  if prior.signature~=input.signature then return redis.error_reply('lottery_already_committed') end
+  return cjson.encode({snapshots=data.snapshots,changed=false})
+ end
+ local selected={}
+ for _,pair in ipairs(input.pairs) do selected[pair.inviterId]=true;selected[pair.inviteeId]=true end
+ for _,snap in ipairs(data.snapshots) do for _,inv in ipairs(snap.invitations) do
+  if inv.status=='accepted' and (selected[inv.inviterId] or selected[inv.inviteeId] or inv.inviterId==input.leftover or inv.inviteeId==input.leftover) then return redis.error_reply('already_booked') end
+ end end
+ -- Validate and encode every wallet before writing any; Lua errors do not roll back Redis writes.
+ local purses={}
+ for _,pair in ipairs(input.pairs) do
+  for _,key in ipairs(pair.keys) do
+   local raw=redis.call('HGET',KEYS[2],key)
+   local purse=raw and cjson.decode(raw) or {owned={}}
+   purse.credits=(purse.credits or 0)+5
+   table.insert(purses,{key=key,value=cjson.encode(purse)})
+  end
+  local own=nil
+  for _,snap in ipairs(data.snapshots) do if snap.inviterId==pair.inviterId then own=snap end end
+  if not own then own={version=1,roundId=ARGV[2],inviterId=pair.inviterId,invitations={}};table.insert(data.snapshots,own) end
+  table.insert(own.invitations,{id=pair.id,inviterId=pair.inviterId,inviteeId=pair.inviteeId,priority=1,status='accepted',source='lottery',createdAt=ARGV[6],answeredAt=ARGV[6]})
+ end
+ for _,snap in ipairs(data.snapshots) do for _,inv in ipairs(snap.invitations) do
+  if inv.status=='pending' and (selected[inv.inviterId] or selected[inv.inviteeId]) then inv.status='cancelled';inv.answeredAt=ARGV[6] end
+ end end
+ data.lotteries[input.messageTs]={signature=input.signature,pairs=input.members,leftover=input.leftover,at=ARGV[6]}
+ for _,entry in ipairs(purses) do redis.call('HSET',KEYS[2],entry.key,entry.value) end
+elseif action=='add' then
  if target then return cjson.encode(data) end
  local pending=0
  for _,snap in ipairs(data.snapshots) do for _,inv in ipairs(snap.invitations) do
@@ -52,6 +83,7 @@ else
 end
 data.savedAt=ARGV[6]
 local result=cjson.encode(data)
+result=string.gsub(result,'"snapshots":{}','"snapshots":[]')
 redis.call('SET',KEYS[1],result)
 return cjson.encode({snapshots=data.snapshots,changed=true})
 `;

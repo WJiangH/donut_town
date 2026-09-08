@@ -14,14 +14,14 @@ async function port(){const s=createServer();await new Promise(r=>s.listen(0,'12
 test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and isolate DMs',{skip:!redis,timeout:30000},async()=>{
  assert(['127.0.0.1','localhost'].includes(new URL(redis).hostname));
  const namespace='C'+randomUUID().replaceAll('-','').toUpperCase(),secret=randomUUID(),dir=await mkdtemp(join(tmpdir(),'town-social-test-'));
- const loader=join(dir,'fixture.mjs'),cardLog=join(dir,'cards.jsonl');
+ const loader=join(dir,'fixture.mjs'),cardLog=join(dir,'cards.jsonl'),threadLog=join(dir,'threads.jsonl');
  await writeFile(loader,`import {appendFileSync} from 'node:fs';const original=fetch;globalThis.fetch=async(url,options={})=>{
   if(String(url).startsWith('https://slack.com/api/')){
    const method=String(url).split('/').pop();let data;
    if(method==='conversations.members')data={ok:true,members:['U1','U2','U3','U4','U5','U6','U7'],response_metadata:{next_cursor:''}};
    else if(method==='users.info'){const id=options.body.get('user');data={ok:true,user:{id,real_name:'Test neighbor '+id,profile:{}}};}
    else if(method==='conversations.open')data={ok:true,channel:{id:'DTEST'}};
-   else if(method==='chat.postMessage'||method==='chat.update'){data={ok:true,ts:String(Date.now())};if(method==='chat.update')appendFileSync(${JSON.stringify(cardLog)},JSON.stringify(JSON.parse(options.body.get('blocks')))+'\\n');}
+   else if(method==='chat.postMessage'||method==='chat.update'){data={ok:true,ts:String(Date.now())};if(method==='chat.update')appendFileSync(${JSON.stringify(cardLog)},JSON.stringify(JSON.parse(options.body.get('blocks')))+'\\n');if(options.body.get('thread_ts'))appendFileSync(${JSON.stringify(threadLog)},JSON.stringify(Object.fromEntries(options.body))+'\\n');}
    else throw Error('Unexpected Slack method');
    return Response.json(data);
   }
@@ -33,7 +33,7 @@ test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and 
   const urls=[];
   for(let i=0;i<2;i++){
    const p=await port(),base='http://127.0.0.1:'+p;
-   const child=spawn(process.execPath,['--import',loader,new URL('server.mjs',root).pathname],{cwd:root,env:{...process.env,PORT:String(p),HOST:'127.0.0.1',PUBLIC_BASE_URL:base,RENDER:'',STAGING_PASSWORD:'',SLACK_BOT_TOKEN:'local-test',SLACK_SIGNING_SECRET:secret,SLACK_CHANNEL_ID:namespace,SLACK_ALLOW_SEND:'true',SLACK_CLIENT_ID:'',SLACK_CLIENT_SECRET:'',SLACK_LEDGER_CHANNEL_ID:'',UPSTASH_REDIS_REST_URL:redis,UPSTASH_REDIS_REST_TOKEN:'local-test',PROFILE_API_URL:'',PROFILE_API_SECRET:''},stdio:'ignore'});
+   const child=spawn(process.execPath,['--import',loader,new URL('server.mjs',root).pathname],{cwd:root,env:{...process.env,PORT:String(p),HOST:'127.0.0.1',PUBLIC_BASE_URL:base,RENDER:'',STAGING_PASSWORD:'',SLACK_BOT_TOKEN:'local-test',SLACK_SIGNING_SECRET:secret,LOTTERY_SYNC_SECRET:secret,SLACK_CHANNEL_ID:namespace,SLACK_ALLOW_SEND:'true',SLACK_CLIENT_ID:'',SLACK_CLIENT_SECRET:'',SLACK_LEDGER_CHANNEL_ID:'',UPSTASH_REDIS_REST_URL:redis,UPSTASH_REDIS_REST_TOKEN:'local-test',PROFILE_API_URL:'',PROFILE_API_SECRET:''},stdio:'ignore'});
    children.push(child);urls.push(base);
    let ready=false;for(let attempt=0;attempt<80;attempt++){try{ready=(await fetch(base+'/api/health')).ok;}catch{}if(ready)break;await delay(50);}assert(ready,'fixture server started');
   }
@@ -46,6 +46,16 @@ test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and 
    const r=await fetch(urls[worker]+path,{headers:{cookie:cookies[user],'content-type':'application/json',...extra},...(body?{method:'POST',body:JSON.stringify(body)}:{})});
    return {status:r.status,data:await r.json()};
   }
+  const threadTs=String(Math.floor(Date.now()/1000)-60)+'.000001';
+  async function lottery(action,extra={},worker=0){
+    const body=JSON.stringify({action,channelId:namespace,messageTs:threadTs,...extra}),timestamp=String(Math.floor(Date.now()/1000));
+    const signature=createHmac('sha256',secret).update(timestamp+'.'+body).digest('hex');
+    const response=await fetch(urls[worker]+'/api/lottery',{method:'POST',headers:{'content-type':'application/json','x-town-timestamp':timestamp,'x-town-signature':signature},body});
+    return {status:response.status,data:await response.json()};
+  }
+  assert.equal((await api(1,'/api/lottery',{action:'status'})).status,401,'a member session cannot act as the scheduler');
+  assert.equal((await lottery('status',{channelId:'COTHER'})).status,409);
+  assert.equal((await lottery('register',{closesAt:new Date(Date.now()-30000).toISOString()})).status,200);
   const roster=(await api(1,'/api/slack/members')).data.members,keys=Object.fromEntries(roster.map(m=>[Number(m.id.slice(1)),m.characterKey]));
   const balance=async user=>(await api(user,'/api/shop')).data.wallet.balance;
   const initial=await balance(1);
@@ -57,6 +67,8 @@ test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and 
   assert.equal(accepted.status,200,JSON.stringify(accepted));
   let firstState;for(let i=0;i<30;i++){firstState=(await api(1,'/api/slack/invitation-states')).data.states.U1;if(firstState.status==='booked')break;await delay(50);}
   assert.equal(firstState.partnerId,'U2');
+  assert.deepEqual((await lottery('pool',{},1)).data.bookedIds.sort(),['U1','U2']);
+  assert.equal((await lottery('commit',{pairs:[['U1','U3'],['U4','U5']]},1)).data.error,'already_booked');
   assert.equal(await balance(1),initial+5);assert.equal(await balance(2),initial+5);
   async function slackAccept(id,user){
    const payload={type:'block_actions',user:{id:user},channel:{id:'DTEST'},actions:[{action_id:'donut_accept',value:id}]};
@@ -69,6 +81,10 @@ test('HTTP: two workers share Town/Slack acceptance, protect visiting homes and 
   assert.equal((await slackAccept(second.id,'U4')).status,200);
   let state;for(let i=0;i<40;i++){state=(await api(4,'/api/slack/invitation-states',null,1)).data.states.U4;if(state.status==='booked')break;await delay(50);}
   assert.equal(state.status,'booked');assert.equal(await balance(4),initial+5);assert.equal(await balance(2),initial+5);
+  let notices=[];
+  for(let i=0;i<40;i++){try{notices=(await readFile(threadLog,'utf8')).trim().split('\n').map(JSON.parse);}catch{}if(notices.length===2)break;await delay(50);}
+  assert.equal(notices.length,2,'Town acceptance and Slack acceptance each announce once');
+  for(const notice of notices){assert.equal(notice.channel,namespace);assert.equal(notice.thread_ts,threadTs);}
   const one=(await api(5,'/api/slack/invitations',{inviteeId:'U6'})).data.invitation;
   const two=(await api(5,'/api/slack/invitations',{inviteeId:'U7'},1)).data.invitation;
   const race=await Promise.all([api(6,'/api/slack/invitations/respond',{id:one.id,status:'accepted'}),api(7,'/api/slack/invitations/respond',{id:two.id,status:'accepted'},1)]);
