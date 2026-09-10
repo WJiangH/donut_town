@@ -480,10 +480,11 @@ function paintFactoryBaker(pin, person, position, moving=false) {
     const sprite=pin.querySelector('.personal-character'),ch=person.character;
     paintPersonalCharacter(sprite,ch,'down',1);
     // Crop the existing neutral front frame at its reviewed collar and fit it
-    // onto the shared workwear. No new face, saved appearance, or per-user atlas.
+    // onto the shared workwear, overlapping its open collar so the neck connects.
+    // No new face, saved appearance, or per-user atlas.
     const [x,y,w,h]=ch.frames[1],scale=32/(h*window.DonutFactory.headFraction(ch));
     const art=sprite.querySelector('.personal-art');
-    art.style.width=`${w*scale}px`;art.style.height='32px';art.style.top='12px';art.style.bottom='auto';
+    art.style.width=`${w*scale}px`;art.style.height='32px';art.style.top='19px';art.style.bottom='auto';
     art.style.backgroundSize=`${ch.imageWidth*scale}px ${ch.imageHeight*scale}px`;
     art.style.backgroundPosition=`${-x*scale}px ${-y*scale}px`;
   }
