@@ -916,17 +916,17 @@ body.town-sidebar-layout .resident-drawer { right:0;top:72px;bottom:72px;width:v
 body.town-sidebar-layout .resident-drawer { background:var(--rail-paper);border:0;border-left:2px solid #8b9a76;box-shadow:none; }
 #mapWorld:focus { outline:none; }
 
-/* Both factories share one complete room and twelve reserved standing spots. */
+/* Both factories share one complete room with 12 counters and 24 standing spots. */
 #factoryView { background:#081e26; }
 #factoryView .map-wrap { container-type:size;touch-action:none; }
-#factoryWorld { width:min(100cqw,calc(100cqh * 1672 / 941));aspect-ratio:1672 / 941;left:50%;top:50%;max-width:none;transform:translate(-50%,-50%); }
+#factoryWorld { width:min(100cqw,calc(100cqh * 3 / 2));aspect-ratio:3 / 2;left:50%;top:50%;max-width:none;transform:translate(-50%,-50%); }
 #factoryView .room-toolbar { z-index:120;flex-wrap:wrap; }
 #factoryView select,#factoryPaging button { padding:8px;background:#f5f3e7;color:#193b2d;border:1px solid #9cad95;font:inherit;font-size:11px; }
 #factoryPaging { display:flex;align-items:center;gap:8px;font-size:11px; }
 #factoryPaging[hidden] { display:none; }
 #factoryWorld .pet-pin { transform:scale(var(--pod-figure,1));transform-origin:0 0; }
 #factoryWorld .resident-pin .resident-label { display:none; }
-.factory-pair-label { position:absolute;transform:translateX(-50%);width:19%;text-align:center;font-size:clamp(6px,1cqw,13px);font-weight:bold;color:#3b3329;pointer-events:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.factory-pair-label { position:absolute;transform:translateX(-50%);width:12%;text-align:center;font-size:clamp(4px,.65cqw,10px);font-weight:bold;color:#3b3329;pointer-events:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 @media(max-width:760px){#factoryView .room-toolbar { top:8px;left:8px;gap:6px; }#factoryView .room-toolbar>div:first-of-type { display:none; }}
 
 @media(max-width:760px){.building-entrance{font-size:10px;padding:6px}.building-entrance .building-prefix{display:none}}
@@ -1030,3 +1030,27 @@ body.town-sidebar-layout .resident-drawer { background:var(--rail-paper);border:
 .messages-panel .member-presence { font-size:11px;margin:0 0 10px; }
 .online-badge,.resident-pin.member-online:not(.remote-player) .roster-online-dot { left:2px;right:auto;top:4px; }
 .self-online-dot { display:none; }.presence-connected .player-pin .self-online-dot { display:block;position:absolute;left:2px;top:4px;width:10px;height:10px;border:2px solid var(--surface-solid);border-radius:50%;background:#27bd6c;box-shadow:0 0 0 2px var(--ink); }
+
+/* Workwear is a shared eight-frame atlas; every baker keeps their own head.
+   It is enabled only after the atlas loads, so failed art keeps a full resident. */
+#factoryForeground { position:absolute;inset:0;pointer-events:none; }
+.factory-counter-front { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated;filter:saturate(.88) brightness(.98); }
+#factoryWorld .residents-layer,#factoryWorld .live-players-layer { z-index:auto; }
+#factoryWorld .resident-pin:is(:hover,:focus-visible) { z-index:var(--feet-depth) !important; }
+#factoryWorld .factory-baking .pixel-person { transform:none;transition:none; }
+.factory-baking .personal-art { clip-path:none; }
+.factory-baking .pixel-person:not(.personal-character),.factory-baking .player-character:not(.personal-character) { clip-path:inset(0 0 54% 0); }
+.factory-baking-torso { display:none;position:absolute;left:50%;top:37px;width:52px;height:52px;transform:translateX(-50%);background-image:url('assets/factory-baking-v1.png');background-size:400% 200%;image-rendering:pixelated;pointer-events:none;animation:factory-bake 1.4s steps(4) infinite; }
+.factory-baking .factory-baking-torso { display:block; }
+.factory-baking-torso.icing { background-position-y:100%; }
+.factory-baking::before { display:none; }
+#factoryWorld .factory-baking .resident-label { display:none; }
+#factoryWorld .factory-baking .resident-state { top:10px; }
+@keyframes factory-bake { from { background-position-x:0%; } to { background-position-x:133.333333%; } }
+@media(prefers-reduced-motion:reduce){.factory-baking-torso { animation:none !important;background-position-x:0%; }}
+
+.factory-baking-torso { z-index:2; }
+#factoryWorld .factory-baking .personal-character { z-index:3; }
+.factory-pair-label { z-index:850;background:rgba(250,234,202,.94);border:1px solid #aa8756;border-radius:3px;line-height:1.25;padding:2px;white-space:normal; }
+
+@media(max-width:760px){#factoryWorld .factory-pair-label { padding:1px 0;white-space:nowrap;text-overflow:ellipsis; }}

@@ -455,19 +455,57 @@ function renderChemPod() {
   renderLivePlayers(0);
 }
 
+let factoryBakingReady=false;
+const factoryBakingAtlas=new Image();
+factoryBakingAtlas.onload=()=>{factoryBakingReady=true;if(currentScene==='donutFactory')renderFactory();};
+function paintFactoryBaker(pin, person, position, moving=false) {
+  const spot=currentScene==='donutFactory' && window.DonutFactory.stationFor(factoryPairs,person.slackId||person.id,factoryPage,position,moving);
+  const baking=Boolean(spot && factoryBakingReady);
+  const wasBaking=pin.classList.contains('factory-baking');
+  pin.classList.toggle('factory-baking',baking);
+  if(!baking){
+    pin.style.setProperty('--feet-depth',String(Math.round(position.y*10)));
+    if(wasBaking){const sprite=pin.querySelector('.personal-character');if(sprite){delete sprite.dataset.pose;const art=sprite.querySelector('.personal-art');art.style.removeProperty('top');art.style.removeProperty('bottom');}}
+    return false;
+  }
+  let torso=pin.querySelector('.factory-baking-torso');
+  if(!torso){torso=document.createElement('span');torso.className='factory-baking-torso';torso.setAttribute('aria-hidden','true');pin.append(torso);}
+  torso.classList.toggle('icing',spot.side===1);
+  const phase=characterPhase(person.slackId||person.id);
+  torso.style.animationDelay=`-${phase.offset}ms`;
+  torso.style.animationDuration=`${Math.round(1400*phase.tempo)}ms`;
+  const depth=String(Math.round(spot.station.bottom*10)+1);
+  pin.style.zIndex=depth;pin.style.setProperty('--feet-depth',depth);
+  if(person.character){
+    const sprite=pin.querySelector('.personal-character'),ch=person.character;
+    paintPersonalCharacter(sprite,ch,'down',1);
+    // Crop the existing neutral front frame at its reviewed collar and fit it
+    // onto the shared workwear. No new face, saved appearance, or per-user atlas.
+    const [x,y,w,h]=ch.frames[1],scale=32/(h*window.DonutFactory.headFraction(ch));
+    const art=sprite.querySelector('.personal-art');
+    art.style.width=`${w*scale}px`;art.style.height='32px';art.style.top='12px';art.style.bottom='auto';
+    art.style.backgroundSize=`${ch.imageWidth*scale}px ${ch.imageHeight*scale}px`;
+    art.style.backgroundPosition=`${-x*scale}px ${-y*scale}px`;
+  }
+  return true;
+}
+
 function renderFactory() {
+  if(!factoryBakingAtlas.src)factoryBakingAtlas.src='/assets/factory-baking-v1.png';
   const roomLayer=document.querySelector('#factoryResidentsLayer');
+  const foreground=document.querySelector('#factoryForeground');
+  if(!foreground.children.length)foreground.innerHTML=window.DonutFactory.stations.map(s=>`<img class="factory-counter-front" src="assets/donut-factory-interior-v2.webp" alt="" style="z-index:${Math.round(s.bottom*10)};clip-path:polygon(${s.x-6.6}% ${s.top}%,${s.x+6.6}% ${s.top}%,${s.x+6.6}% ${s.bottom}%,${s.x-6.6}% ${s.bottom}%)">`).join('');
   const pairs=factoryPairs.filter(pair=>pair.page===factoryPage);
   const people=pairs.flatMap(pair=>pair.members).filter(person=>!person.isPlayer && !(remotePlayers.get(person.slackId)?.scene==='donutFactory' && remotePlayers.get(person.slackId)?.workshop===factoryPage));
   const markup=people.map(person=>`<button class="resident-pin booked ${onlineRoster.status(person.slackId).state==='online'?'member-online':''}" data-id="${person.id}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y*10)}" aria-label="Open ${escapeHtml(person.name)}'s profile">${personMarkup(person)}</button>`).join('')+
-    pairs.map(pair=>`<div class="factory-pair-label" style="left:${pair.station.x}%;top:${pair.station.y+4}%">${pair.members.map(p=>escapeHtml(p.displayName||p.name)).join(' + ')}</div>`).join('')+
+    pairs.map(pair=>`<div class="factory-pair-label" style="left:${pair.station.x}%;top:${pair.station.bottom-3.3}%">${pair.members.map(p=>escapeHtml(p.displayName||p.name)).join(' + ')}</div>`).join('')+
     `<div class="player-pin ${currentUser?.status||'open'}" id="factoryPlayerPin">${playerMarkup()}</div>`;
   if(markup!==lastFactoryMarkup){
     roomLayer.innerHTML=markup;lastFactoryMarkup=markup;
     roomLayer.querySelectorAll('[data-id]').forEach(pin=>pin.onclick=()=>openResident(Number(pin.dataset.id)));
   }
-  const pages=Math.max(1,Math.ceil(factoryPairs.length/6));
-  document.querySelector('#factoryCount').textContent=`${pairs.length} / 6 pairs this week`;
+  const pages=Math.max(1,Math.ceil(factoryPairs.length/window.DonutFactory.stations.length));
+  document.querySelector('#factoryCount').textContent=`${pairs.length} / ${window.DonutFactory.stations.length} pairs this week`;
   document.querySelector('#factoryChoice').value=String(factoryPage%2);
   const shifts=Math.max(1,Math.ceil((pages-factoryPage%2)/2));
   document.querySelector('#factoryWorkshop').textContent=`Shift ${Math.floor(factoryPage/2)+1} / ${shifts}`;
@@ -475,14 +513,16 @@ function renderFactory() {
   document.querySelector('#factoryNext').disabled=factoryPage+2>=pages;
   document.querySelector('#factoryPaging').hidden=shifts===1;
   document.querySelector('#factoryEmpty').hidden=pairs.length>0;
-  paintResidentCharacters(roomLayer);updatePlayerElement(false);renderLivePlayers(0);
+  paintResidentCharacters(roomLayer);
+  roomLayer.querySelectorAll('.resident-pin[data-id]').forEach(pin=>{const person=residents.find(p=>p.id===Number(pin.dataset.id));if(person)paintFactoryBaker(pin,person,person);});
+  updatePlayerElement(false);renderLivePlayers(0);
 }
 
 function changeFactoryWorkshop(delta) {
-  factoryPage=Math.max(0,Math.min(Math.max(1,Math.ceil(factoryPairs.length/6)-1),factoryPage+delta));
+  factoryPage=Math.max(0,Math.min(Math.max(1,Math.ceil(factoryPairs.length/window.DonutFactory.stations.length)-1),factoryPage+delta));
   Object.assign(player,{x:50,y:88});clickPath=[];pressedKeys.clear();playerAction=null;
   const own=factoryPairs.find(p=>p.page===factoryPage&&p.members.some(m=>m.isPlayer));
-  if(own){Object.assign(player,own.members[0].isPlayer?own.station.left:own.station.right);playerDirection=own.members[0].isPlayer?'right':'left';}
+  if(own){Object.assign(player,own.members[0].isPlayer?own.station.left:own.station.right);playerDirection='down';}
   renderFactory();publishPresence(true,false);
 }
 
@@ -608,6 +648,10 @@ function renderLivePlayers(deltaSeconds) {
     pin.classList.toggle("pending", person.status === "pending");
     pin.classList.toggle("booked", person.status === "booked");
     pin.dataset.direction = remote.direction;
+    if (paintFactoryBaker(pin,person,remote,remote.moving)) {
+      pin.setAttribute("aria-label", `Open ${person.name}'s profile, baking donuts`);
+      continue;
+    }
     if (person.character) {
       const action = !remote.moving && remote.action ? person.character.actions?.[remote.action] : null;
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -739,7 +783,7 @@ function layoutBookedPairs() {
   });
 
   factoryPairs = window.DonutFactory.pairsFor([...residents, ...(currentUser ? [{...currentUser,isPlayer:true}] : [])]);
-  const lastPage=Math.max(1,Math.ceil(factoryPairs.length/6)-1);
+  const lastPage=Math.max(1,Math.ceil(factoryPairs.length/window.DonutFactory.stations.length)-1);
   if(factoryPage>lastPage)factoryPage=Math.max(factoryPage%2,lastPage-(lastPage%2!==factoryPage%2?1:0));
   for (const pair of factoryPairs) pair.members.forEach((person,index)=>{
     const spot=index===0?pair.station.left:pair.station.right;
@@ -749,7 +793,7 @@ function layoutBookedPairs() {
         scenePlayerPositions.donutFactory={...spot};
         if(currentScene==='donutFactory'){factoryPage=pair.page;Object.assign(player,spot);clickPath=[];}
       }
-    } else Object.assign(person,{...spot,scene:'donutFactory',factoryPage:pair.page,activity:'donut-station',pairFacing:index===0?'right':'left'});
+    } else Object.assign(person,{...spot,scene:'donutFactory',factoryPage:pair.page,activity:'donut-station',pairFacing:'down'});
   });
   document.querySelector('#neighborSummary').textContent=`${residents.length+(currentUser?1:0)} Slack members · ${factoryPairs.length} matched pairs · ${residents.filter(p=>p.scene==='chemPod').length} in Chem Pod`;
   currentPairId = currentUser?.pairId || null;
@@ -925,7 +969,7 @@ const SCENES = {
   donutFactory: {
     title:'Donut Factory',view:'#factoryView',residents:'#factoryResidentsLayer',
     players:'#factoryLivePlayersLayer',pets:'#factoryPetsLayer',pin:'#factoryPlayerPin',
-    facing:'up',bounds:{minX:10,maxX:90,minY:35,maxY:93},collision:()=>window.FactoryCollision
+    facing:'up',bounds:{minX:11.5,maxX:89,minY:30,maxY:91},collision:()=>window.FactoryCollision
   },
   donutShop: {
     title: "Donut Shop",
@@ -1028,6 +1072,7 @@ function updatePlayerElement(isMoving) {
   pin.style.zIndex = String(Math.round(player.y * 10));
   pin.classList.toggle("walking", isMoving);
   const sprite = pin.querySelector(".player-character");
+  if (currentUser && paintFactoryBaker(pin,currentUser,player,isMoving)) return;
   if (currentUser?.character) {
     const action = !isMoving && playerAction ? currentUser.character.actions?.[playerAction] : null;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1062,7 +1107,7 @@ function setScene(nextScene) {
   }
   Object.assign(player, scenePlayerPositions[currentScene]);
   playerDirection = scene().facing;
-  if(currentScene==='donutFactory'){const own=factoryPairs.find(p=>p.page===factoryPage&&p.members.some(m=>m.isPlayer));if(own)playerDirection=own.members[0].isPlayer?'right':'left';}
+  if(currentScene==='donutFactory'){const own=factoryPairs.find(p=>p.page===factoryPage&&p.members.some(m=>m.isPlayer));if(own)playerDirection='down';}
   playerFrame = 1;
   playerAction = null;
   clickPath = [];
@@ -1931,7 +1976,7 @@ new ResizeObserver(([entry]) => {
   if (entry.contentRect.width > 0) entry.target.style.setProperty("--pod-figure", entry.contentRect.width / 1750);
 }).observe(document.querySelector("#chemPodWorld"));
 new ResizeObserver(([entry])=>{
-  if(entry.contentRect.width>0)entry.target.style.setProperty('--pod-figure',entry.contentRect.width/2100);
+  if(entry.contentRect.width>0)entry.target.style.setProperty('--pod-figure',entry.contentRect.width/1500);
 }).observe(document.querySelector('#factoryWorld'));
 
 window.addEventListener("resize", () => {

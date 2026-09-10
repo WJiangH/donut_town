@@ -8,8 +8,8 @@ for(const file of ['donut-factory.js','town-collision.js'])vm.runInContext(readF
 const {DonutFactory:factory,FactoryCollision:collision}=ctx.window;
 const sample=n=>Array.from({length:n},(_,i)=>[{id:`a${i}`,partnerId:`b${i}`},{id:`b${i}`,partnerId:`a${i}`}].map(p=>({...p,pairId:`pair${i}`,status:'booked'}))).flat();
 
-test('two factories hold six whole pairs each; overflow uses shifts without duplicate seats',()=>{
- for(const count of [0,1,6,7,12,13,32]){
+test('two factories hold twelve whole pairs each; overflow uses shifts without duplicate seats',()=>{
+ for(const count of [0,1,12,13,24,25,32]){
   const pairs=factory.pairsFor(sample(count));
   assert.equal(pairs.length,count);
   const seats=new Set();
@@ -18,7 +18,7 @@ test('two factories hold six whole pairs each; overflow uses shifts without dupl
    for(const spot of [pair.station.left,pair.station.right])seats.add(`${pair.page}:${spot.x}:${spot.y}`);
   }
   assert.equal(seats.size,count*2);
-  for(const page of new Set(pairs.map(p=>p.page)))assert(pairs.filter(p=>p.page===page).length<=6);
+  for(const page of new Set(pairs.map(p=>p.page)))assert(pairs.filter(p=>p.page===page).length<=12);
   assert.deepEqual(factory.pairsFor(sample(count).reverse()).map(p=>p.pairId),pairs.map(p=>p.pairId));
  }
 });
@@ -30,7 +30,7 @@ test('pending, partial, self, duplicated and nonreciprocal matches do not reserv
  assert.equal(factory.pairsFor(residents).length,1,'identity comes from Slack, not numeric rendering IDs');
 });
 
-test('all twelve standing spots are reachable from the door without crossing any table',()=>{
+test('all twenty-four standing spots are reachable from the door without crossing any table',()=>{
  assert(collision.ready);
  const start={x:50,y:88};
  for(const goal of factory.stations.flatMap(s=>[s.left,s.right])){
@@ -43,7 +43,7 @@ test('all twelve standing spots are reachable from the door without crossing any
    previous=p;
   }
  }
- for(const table of factory.stations)assert(!collision.isWalkable(table.x,table.y-5));
+ for(const table of factory.stations)assert(!collision.isWalkable(table.x,table.y+3));
  for(const [x,y] of [[50,22],[7,53],[93,54]])assert(!collision.isWalkable(x,y));
 });
 
@@ -91,4 +91,23 @@ test('a roster change moves a reserved player with their pair, but never telepor
  vm.runInContext('layoutBookedPairs()',scope);assert.notEqual(scope.player.x,before.x);
  Object.assign(scope.player,{x:50,y:88});residents[0].status=residents[1].status='booked';
  vm.runInContext('layoutBookedPairs()',scope);assert.equal(scope.player.x,50);assert.equal(scope.player.y,88);
+});
+
+
+test('twelve distinct stations keep partners side by side, and baking follows their own reserved spot',()=>{
+ assert.equal(factory.stations.length,12);
+ assert.equal(new Set(factory.stations.map(s=>s.variant)).size,12);
+ const pairs=factory.pairsFor(sample(25));
+ for(const pair of pairs){
+  assert.equal(pair.station.left.y,pair.station.right.y);
+  assert(pair.station.right.x-pair.station.left.x<6);
+  for(const [side,spot] of [pair.station.left,pair.station.right].entries()){
+   const id=pair.members[side].id;
+   assert.equal(factory.stationFor(pairs,id,pair.page,spot).side,side);
+   assert.equal(factory.stationFor(pairs,id,pair.page,spot,true),null);
+   assert.equal(factory.stationFor(pairs,id,pair.page+1,spot),null);
+   assert.equal(factory.stationFor(pairs,id,pair.page,{x:50,y:88}),null);
+  }
+ }
+ assert.equal(factory.stationFor(pairs,'visitor',0,pairs[0].station.left),null);
 });
