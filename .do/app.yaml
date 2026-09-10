@@ -1,0 +1,80 @@
+# App Platform reference spec. Replace github.repo and fill secrets in the
+# DigitalOcean dashboard before deployment. Never commit production values.
+# Existing deployment: reuse the same Slack app, signing secret and Upstash DB.
+name: donut-town
+services:
+  - name: web
+    environment_slug: node-js
+    github:
+      repo: your-account/your-repo
+      branch: main
+      deploy_on_push: true
+    source_dir: /
+    build_command: npm ci
+    run_command: npm start
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    instance_count: 1
+    http_port: 8080
+    health_check:
+      http_path: /api/health
+    envs:
+      - key: NODE_ENV
+        scope: RUN_TIME
+        value: production
+      - key: HOST
+        scope: RUN_TIME
+        value: 0.0.0.0
+      - key: PORT
+        scope: RUN_TIME
+        value: "8080"
+      - key: PUBLIC_BASE_URL
+        scope: RUN_TIME
+        value: ${APP_URL}
+      - key: SLACK_ALLOW_SEND
+        scope: RUN_TIME
+        value: "false"
+      - key: STAGING_PASSWORD
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: SLACK_BOT_TOKEN
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: SLACK_SIGNING_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: SLACK_CLIENT_ID
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: SLACK_CLIENT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: SLACK_CHANNEL_ID
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: UPSTASH_REDIS_REST_URL
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: UPSTASH_REDIS_REST_TOKEN
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+      - key: LOTTERY_SYNC_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+# Add existing PROFILE_API_URL, PROFILE_API_SECRET, TOWN_ADMIN_KEYS,
+# SLACK_LEDGER_CHANNEL_ID and SESSION_DAYS if configured on the old service.
+ingress:
+  rules:
+    - component:
+        name: web
+      match:
+        path:
+          prefix: /

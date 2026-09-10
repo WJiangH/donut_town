@@ -32,6 +32,8 @@ import { normalizeProfile, SheetProfileStore } from "./profile-store.mjs";
 const root = fileURLToPath(new URL(".", import.meta.url));
 await loadLocalEnv(join(root, ".env.local"));
 
+const production = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
+
 const config = {
   botToken: process.env.SLACK_BOT_TOKEN || "",
   signingSecret: process.env.SLACK_SIGNING_SECRET || "",
@@ -47,16 +49,24 @@ const config = {
   profileApiSecret: process.env.PROFILE_API_SECRET || "",
   allowSend: process.env.SLACK_ALLOW_SEND === "true",
   port: Number(process.env.PORT || 4173),
-  host: process.env.HOST || (process.env.RENDER ? "0.0.0.0" : "127.0.0.1")
+  host: process.env.HOST || (production ? "0.0.0.0" : "127.0.0.1")
 };
 if (Boolean(config.upstashUrl) !== Boolean(config.upstashToken)) {
   throw new Error("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be configured together.");
 }
-if (process.env.RENDER && !config.stagingPassword) {
-  throw new Error("STAGING_PASSWORD is required on Render so Slack member data is not public.");
+if (production && !config.stagingPassword) {
+  throw new Error("STAGING_PASSWORD is required in production so Slack member data is not public.");
 }
-if (process.env.RENDER && (!config.botToken || !config.signingSecret || !config.channelId)) {
-  throw new Error("SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, and SLACK_CHANNEL_ID are required on Render.");
+if (production && (!config.botToken || !config.signingSecret || !config.channelId)) {
+  throw new Error("SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, and SLACK_CHANNEL_ID are required in production.");
+}
+if (production) {
+  try {
+    const origin = new URL(getPublicBaseUrl());
+    if (origin.protocol !== 'https:' || origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash) throw new Error();
+  } catch {
+    throw new Error('Production requires PUBLIC_BASE_URL as an HTTPS origin, or a Render-assigned hostname.');
+  }
 }
 const slack = config.botToken ? new SlackClient(config.botToken) : null;
 const profileStore = new SheetProfileStore({ url: config.profileApiUrl, secret: config.profileApiSecret });

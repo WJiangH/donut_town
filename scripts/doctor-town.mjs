@@ -82,7 +82,7 @@ async function main() {
   try { local = await readFile(new URL('../.env.local', import.meta.url), 'utf8'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
   const env = parseEnv(local, process.env);
   const results = checkConfig(env);
-  if (values.url && env.PUBLIC_BASE_URL && townOrigin(env.PUBLIC_BASE_URL) !== townOrigin(values.url)) results.push({ ok: false, label: 'PUBLIC_BASE_URL', detail: 'Does not match --url; remove a stale value on Render or correct it.' });
+  if (values.url && env.PUBLIC_BASE_URL && townOrigin(env.PUBLIC_BASE_URL) !== townOrigin(values.url)) results.push({ ok: false, label: 'PUBLIC_BASE_URL', detail: 'Does not match --url; correct the stale local/deployment value.' });
   for (const result of results) console.log(`${result.ok ? 'PASS' : 'FAIL'} ${result.label}: ${result.detail}`);
   if (values.live && results.every(r => r.ok)) {
     const live = await checkLive(env, values.url || env.PUBLIC_BASE_URL);

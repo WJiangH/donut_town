@@ -43,6 +43,10 @@ Use a dedicated database per deployment. Wardrobe, shop and Home use shared
 key names; pointing another town at the same database is not a supported
 isolation boundary. Backups and retention are your responsibility.
 
+For an existing Town moving to DigitalOcean App Platform, use the
+[App Platform migration guide](deploy-digitalocean.md). It preserves the Slack app
+and existing Upstash data.
+
 ## 3. Deploy your fork on Render
 
 In [Render](https://dashboard.render.com), choose **New → Blueprint**, connect
