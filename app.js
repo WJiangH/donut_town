@@ -334,10 +334,15 @@ function paintResidentCharacters(container) {
 }
 
 function setCharacterPortrait(element, person) {
-  if (!person?.character) { setSlackAvatar(element, person); return; }
-  element.classList.remove("has-photo");
+  if (!person?.character) {
+    const atlasIndex = person.spriteIndex ?? ((person.id - 1) % 12);
+    const spriteX = [0, 33.333, 66.667, 100][atlasIndex % 4];
+    const spriteY = [0, 50, 100][Math.floor(atlasIndex / 4)];
+    element.innerHTML = `<div class="pixel-person" style="--sprite-x:${spriteX}%;--sprite-y:${spriteY}%"></div>`;
+    return;
+  }
   element.innerHTML = personalCharacterMarkup(person.character, "portrait-character");
-  paintPersonalCharacter(element.firstElementChild, person.character);
+  paintPersonalCharacter(element.firstElementChild, person.character, "down", 1);
 }
 
 function personMarkup(person, compact = false) {
@@ -1263,6 +1268,7 @@ function openResident(id) {
     : `<strong id="residentDonuts">${escapeHtml(selectedResident.donuts)}</strong> successful pairings`;
   document.querySelector("#connectionNote").textContent = "Profile details are synced from Slack.";
   setSlackAvatar(document.querySelector("#drawerPortrait"), selectedResident);
+  setCharacterPortrait(document.querySelector("#drawerCharacter"), selectedResident);
   const statusLabel = selectedResident.status === "open" ? "Open to invitations" : selectedResident.status === "pending" ? "Invitation pending" : "Booked this week";
   document.querySelector("#drawerStatus").textContent = statusLabel;
   paintPresence(document.querySelector("#residentPresence"),onlineRoster.status(selectedResident.slackId));
