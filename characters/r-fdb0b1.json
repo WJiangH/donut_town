@@ -1,0 +1,65 @@
+{
+  "url": "/assets/residents/r-fdb0b1/walk-v1.png",
+  "imageWidth": 1224,
+  "imageHeight": 1284,
+  "frameHeight": 413,
+  "frames": [
+    [
+      124,
+      16,
+      202,
+      408
+    ],
+    [
+      511,
+      16,
+      202,
+      407
+    ],
+    [
+      897,
+      15,
+      201,
+      408
+    ],
+    [
+      128,
+      440,
+      193,
+      383
+    ],
+    [
+      531,
+      438,
+      156,
+      387
+    ],
+    [
+      906,
+      440,
+      198,
+      385
+    ],
+    [
+      122,
+      841,
+      204,
+      409
+    ],
+    [
+      514,
+      840,
+      189,
+      413
+    ],
+    [
+      897,
+      840,
+      202,
+      410
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride"
+}

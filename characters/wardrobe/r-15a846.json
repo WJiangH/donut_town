@@ -1,0 +1,141 @@
+{
+  "url": "/assets/residents/r-15a846/walk-v1.png",
+  "imageWidth": 1242,
+  "imageHeight": 1263,
+  "frameHeight": 414,
+  "frames": [
+    [
+      124,
+      8,
+      203,
+      410
+    ],
+    [
+      506,
+      8,
+      204,
+      403
+    ],
+    [
+      902,
+      8,
+      204,
+      408
+    ],
+    [
+      111,
+      427,
+      217,
+      390
+    ],
+    [
+      507,
+      428,
+      189,
+      390
+    ],
+    [
+      903,
+      427,
+      228,
+      391
+    ],
+    [
+      123,
+      827,
+      208,
+      414
+    ],
+    [
+      515,
+      828,
+      207,
+      414
+    ],
+    [
+      908,
+      830,
+      207,
+      412
+    ]
+  ],
+  "version": 1,
+  "designApproved": true,
+  "animationStatus": "preview-repeated-stride",
+  "schemaVersion": 1,
+  "rig": "r-15a846-walk-v1",
+  "base": "/assets/residents/r-15a846/wardrobe-v1/base.png",
+  "slots": {
+    "jacket": {
+      "required": true,
+      "default": "original",
+      "items": {
+        "original": "/assets/residents/r-15a846/wardrobe-v1/jacket-original.png",
+        "navy": "/assets/residents/r-15a846/wardrobe-v1/jacket-navy.png",
+        "olive": "/assets/residents/r-15a846/wardrobe-v1/jacket-olive.png"
+      }
+    },
+    "shoes": {
+      "required": true,
+      "default": "original",
+      "items": {
+        "original": "/assets/residents/r-15a846/wardrobe-v1/shoes-original.png",
+        "cream": "/assets/residents/r-15a846/wardrobe-v1/shoes-cream.png",
+        "burgundy": "/assets/residents/r-15a846/wardrobe-v1/shoes-burgundy.png"
+      }
+    },
+    "eyewear": {
+      "required": false,
+      "default": "none",
+      "items": {
+        "none": null,
+        "smoke": "/assets/residents/r-15a846/wardrobe-v1/eyewear-smoke.png"
+      }
+    }
+  },
+  "layerOrder": [
+    "jacket",
+    "shoes",
+    "eyewear"
+  ],
+  "compatibility": "This rig only; same-silhouette apparel variants. Required garment slots cover legacy cutouts.",
+  "ui": {
+    "eyewear": {
+      "label": "Eyewear",
+      "items": {
+        "none": {
+          "label": "None"
+        },
+        "smoke": {
+          "label": "Sunglasses"
+        }
+      }
+    },
+    "jacket": {
+      "label": "Jacket",
+      "items": {
+        "original": {
+          "label": "Blue-gray jacket",
+          "swatch": "#69748c"
+        }
+      }
+    },
+    "shoes": {
+      "label": "Shoes",
+      "items": {
+        "original": {
+          "label": "Black sneakers",
+          "swatch": "#383332"
+        },
+        "cream": {
+          "label": "Cream shoes",
+          "swatch": "#d3cab0"
+        },
+        "burgundy": {
+          "label": "Burgundy shoes",
+          "swatch": "#752f35"
+        }
+      }
+    }
+  }
+}
