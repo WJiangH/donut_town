@@ -114,6 +114,21 @@ def is_sage_shirt(pixel):
     return a >= 128 and g >= r + 3 and g >= b and 100 <= g <= 210 and max(r, g, b) - min(r, g, b) >= 8
 
 
+def is_shirt(pixel, palette, relative_y):
+    if palette == 'sage':
+        return is_sage_shirt(pixel)
+    if not 0.38 <= relative_y <= 0.72 or pixel[3] < 128:
+        return False
+    r, g, b, _ = pixel
+    if palette == 'pink':
+        return r >= 135 and r >= g * 1.45 and r >= b * 1.2
+    if palette == 'cream':
+        return min(r, g, b) >= 150 and max(r, g, b) - min(r, g, b) <= 48
+    if palette == 'blue':
+        return b >= 90 and b >= r * 1.35 and b >= g * 1.1
+    raise ValueError(f'Unsupported shirt palette: {palette}')
+
+
 def is_skin(pixel):
     r, g, b, a = pixel
     return a >= 128 and r > g + 12 and r > b + 18 and g > b - 5
@@ -121,10 +136,11 @@ def is_skin(pixel):
 
 def build_color_band(spec, source):
     width, height = source.size
-    out = ROOT / 'assets' / 'residents' / spec['characterId'] / 'wardrobe-v1'
+    out = ROOT / 'assets' / 'residents' / spec['characterId'] / spec.get('wardrobeVersion', 'wardrobe-v1')
     out.mkdir(parents=True, exist_ok=True)
     manifest = json.loads((ROOT / 'characters' / f"{spec['characterId']}.json").read_text())
     shoe_band = spec['shoes']['band']
+    shirt_palette = spec.get('shirtPalette', 'sage')
     shoe_mask = Image.new('L', source.size)
     jacket_mask = Image.new('L', source.size)
     lens_mask = Image.new('L', source.size)
@@ -142,7 +158,7 @@ def build_color_band(spec, source):
                 continue
             for py in range(max(foot_top, bottom - shoe_band + 1), bottom + 1):
                 pixel = source.getpixel((px, py))
-                if pixel[3] < 128 or is_skin(pixel) or is_sage_shirt(pixel):
+                if pixel[3] < 128 or is_skin(pixel) or is_shirt(pixel, shirt_palette, (py-y)/h):
                     continue
                 shoe_mask.putpixel((px, py), 255)
         for py in range(y, y + h):
@@ -150,7 +166,7 @@ def build_color_band(spec, source):
                 pixel = source.getpixel((px, py))
                 if pixel[3] < 128:
                     continue
-                if is_sage_shirt(pixel):
+                if is_shirt(pixel, shirt_palette, (py-y)/h):
                     jacket_mask.putpixel((px, py), 255)
                 if row < 2:
                     rel = (py - y) / h

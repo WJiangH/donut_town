@@ -1,8 +1,9 @@
 {
-  "characterId": "r-dd03cb",
-  "rig": "r-dd03cb-walk-v2",
-  "source": "assets/residents/r-dd03cb/walk-v2.png",
+  "characterId": "r-5fb2a7",
+  "rig": "r-5fb2a7-walk-v1",
+  "source": "assets/residents/r-5fb2a7/walk-v1.png",
   "split": "color-band",
+  "shirtPalette": "blue",
   "shoes": {
     "mode": "frame-bottom",
     "band": 24
@@ -12,19 +13,19 @@
       "label": "Eyewear",
       "items": {
         "none": {
-          "label": "Shades"
+          "label": "None"
         },
         "smoke": {
-          "label": "Smoke"
+          "label": "Sunglasses"
         }
       }
     },
     "jacket": {
-      "label": "Top",
+      "label": "Shirt",
       "items": {
         "original": {
-          "label": "Sage shirt",
-          "swatch": "#9fb59a"
+          "label": "Blue shirt",
+          "swatch": "#1661bd"
         },
         "navy": {
           "label": "Navy shirt",
@@ -40,20 +41,18 @@
       "label": "Shoes",
       "items": {
         "original": {
-          "label": "White sneakers",
-          "swatch": "#e8e4dc"
+          "label": "Dark shoes",
+          "swatch": "#292627"
         },
         "cream": {
-          "label": "Cream sneakers",
+          "label": "Cream shoes",
           "swatch": "#d3cab0"
         },
         "burgundy": {
-          "label": "Burgundy sneakers",
+          "label": "Burgundy shoes",
           "swatch": "#752f35"
         }
       }
     }
-  },
-  "wardrobeVersion": "wardrobe-v2",
-  "shirtPalette": "sage"
+  }
 }

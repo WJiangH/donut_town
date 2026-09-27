@@ -1,7 +1,7 @@
 {
   "characterId": "r-2c4dd6",
-  "rig": "r-2c4dd6-walk-v1",
-  "source": "assets/residents/r-2c4dd6/walk-v1.png",
+  "rig": "r-2c4dd6-walk-v2",
+  "source": "assets/residents/r-2c4dd6/walk-v2.png",
   "split": "color-band",
   "shoes": {
     "mode": "frame-bottom",
@@ -20,11 +20,11 @@
       }
     },
     "jacket": {
-      "label": "Jacket",
+      "label": "Top",
       "items": {
         "original": {
-          "label": "Light cardigan",
-          "swatch": "#e6ded1"
+          "label": "Pink top",
+          "swatch": "#d62d65"
         }
       }
     },
@@ -45,5 +45,7 @@
         }
       }
     }
-  }
+  },
+  "wardrobeVersion": "wardrobe-v2",
+  "shirtPalette": "pink"
 }

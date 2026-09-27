@@ -28,7 +28,7 @@ test('every selectable layer uses the same atlas geometry as its character rig',
     }
     const urls = [manifest.base, ...Object.values(manifest.slots).flatMap(slot => Object.values(slot.items)).filter(Boolean)];
     for (const url of urls) {
-      assert.match(url, new RegExp(`^/assets/residents/${id}/wardrobe-v1/[a-z-]+\\.png$`));
+      assert.match(url, new RegExp(`^/assets/residents/${id}/wardrobe-v[1-9][0-9]*/[a-z-]+\\.png$`));
       const bytes = readFileSync(new URL('..'+url, import.meta.url));
       assert.equal(bytes.readUInt32BE(16), manifest.imageWidth);
       assert.equal(bytes.readUInt32BE(20), manifest.imageHeight);

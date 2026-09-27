@@ -1,246 +1,65 @@
 {
-  "url": "/assets/residents/r-dd03cb/walk-v1.png",
-  "imageWidth": 1024,
-  "imageHeight": 1024,
-  "frameHeight": 283,
+  "url": "/assets/residents/r-dd03cb/walk-v2.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "frameHeight": 360,
   "frames": [
     [
-      79,
-      51,
-      193,
-      283
+      83,
+      56,
+      254,
+      359
     ],
     [
-      449,
-      51,
+      542,
+      56,
+      166,
+      358
+    ],
+    [
+      920,
+      56,
+      250,
+      360
+    ],
+    [
+      120,
+      469,
+      196,
+      333
+    ],
+    [
+      567,
+      469,
       126,
-      282
+      333
     ],
     [
-      759,
-      51,
-      191,
-      282
+      941,
+      469,
+      230,
+      333
     ],
     [
-      111,
-      392,
-      149,
-      256
+      87,
+      849,
+      269,
+      355
     ],
     [
-      481,
-      392,
-      80,
-      257
+      537,
+      851,
+      176,
+      353
     ],
     [
-      777,
-      393,
-      173,
-      255
-    ],
-    [
-      84,
-      750,
-      206,
-      236
-    ],
-    [
-      447,
-      750,
-      130,
-      237
-    ],
-    [
-      742,
-      750,
-      187,
-      236
+      898,
+      849,
+      254,
+      356
     ]
   ],
-  "version": 1,
-  "designApproved": true,
-  "animationStatus": "preview-repeated-stride",
-  "actions": {
-    "sitChair": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          71,
-          8,
-          137,
-          348
-        ]
-      ],
-      "facing": "down"
-    },
-    "garden": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          329,
-          8,
-          181,
-          348
-        ]
-      ],
-      "facing": "down"
-    },
-    "lookout": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          624,
-          8,
-          152,
-          348
-        ]
-      ],
-      "facing": "right"
-    },
-    "read": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          846,
-          138,
-          268,
-          218
-        ]
-      ],
-      "facing": "down"
-    },
-    "experiment": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          1169,
-          8,
-          181,
-          348
-        ]
-      ],
-      "facing": "up"
-    },
-    "fish": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          1406,
-          18,
-          268,
-          338
-        ]
-      ],
-      "facing": "right"
-    },
-    "coffee": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          42,
-          368,
-          196,
-          348
-        ],
-        [
-          335,
-          368,
-          169,
-          348
-        ]
-      ],
-      "loop": [
-        0,
-        0,
-        0,
-        1,
-        1,
-        0
-      ],
-      "frameMs": 240,
-      "facing": "down"
-    },
-    "sitGrass": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          566,
-          472,
-          268,
-          244
-        ],
-        [
-          846,
-          431,
-          268,
-          285
-        ]
-      ],
-      "loop": [
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0
-      ],
-      "frameMs": 280,
-      "facing": "down"
-    },
-    "dance": {
-      "url": "/assets/residents/r-dd03cb/actions-v2.png",
-      "imageWidth": 1680,
-      "imageHeight": 720,
-      "frameHeight": 348,
-      "frames": [
-        [
-          1174,
-          368,
-          171,
-          348
-        ],
-        [
-          1464,
-          368,
-          151,
-          348
-        ]
-      ],
-      "loop": [
-        0,
-        1,
-        0,
-        1
-      ],
-      "frameMs": 200,
-      "facing": "down"
-    }
-  }
+  "version": 2,
+  "designApproved": false,
+  "animationStatus": "generated-nine-frame-visual-review"
 }

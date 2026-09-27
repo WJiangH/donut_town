@@ -1,87 +1,87 @@
 {
-  "url": "/assets/residents/r-dd03cb/walk-v2.png",
+  "url": "/assets/residents/r-5fb2a7/walk-v1.png",
   "imageWidth": 1254,
   "imageHeight": 1254,
-  "frameHeight": 360,
+  "frameHeight": 407,
   "frames": [
     [
-      83,
-      56,
-      254,
-      359
+      204,
+      29,
+      184,
+      407
     ],
     [
-      542,
-      56,
-      166,
-      358
+      528,
+      27,
+      184,
+      405
     ],
     [
-      920,
-      56,
-      250,
-      360
+      864,
+      29,
+      188,
+      407
     ],
     [
-      120,
-      469,
-      196,
-      333
+      198,
+      445,
+      199,
+      386
     ],
     [
-      567,
-      469,
-      126,
-      333
+      541,
+      445,
+      158,
+      387
     ],
     [
-      941,
-      469,
-      230,
-      333
+      865,
+      445,
+      198,
+      386
     ],
     [
-      87,
-      849,
-      269,
-      355
+      190,
+      839,
+      187,
+      399
     ],
     [
-      537,
-      851,
-      176,
-      353
+      533,
+      839,
+      179,
+      399
     ],
     [
-      898,
-      849,
-      254,
-      356
+      878,
+      837,
+      186,
+      401
     ]
   ],
-  "version": 2,
+  "version": 1,
   "designApproved": false,
   "animationStatus": "generated-nine-frame-visual-review",
   "schemaVersion": 1,
-  "rig": "r-dd03cb-walk-v2",
-  "base": "/assets/residents/r-dd03cb/wardrobe-v2/base.png",
+  "rig": "r-5fb2a7-walk-v1",
+  "base": "/assets/residents/r-5fb2a7/wardrobe-v1/base.png",
   "slots": {
     "jacket": {
       "required": true,
       "default": "original",
       "items": {
-        "original": "/assets/residents/r-dd03cb/wardrobe-v2/jacket-original.png",
-        "navy": "/assets/residents/r-dd03cb/wardrobe-v2/jacket-navy.png",
-        "olive": "/assets/residents/r-dd03cb/wardrobe-v2/jacket-olive.png"
+        "original": "/assets/residents/r-5fb2a7/wardrobe-v1/jacket-original.png",
+        "navy": "/assets/residents/r-5fb2a7/wardrobe-v1/jacket-navy.png",
+        "olive": "/assets/residents/r-5fb2a7/wardrobe-v1/jacket-olive.png"
       }
     },
     "shoes": {
       "required": true,
       "default": "original",
       "items": {
-        "original": "/assets/residents/r-dd03cb/wardrobe-v2/shoes-original.png",
-        "cream": "/assets/residents/r-dd03cb/wardrobe-v2/shoes-cream.png",
-        "burgundy": "/assets/residents/r-dd03cb/wardrobe-v2/shoes-burgundy.png"
+        "original": "/assets/residents/r-5fb2a7/wardrobe-v1/shoes-original.png",
+        "cream": "/assets/residents/r-5fb2a7/wardrobe-v1/shoes-cream.png",
+        "burgundy": "/assets/residents/r-5fb2a7/wardrobe-v1/shoes-burgundy.png"
       }
     },
     "eyewear": {
@@ -89,7 +89,7 @@
       "default": "none",
       "items": {
         "none": null,
-        "smoke": "/assets/residents/r-dd03cb/wardrobe-v2/eyewear-smoke.png"
+        "smoke": "/assets/residents/r-5fb2a7/wardrobe-v1/eyewear-smoke.png"
       }
     }
   },
@@ -104,19 +104,19 @@
       "label": "Eyewear",
       "items": {
         "none": {
-          "label": "Shades"
+          "label": "None"
         },
         "smoke": {
-          "label": "Smoke"
+          "label": "Sunglasses"
         }
       }
     },
     "jacket": {
-      "label": "Top",
+      "label": "Shirt",
       "items": {
         "original": {
-          "label": "Sage shirt",
-          "swatch": "#9fb59a"
+          "label": "Blue shirt",
+          "swatch": "#1661bd"
         },
         "navy": {
           "label": "Navy shirt",
@@ -132,15 +132,15 @@
       "label": "Shoes",
       "items": {
         "original": {
-          "label": "White sneakers",
-          "swatch": "#e8e4dc"
+          "label": "Dark shoes",
+          "swatch": "#292627"
         },
         "cream": {
-          "label": "Cream sneakers",
+          "label": "Cream shoes",
           "swatch": "#d3cab0"
         },
         "burgundy": {
-          "label": "Burgundy sneakers",
+          "label": "Burgundy shoes",
           "swatch": "#752f35"
         }
       }

@@ -1,87 +1,87 @@
 {
-  "url": "/assets/residents/r-50980f/walk-v1.png",
-  "imageWidth": 1230,
-  "imageHeight": 1275,
-  "frameHeight": 412,
+  "url": "/assets/residents/r-50980f/walk-v2.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "frameHeight": 384,
   "frames": [
     [
-      124,
-      13,
-      186,
-      405
+      174,
+      46,
+      171,
+      382
     ],
     [
-      522,
-      11,
-      184,
-      404
+      543,
+      46,
+      162,
+      380
     ],
     [
-      921,
-      15,
-      182,
-      404
+      900,
+      46,
+      174,
+      382
     ],
     [
-      115,
-      430,
-      203,
-      385
-    ],
-    [
-      533,
-      430,
-      152,
-      385
-    ],
-    [
-      923,
-      430,
-      191,
-      385
-    ],
-    [
-      118,
-      835,
+      172,
+      449,
       187,
-      411
+      371
     ],
     [
-      522,
-      833,
-      183,
-      404
+      545,
+      449,
+      168,
+      371
     ],
     [
-      917,
-      834,
-      186,
-      412
+      903,
+      449,
+      188,
+      371
+    ],
+    [
+      154,
+      841,
+      178,
+      384
+    ],
+    [
+      543,
+      842,
+      158,
+      379
+    ],
+    [
+      915,
+      841,
+      178,
+      384
     ]
   ],
-  "version": 1,
-  "designApproved": true,
-  "animationStatus": "preview-repeated-stride",
+  "version": 2,
+  "designApproved": false,
+  "animationStatus": "generated-nine-frame-visual-review",
   "schemaVersion": 1,
-  "rig": "r-50980f-walk-v1",
-  "base": "/assets/residents/r-50980f/wardrobe-v1/base.png",
+  "rig": "r-50980f-walk-v2",
+  "base": "/assets/residents/r-50980f/wardrobe-v2/base.png",
   "slots": {
     "jacket": {
       "required": true,
       "default": "original",
       "items": {
-        "original": "/assets/residents/r-50980f/wardrobe-v1/jacket-original.png",
-        "navy": "/assets/residents/r-50980f/wardrobe-v1/jacket-navy.png",
-        "olive": "/assets/residents/r-50980f/wardrobe-v1/jacket-olive.png"
+        "original": "/assets/residents/r-50980f/wardrobe-v2/jacket-original.png",
+        "navy": "/assets/residents/r-50980f/wardrobe-v2/jacket-navy.png",
+        "olive": "/assets/residents/r-50980f/wardrobe-v2/jacket-olive.png"
       }
     },
     "shoes": {
       "required": true,
       "default": "original",
       "items": {
-        "original": "/assets/residents/r-50980f/wardrobe-v1/shoes-original.png",
-        "cream": "/assets/residents/r-50980f/wardrobe-v1/shoes-cream.png",
-        "burgundy": "/assets/residents/r-50980f/wardrobe-v1/shoes-burgundy.png"
+        "original": "/assets/residents/r-50980f/wardrobe-v2/shoes-original.png",
+        "cream": "/assets/residents/r-50980f/wardrobe-v2/shoes-cream.png",
+        "burgundy": "/assets/residents/r-50980f/wardrobe-v2/shoes-burgundy.png"
       }
     },
     "eyewear": {
@@ -89,7 +89,7 @@
       "default": "none",
       "items": {
         "none": null,
-        "smoke": "/assets/residents/r-50980f/wardrobe-v1/eyewear-smoke.png"
+        "smoke": "/assets/residents/r-50980f/wardrobe-v2/eyewear-smoke.png"
       }
     }
   },
@@ -112,10 +112,10 @@
       }
     },
     "jacket": {
-      "label": "Jacket",
+      "label": "Top",
       "items": {
         "original": {
-          "label": "Light patterned shirt",
+          "label": "White sweatshirt",
           "swatch": "#f2eee6"
         }
       }

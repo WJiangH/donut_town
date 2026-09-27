@@ -51,11 +51,29 @@ test('member fetch overlaps map setup but residents wait for the map',async()=>{
 test('neighbor avatar uses native lazy loading and falls back to initials on failure',()=>{
   let error;
   const image={addEventListener:(_,fn)=>error=fn,set src(value){assert.equal(this.loading,'lazy');assert.equal(this.referrerPolicy,'no-referrer');this.url=value}};
-  const element={replaceChildren(){},classList:{toggle(){},remove(){}},append(img){assert.equal(img,image)}};
+  let replacements=0;
+  const element={dataset:{},replaceChildren(){replacements++},classList:{toggle(){},remove(){}},append(img){assert.equal(img,image)}};
   const context={document:{createElement:()=>image}};vm.createContext(context);
   vm.runInContext(source.slice(source.indexOf('function initialsFor('),source.indexOf('function slackFacts(')),context);
   context.setSlackAvatar(element,{name:'Test Neighbor',avatarUrl:'https://example.com/avatar.png'},true);
   assert.equal(image.url,'https://example.com/avatar.png');assert.equal(image.decoding,'async');
+  context.setSlackAvatar(element,{name:'Test Neighbor',avatarUrl:'https://example.com/avatar.png'},true);
+  assert.equal(replacements,1,'repeated profile refresh keeps the loaded image node');
   error();assert.equal(element.textContent,'TN');
   context.setSlackAvatar(element,{name:'Other Neighbor'},true);assert.equal(element.textContent,'ON');
+});
+
+test('periodic profile refresh keeps the painted character node',()=>{
+  let paints=0,replacements=0;
+  const element={dataset:{},firstElementChild:{},set innerHTML(value){replacements++;this.markup=value}};
+  const context={personalCharacterMarkup:()=>'<div></div>',paintPersonalCharacter:()=>paints++};
+  vm.createContext(context);
+  vm.runInContext(source.slice(source.indexOf('function setCharacterPortrait('),source.indexOf('function personMarkup(')),context);
+  const person={id:1,character:{url:'/assets/residents/r-test/walk-v1.png'}};
+  context.setCharacterPortrait(element,person);
+  context.setCharacterPortrait(element,person);
+  assert.equal(replacements,1);
+  assert.equal(paints,1);
+  context.setCharacterPortrait(element,{...person,character:{...person.character,layers:['/assets/residents/r-test/new-outfit.png']}});
+  assert.equal(replacements,2,'a changed outfit still repaints the portrait');
 });

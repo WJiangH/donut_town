@@ -166,6 +166,9 @@ function initialsFor(name) {
 }
 
 function setSlackAvatar(element, person, lazy = false) {
+  const avatarKey = person?.avatarUrl || `initials:${initialsFor(person?.displayName || person?.name || "Slack member")}`;
+  if (element.dataset.avatarKey === avatarKey) return;
+  element.dataset.avatarKey = avatarKey;
   element.replaceChildren();
   element.classList.toggle("has-photo", Boolean(person?.avatarUrl));
   if (!person?.avatarUrl) {
@@ -334,6 +337,11 @@ function paintResidentCharacters(container) {
 }
 
 function setCharacterPortrait(element, person) {
+  const characterKey = person?.character
+    ? [person.character.url, ...(person.character.layers || [])].join('|')
+    : `default:${person.spriteIndex ?? ((person.id - 1) % 12)}`;
+  if (element.dataset.characterKey === characterKey) return;
+  element.dataset.characterKey = characterKey;
   if (!person?.character) {
     const atlasIndex = person.spriteIndex ?? ((person.id - 1) % 12);
     const spriteX = [0, 33.333, 66.667, 100][atlasIndex % 4];
@@ -401,8 +409,10 @@ function renderNeighborDirectory() {
   const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-face"><span class="directory-initials" data-avatar="${escapeHtml(person.avatarUrl || '')}" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><i class="presence-dot unknown" aria-hidden="true"></i></span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small class="directory-presence"></small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
   if(markup!==lastDirectoryMarkup){
     const directory=document.querySelector('#neighborDirectory');
+    const focusedId=directory.contains(document.activeElement)?document.activeElement.dataset.resident:null;
     directory.innerHTML=markup;lastDirectoryMarkup=markup;
     directory.querySelectorAll('.directory-initials').forEach((avatar,index)=>setSlackAvatar(avatar,matches[index],true));
+    if(focusedId)directory.querySelector(`[data-resident="${focusedId}"]`)?.focus({preventScroll:true});
   }
   document.querySelectorAll('#neighborDirectory .directory-person').forEach((row,index)=>{
     const status=onlineRoster.status(matches[index].slackId);
@@ -411,6 +421,35 @@ function renderNeighborDirectory() {
     dot.className='presence-dot '+status.state;
     row.setAttribute('aria-label',`View ${matches[index].name}, ${status.label}`);
   });
+  updateDirectorySelection();
+}
+
+function updateDirectorySelection() {
+  document.querySelectorAll('#neighborDirectory .directory-person').forEach(row => {
+    const selected = Number(row.dataset.resident) === selectedResident?.id;
+    row.classList.toggle('selected', selected);
+    if (selected) row.setAttribute('aria-current', 'true');
+    else row.removeAttribute('aria-current');
+  });
+}
+
+function browseNeighborDirectory(event) {
+  if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.target.id === 'neighborSearch' && !['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+  const rows = [...document.querySelectorAll('#neighborDirectory .directory-person')];
+  if (!rows.length) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const focused = rows.indexOf(document.activeElement);
+  const selected = rows.findIndex(row => Number(row.dataset.resident) === selectedResident?.id);
+  const index = focused >= 0 ? focused : event.target.id === 'neighborSearch' ? -1 : selected;
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? rows.length - 1
+    : index < 0 ? (event.key === 'ArrowUp' ? rows.length - 1 : 0)
+    : Math.max(0, Math.min(rows.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)));
+  const row = rows[next];
+  row.focus({ preventScroll: true });
+  row.scrollIntoView({ block: 'nearest' });
+  openResident(Number(row.dataset.resident));
 }
 
 function renderResidents() {
@@ -1259,6 +1298,8 @@ function gameLoop(timestamp) {
 function openResident(id) {
   closeProfile();
   selectedResident = residents.find(person => person.id === id);
+  if (!selectedResident) return;
+  updateDirectorySelection();
   document.querySelector("#residentName").textContent = selectedResident.name;
   document.querySelector("#residentSummary").textContent = selectedResident.title || selectedResident.realName || "Slack member";
   document.querySelector("#residentFacts").innerHTML = factsMarkup(slackFacts(selectedResident));
@@ -1880,9 +1921,11 @@ document.querySelector('#neighborListToggle').addEventListener('click',()=>{
   if(open)document.querySelector('#neighborSearch').focus();
 });
 document.querySelector('#neighborSearch').addEventListener('input',renderNeighborDirectory);
+document.querySelector('#neighborSearch').addEventListener('keydown',browseNeighborDirectory);
 document.querySelector('#onlineNeighbors').onchange=renderNeighborDirectory;
 document.querySelector('#neighborSearch').addEventListener('focus',()=>{pressedKeys.clear();clickPath=[];});
 document.querySelector('#neighborDirectory').addEventListener('click',event=>{const button=event.target.closest('[data-resident]');if(button)openResident(Number(button.dataset.resident));});
+document.querySelector('#neighborDirectory').addEventListener('keydown',browseNeighborDirectory);
 document.querySelector('#railHome').addEventListener('click',openHouse);
 document.querySelector('#railShop').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('donutShop');});
 document.querySelector('#railChem').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('chemPod');});

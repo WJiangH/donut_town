@@ -1,65 +1,65 @@
 {
-  "url": "/assets/residents/r-50980f/walk-v1.png",
-  "imageWidth": 1230,
-  "imageHeight": 1275,
-  "frameHeight": 412,
+  "url": "/assets/residents/r-50980f/walk-v2.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "frameHeight": 384,
   "frames": [
     [
-      124,
-      13,
-      186,
-      405
+      174,
+      46,
+      171,
+      382
     ],
     [
-      522,
-      11,
-      184,
-      404
+      543,
+      46,
+      162,
+      380
     ],
     [
-      921,
-      15,
-      182,
-      404
+      900,
+      46,
+      174,
+      382
     ],
     [
-      115,
-      430,
-      203,
-      385
-    ],
-    [
-      533,
-      430,
-      152,
-      385
-    ],
-    [
-      923,
-      430,
-      191,
-      385
-    ],
-    [
-      118,
-      835,
+      172,
+      449,
       187,
-      411
+      371
     ],
     [
-      522,
-      833,
-      183,
-      404
+      545,
+      449,
+      168,
+      371
     ],
     [
-      917,
-      834,
-      186,
-      412
+      903,
+      449,
+      188,
+      371
+    ],
+    [
+      154,
+      841,
+      178,
+      384
+    ],
+    [
+      543,
+      842,
+      158,
+      379
+    ],
+    [
+      915,
+      841,
+      178,
+      384
     ]
   ],
-  "version": 1,
-  "designApproved": true,
-  "animationStatus": "preview-repeated-stride"
+  "version": 2,
+  "designApproved": false,
+  "animationStatus": "generated-nine-frame-visual-review"
 }

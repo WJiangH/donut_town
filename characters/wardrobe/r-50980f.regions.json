@@ -1,7 +1,7 @@
 {
   "characterId": "r-50980f",
-  "rig": "r-50980f-walk-v1",
-  "source": "assets/residents/r-50980f/walk-v1.png",
+  "rig": "r-50980f-walk-v2",
+  "source": "assets/residents/r-50980f/walk-v2.png",
   "split": "color-band",
   "shoes": {
     "mode": "frame-bottom",
@@ -20,10 +20,10 @@
       }
     },
     "jacket": {
-      "label": "Jacket",
+      "label": "Top",
       "items": {
         "original": {
-          "label": "Light patterned shirt",
+          "label": "White sweatshirt",
           "swatch": "#f2eee6"
         }
       }
@@ -45,5 +45,7 @@
         }
       }
     }
-  }
+  },
+  "wardrobeVersion": "wardrobe-v2",
+  "shirtPalette": "cream"
 }
