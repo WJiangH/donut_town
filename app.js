@@ -206,7 +206,7 @@ function factsMarkup(facts, emptyCopy = "No additional Slack profile details hav
 // Personal art is enabled only after its versioned PNG has loaded successfully.
 const characterImages = new Map();
 function characterAssetUrlOk(url) {
-  return /^\/assets\/residents\/[a-z0-9-]+\/(?:wardrobe-v1\/)?[a-z0-9-]+\.png$/.test(url);
+  return /^\/assets\/residents\/[a-z0-9-]+\/(?:wardrobe-v[1-9][0-9]*\/)?[a-z0-9-]+\.png$/.test(url);
 }
 
 function loadCharacterImage(url, width, height) {

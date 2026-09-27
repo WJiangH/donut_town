@@ -31,6 +31,22 @@ test('entry loads equipped layers once; actions are deferred and failures keep t
   assert.equal(await context.loadCharacterArt({...character,actions:{bad:{url:'https://example.com/bad.png'}}}),null);
 });
 
+test('versioned wardrobe layers load instead of falling back to a generic sprite',async()=>{
+  const pending=[];
+  const context={Map,WeakMap,Promise,setTimeout,clearTimeout,
+    Image:class {set src(url){this.url=url;pending.push(this)}},
+    paintResidentCharacters(){},sceneLayer:()=>null,layer:{}};
+  vm.createContext(context);
+  vm.runInContext(source.slice(source.indexOf('const characterImages ='),source.indexOf('function wardrobeManifestUrl')),context);
+  const root='/assets/residents/r-test/';
+  const character={url:root+'walk-v2.png',layers:[root+'wardrobe-v2/base.png',root+'wardrobe-v2/jacket-original.png'],imageWidth:12,imageHeight:12};
+  const loaded=context.loadCharacterArt(character);
+  assert.deepEqual(pending.map(image=>image.url),character.layers);
+  for(const image of pending){image.naturalWidth=12;image.naturalHeight=12;image.onload();}
+  assert.equal(await loaded,character);
+  assert.equal(context.characterAssetUrlOk('https://example.com/other.png'),false);
+});
+
 test('member fetch overlaps map setup but residents wait for the map',async()=>{
   let finishMap,finishMembers,placed=0,opened=false;
   const response={ok:true};
