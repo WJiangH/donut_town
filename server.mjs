@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { timingSafeEqual } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { sendStaticFile } from "./web/static-files.mjs";
 import { isPrivatePath } from "./web/private-path.mjs";
@@ -28,6 +28,7 @@ import { buildSlackAuthorizeUrl, exchangeSlackCode, fetchSlackJwks, verifySlackI
 import { createLaunchToken, createOAuthStateToken, createSessionToken, parseCookies, verifyOAuthStateToken, verifyTownToken, shouldRenewSession, SESSION_TTL_SECONDS } from "./slack/session.mjs";
 import { verifySlackRequest } from "./slack/signature.mjs";
 import { normalizeProfile, SheetProfileStore } from "./profile-store.mjs";
+import { createMapLaunchTicket, mapOrigin } from "./map/sso.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 await loadLocalEnv(join(root, ".env.local"));
@@ -160,6 +161,35 @@ const server = createServer(async (request, response) => {
     }
 
     renewSessionCookie(request, response);
+
+    if (request.method === 'GET' && url.pathname === '/map') {
+      response.setHeader('cache-control', 'no-store');
+      response.setHeader('referrer-policy', 'no-referrer');
+      const target = mapOrigin(process.env.STEMM_MAP_ORIGIN);
+      const townOrigin = mapOrigin(getPublicBaseUrl());
+      if (!target || !townOrigin || !process.env.MAP_SSO_SECRET || process.env.MAP_SSO_SECRET.length < 32) {
+        return sendJson(response, 503, { error: 'map_not_configured' });
+      }
+      const session = getSlackSession(request);
+      if (!session) return redirect(response, '/auth/slack/start');
+      let members;
+      try {
+        members = await getCachedChannelMembers();
+        if (Date.now() >= memberCacheExpiresAt) throw new Error('Channel membership cache is stale');
+      }
+      catch { return sendJson(response, 503, { error: 'map_membership_unavailable' }); }
+      if (!members.some(member => member.id === session.sub)) return sendJson(response, 403, { error: 'member_not_found' });
+      const ticket = createMapLaunchTicket({ userId: session.sub, townOrigin, secret: process.env.MAP_SSO_SECRET });
+      const nonce = randomBytes(16).toString('base64');
+      response.writeHead(200, {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-store',
+        'referrer-policy': 'no-referrer',
+        'x-content-type-options': 'nosniff',
+        'content-security-policy': `default-src 'none'; script-src 'nonce-${nonce}'; form-action ${target}; base-uri 'none'`
+      });
+      return response.end(`<!doctype html><html><head><meta charset="utf-8"><title>Opening STEMM Map</title></head><body><form id="map-handoff" method="post" action="${target}/api/auth/town"><input type="hidden" name="ticket" value="${ticket}"><button type="submit">Open STEMM Map</button></form><script nonce="${nonce}">document.getElementById('map-handoff').submit()</script></body></html>`);
+    }
     if (request.method === 'POST' && url.pathname.startsWith('/api/')) {
       const origin=request.headers.origin;
       if ((origin && new URL(origin).host!==request.headers.host) || request.headers['sec-fetch-site']==='cross-site') return sendJson(response,403,{error:'same_origin_required'});

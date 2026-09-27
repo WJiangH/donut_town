@@ -819,8 +819,8 @@ body:has(#shopView:not([hidden])) .invite-dock { display:none; }
 .town-shortcuts { display:none; }
 #townView.overview-side-controls .town-shortcuts { display:grid;width:100%;gap:8px;margin-top:16px;padding-top:18px;border-top:1px solid #f2ead933; }
 .rail-label { color:#d3dece;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px; }
-.town-shortcuts button { display:grid;grid-template-columns:24px 1fr 16px;align-items:center;gap:12px;width:100%;padding:13px 14px;text-align:left;border:2px solid #83967c;border-radius:8px;background:var(--surface-solid);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;box-shadow:3px 3px 0 #09190f; }
-.town-shortcuts button:hover { background:#e3efda;color:#173126; }
+.town-shortcuts button,.town-shortcuts a { display:grid;grid-template-columns:24px 1fr 16px;align-items:center;gap:12px;width:100%;padding:13px 14px;text-align:left;border:2px solid #83967c;border-radius:8px;background:var(--surface-solid);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;box-shadow:3px 3px 0 #09190f;text-decoration:none; }
+.town-shortcuts button:hover,.town-shortcuts a:hover { background:#e3efda;color:#173126; }
 .town-shortcuts .house-entrance-mark { width:28px;height:28px; }
 .town-sidebar-layout .profile-drawer.docked { right:12px;top:84px;bottom:112px;width:var(--town-rail-width);padding:18px;transform:none;transition:none;box-shadow:none;border:2px solid #83967c;border-radius:10px;scrollbar-width:thin;display:flex;flex-direction:column;gap:0; }
 .profile-drawer.docked>#closeProfile { display:none; }
@@ -876,8 +876,8 @@ body.town-sidebar-layout .topbar { background:var(--rail-paper);border-bottom:2p
 #townView.overview-side-controls .camera-toggle[aria-pressed="true"] { background:#354f37;color:#f4f0dc; }
 #townView.overview-side-controls .town-shortcuts { gap:0;padding:0;margin:0;border:0; }
 #townView.overview-side-controls .rail-label { display:none; }
-#townView.overview-side-controls .town-shortcuts button { padding:11px 4px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;box-shadow:none;font-size:12px; }
-#townView.overview-side-controls .town-shortcuts button:hover { background:#d3dcc2; }
+#townView.overview-side-controls .town-shortcuts button,#townView.overview-side-controls .town-shortcuts a { padding:11px 4px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;box-shadow:none;font-size:12px; }
+#townView.overview-side-controls .town-shortcuts button:hover,#townView.overview-side-controls .town-shortcuts a:hover { background:#d3dcc2; }
 #townView.overview-side-controls .movement-help { display:none; }
 #townView.overview-side-controls .legend { left:0;bottom:0;width:var(--overview-gutter);max-width:none;height:48px;padding:12px 20px;align-items:center;font-size:8px;background:var(--rail-paper);border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;gap:9px; }
 #townView.overview-side-controls .town-directory { display:flex;flex-direction:column;flex:1;min-height:0;width:100%;gap:12px; }
@@ -912,7 +912,7 @@ body.town-sidebar-layout .resident-drawer { right:0;top:72px;bottom:72px;width:v
  body.town-sidebar-layout { --ink:#e3e7d8;--muted:#a8b599;--surface:#263d2c;--surface-solid:#263d2c;--line:#52664b;--rail-paper:#293e2e; }
  body.town-sidebar-layout #neighborSearch { background:#1c3023;color:var(--ink); }
  body.town-sidebar-layout .directory-initials,body.town-sidebar-layout .profile-drawer.docked .house-entrance,body.town-sidebar-layout .profile-drawer.docked .chat-stats,body.town-sidebar-layout .profile-drawer.docked .donut-total { background:#3f5637; }
- body.town-sidebar-layout .directory-person:hover,body.town-sidebar-layout .directory-person:focus-visible,body.town-sidebar-layout #townView .town-shortcuts button:hover,body.town-sidebar-layout #townView .filter-button.active { background:#405a39;color:var(--ink); }
+ body.town-sidebar-layout .directory-person:hover,body.town-sidebar-layout .directory-person:focus-visible,body.town-sidebar-layout #townView .town-shortcuts button:hover,body.town-sidebar-layout #townView .town-shortcuts a:hover,body.town-sidebar-layout #townView .filter-button.active { background:#405a39;color:var(--ink); }
  body.town-sidebar-layout .directory-person.selected { background:#405a39;color:var(--ink);box-shadow:inset 4px 0 #94c38d; }
 }
 
