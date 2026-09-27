@@ -1924,7 +1924,7 @@ document.querySelector('#neighborSearch').addEventListener('input',renderNeighbo
 document.querySelector('#neighborSearch').addEventListener('keydown',browseNeighborDirectory);
 document.querySelector('#onlineNeighbors').onchange=renderNeighborDirectory;
 document.querySelector('#neighborSearch').addEventListener('focus',()=>{pressedKeys.clear();clickPath=[];});
-document.querySelector('#neighborDirectory').addEventListener('click',event=>{const button=event.target.closest('[data-resident]');if(button)openResident(Number(button.dataset.resident));});
+document.querySelector('#neighborDirectory').addEventListener('click',event=>{const button=event.target.closest('[data-resident]');if(button){button.focus({preventScroll:true});openResident(Number(button.dataset.resident));}});
 document.querySelector('#neighborDirectory').addEventListener('keydown',browseNeighborDirectory);
 document.querySelector('#railHome').addEventListener('click',openHouse);
 document.querySelector('#railShop').addEventListener('click',()=>{closeProfile();closeDrawer();transitionToScene('donutShop');});

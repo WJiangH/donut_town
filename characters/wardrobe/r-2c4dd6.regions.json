@@ -1,7 +1,7 @@
 {
   "characterId": "r-2c4dd6",
-  "rig": "r-2c4dd6-walk-v2",
-  "source": "assets/residents/r-2c4dd6/walk-v2.png",
+  "rig": "r-2c4dd6-walk-v4",
+  "source": "assets/residents/r-2c4dd6/walk-v4.png",
   "split": "color-band",
   "shoes": {
     "mode": "frame-bottom",
@@ -46,6 +46,6 @@
       }
     }
   },
-  "wardrobeVersion": "wardrobe-v2",
+  "wardrobeVersion": "wardrobe-v4",
   "shirtPalette": "pink"
 }
