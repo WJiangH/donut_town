@@ -26,6 +26,30 @@
       "walk": "/assets/pets/pet-frog/walk-v1.png",
       "sit": "/assets/pets/pet-frog/sit-v1.png",
       "portrait": "/assets/pets/pet-frog/portrait-v1.png"
+    },
+    {
+      "id": "pet-princess-leia",
+      "name": "Princess Leia",
+      "manifest": "/pets/pet-princess-leia.json",
+      "walk": "/assets/pets/pet-princess-leia/walk-v1.png",
+      "sit": "/assets/pets/pet-princess-leia/sit-v1.png",
+      "portrait": "/assets/pets/pet-princess-leia/portrait-v1.png"
+    },
+    {
+      "id": "pet-dasher",
+      "name": "Dasher",
+      "manifest": "/pets/pet-dasher.json",
+      "walk": "/assets/pets/pet-dasher/walk-v1.png",
+      "sit": "/assets/pets/pet-dasher/sit-v1.png",
+      "portrait": "/assets/pets/pet-dasher/portrait-v1.png"
+    },
+    {
+      "id": "pet-chewy",
+      "name": "Chewy",
+      "manifest": "/pets/pet-chewy.json",
+      "walk": "/assets/pets/pet-chewy/walk-v1.png",
+      "sit": "/assets/pets/pet-chewy/sit-v1.png",
+      "portrait": "/assets/pets/pet-chewy/portrait-v1.png"
     }
   ]
 }

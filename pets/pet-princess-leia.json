@@ -1,0 +1,132 @@
+{
+  "id": "pet-princess-leia",
+  "kind": "pet",
+  "name": "Princess Leia",
+  "price": 20,
+  "swatch": "#858084",
+  "blurb": "A curious grey-and-white kitten.",
+  "gait": "trot",
+  "displayHeight": 34,
+  "version": 1,
+  "animationStatus": "generated-reviewed",
+  "walk": {
+    "imageWidth": 1086,
+    "imageHeight": 1152,
+    "frameHeight": 275,
+    "frames": [
+      [
+        0,
+        0,
+        362,
+        384
+      ],
+      [
+        362,
+        0,
+        362,
+        384
+      ],
+      [
+        724,
+        0,
+        362,
+        384
+      ],
+      [
+        0,
+        384,
+        362,
+        384
+      ],
+      [
+        362,
+        384,
+        362,
+        384
+      ],
+      [
+        724,
+        384,
+        362,
+        384
+      ],
+      [
+        0,
+        768,
+        362,
+        384
+      ],
+      [
+        362,
+        768,
+        362,
+        384
+      ],
+      [
+        724,
+        768,
+        362,
+        384
+      ]
+    ],
+    "url": "/assets/pets/pet-princess-leia/walk-v1.png",
+    "loop": [
+      0,
+      1,
+      2,
+      1
+    ],
+    "frameMs": 130,
+    "rows": [
+      "down",
+      "right",
+      "up"
+    ],
+    "columns": [
+      "stepA",
+      "neutral",
+      "stepB"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "sit": {
+    "imageWidth": 1086,
+    "imageHeight": 384,
+    "frameHeight": 275,
+    "frames": [
+      [
+        0,
+        0,
+        362,
+        384
+      ],
+      [
+        362,
+        0,
+        362,
+        384
+      ],
+      [
+        724,
+        0,
+        362,
+        384
+      ]
+    ],
+    "url": "/assets/pets/pet-princess-leia/sit-v1.png",
+    "rows": [
+      "sit"
+    ],
+    "columns": [
+      "down",
+      "right",
+      "up"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "portrait": {
+    "url": "/assets/pets/pet-princess-leia/portrait-v1.png",
+    "imageWidth": 362,
+    "imageHeight": 362
+  }
+}

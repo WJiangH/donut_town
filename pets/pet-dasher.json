@@ -1,0 +1,132 @@
+{
+  "id": "pet-dasher",
+  "kind": "pet",
+  "name": "Dasher",
+  "price": 20,
+  "swatch": "#c9c3bd",
+  "blurb": "A fluffy grey-and-white companion.",
+  "gait": "trot",
+  "displayHeight": 40,
+  "version": 1,
+  "animationStatus": "generated-reviewed",
+  "walk": {
+    "imageWidth": 1086,
+    "imageHeight": 1152,
+    "frameHeight": 315,
+    "frames": [
+      [
+        0,
+        0,
+        362,
+        384
+      ],
+      [
+        362,
+        0,
+        362,
+        384
+      ],
+      [
+        724,
+        0,
+        362,
+        384
+      ],
+      [
+        0,
+        384,
+        362,
+        384
+      ],
+      [
+        362,
+        384,
+        362,
+        384
+      ],
+      [
+        724,
+        384,
+        362,
+        384
+      ],
+      [
+        0,
+        768,
+        362,
+        384
+      ],
+      [
+        362,
+        768,
+        362,
+        384
+      ],
+      [
+        724,
+        768,
+        362,
+        384
+      ]
+    ],
+    "url": "/assets/pets/pet-dasher/walk-v1.png",
+    "loop": [
+      0,
+      1,
+      2,
+      1
+    ],
+    "frameMs": 130,
+    "rows": [
+      "down",
+      "right",
+      "up"
+    ],
+    "columns": [
+      "stepA",
+      "neutral",
+      "stepB"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "sit": {
+    "imageWidth": 1086,
+    "imageHeight": 384,
+    "frameHeight": 315,
+    "frames": [
+      [
+        0,
+        0,
+        362,
+        384
+      ],
+      [
+        362,
+        0,
+        362,
+        384
+      ],
+      [
+        724,
+        0,
+        362,
+        384
+      ]
+    ],
+    "url": "/assets/pets/pet-dasher/sit-v1.png",
+    "rows": [
+      "sit"
+    ],
+    "columns": [
+      "down",
+      "right",
+      "up"
+    ],
+    "mirrorRightForLeft": true
+  },
+  "portrait": {
+    "url": "/assets/pets/pet-dasher/portrait-v1.png",
+    "imageWidth": 362,
+    "imageHeight": 362
+  }
+}

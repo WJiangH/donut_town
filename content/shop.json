@@ -33,6 +33,36 @@
       "category": "pets"
     },
     {
+      "id": "pet-princess-leia",
+      "kind": "pet",
+      "name": "Princess Leia",
+      "price": 20,
+      "swatch": "#858084",
+      "blurb": "A curious grey-and-white kitten.",
+      "thumb": "/assets/pets/pet-princess-leia/portrait-v1.png",
+      "category": "pets"
+    },
+    {
+      "id": "pet-dasher",
+      "kind": "pet",
+      "name": "Dasher",
+      "price": 20,
+      "swatch": "#c9c3bd",
+      "blurb": "A fluffy grey-and-white companion.",
+      "thumb": "/assets/pets/pet-dasher/portrait-v1.png",
+      "category": "pets"
+    },
+    {
+      "id": "pet-chewy",
+      "kind": "pet",
+      "name": "Chewy",
+      "price": 20,
+      "swatch": "#dba875",
+      "blurb": "A cheerful golden companion.",
+      "thumb": "/assets/pets/pet-chewy/portrait-v1.png",
+      "category": "pets"
+    },
+    {
       "id": "deco-fern",
       "kind": "decoration",
       "name": "Potted fern",
