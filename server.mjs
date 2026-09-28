@@ -164,7 +164,7 @@ const server = createServer(async (request, response) => {
 
     if (request.method === 'GET' && url.pathname === '/map') {
       response.setHeader('cache-control', 'no-store');
-      response.setHeader('referrer-policy', 'no-referrer');
+      response.setHeader('referrer-policy', 'origin');
       const target = mapOrigin(process.env.STEMM_MAP_ORIGIN);
       const townOrigin = mapOrigin(getPublicBaseUrl());
       if (!target || !townOrigin || !process.env.MAP_SSO_SECRET || process.env.MAP_SSO_SECRET.length < 32) {
@@ -184,7 +184,7 @@ const server = createServer(async (request, response) => {
       response.writeHead(200, {
         'content-type': 'text/html; charset=utf-8',
         'cache-control': 'no-store',
-        'referrer-policy': 'no-referrer',
+        'referrer-policy': 'origin',
         'x-content-type-options': 'nosniff',
         'content-security-policy': `default-src 'none'; script-src 'nonce-${nonce}'; form-action ${target}; base-uri 'none'`
       });

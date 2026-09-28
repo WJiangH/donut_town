@@ -37,7 +37,7 @@ test('App Platform production binds publicly, protects members, uses new OAuth o
  await writeFile(loader,`globalThis.fetch=async url=>{if(String(url)==='https://slack.com/api/auth.test')return Response.json({ok:true,team_id:'TFIXTURE'});throw Error('Unexpected external request');};`);
  const listener=createServer();await new Promise(resolve=>listener.listen(0,'127.0.0.1',resolve));
  const port=listener.address().port;await new Promise(resolve=>listener.close(resolve));
- const child=spawn(process.execPath,['--import',loader,'server.mjs'],{cwd:root,env:{...process.env,...fixture,PORT:String(port)},stdio:['ignore','pipe','pipe']});
+ const child=spawn(process.execPath,['--import',loader,'server.mjs'],{cwd:root,env:{...process.env,...fixture,PORT:String(port),STEMM_MAP_ORIGIN:'https://map.example',MAP_SSO_SECRET:'a'.repeat(32)},stdio:['ignore','pipe','pipe']});
  let output='';child.stdout.on('data',data=>output+=data);child.stderr.on('data',data=>output+=data);
  let socket;
  try {
@@ -50,6 +50,9 @@ test('App Platform production binds publicly, protects members, uses new OAuth o
   const base='http://127.0.0.1:'+port;
   assert.equal((await (await fetch(base+'/api/health')).json()).ok,true);
   assert.equal((await fetch(base+'/api/slack/members')).status,401);
+  const mapHandoff=await fetch(base+'/map',{redirect:'manual',headers:{authorization:'Basic '+Buffer.from('donut:'+fixture.STAGING_PASSWORD).toString('base64')}});
+  assert.equal(mapHandoff.status,302);
+  assert.equal(mapHandoff.headers.get('referrer-policy'),'origin');
   const login=await fetch(base+'/auth/slack/start',{redirect:'manual'});
   assert.equal(login.status,302);
   assert.equal(new URL(login.headers.get('location')).searchParams.get('redirect_uri'),fixture.PUBLIC_BASE_URL+'/auth/slack/callback');
