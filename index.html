@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#315f47" />
     <title>Donut Town</title>
-    <link rel="stylesheet" href="styles.css?v=57" />
+    <link rel="stylesheet" href="styles.css?v=58" />
     <link rel="stylesheet" href="town-themes/settings.css?v=1" />
   </head>
   <body>
@@ -46,11 +46,6 @@
             <span>This week</span>
             <strong id="neighborSummary">Loading residents…</strong>
           </button>
-          <div class="filter-group" aria-label="Filter residents">
-            <button class="filter-button active" data-filter="all">Everyone</button>
-            <button class="filter-button" data-filter="new">New faces</button>
-            <button class="filter-button" data-filter="other">Other teams</button>
-          </div>
           <div class="camera-controls" role="group" aria-label="Camera view" title="Space: switch view">
             <button class="camera-toggle" data-camera-mode="overview" type="button" aria-pressed="true">Town overview</button>
             <button class="camera-toggle" data-camera-mode="follow" type="button" aria-pressed="false">Follow me</button>
@@ -63,9 +58,9 @@
             <button type="button" id="railHome"><span class="house-entrance-mark" aria-hidden="true"></span> My Home <span aria-hidden="true">→</span></button>
             <button type="button" id="railFactory"><span aria-hidden="true">♨</span> Donut Factory <span aria-hidden="true">→</span></button>
             <button type="button" id="railChem"><span aria-hidden="true">⚗</span> Chem Pod <span aria-hidden="true">→</span></button>
-            <a id="railStemmMap" href="/map" target="_blank" rel="noopener noreferrer" aria-label="Open STEMM Team Map in a new tab"><span aria-hidden="true">🗺</span> STEMM Map <span aria-hidden="true">↗</span></a>
             </nav>
           </details>
+          <a class="town-map-link" id="railStemmMap" href="/map" target="_blank" rel="noopener noreferrer" aria-label="Open STEMM Team Map in a new tab"><span aria-hidden="true">🗺</span><span>STEMM Map</span><span aria-hidden="true">↗</span></a>
           <details class="pair-board" id="pairBoard"><summary><span class="mini-donut" aria-hidden="true"></span> Baking together <small id="pairBoardCount">0 pairs</small></summary><p>This week’s Donut Chat pairs</p><ol id="pairBoardList"></ol></details>
           <section id="townDirectory" class="town-directory" aria-labelledby="directoryTitle">
             <div class="directory-heading"><h2 id="directoryTitle">Neighbors</h2><span id="directoryCount"></span></div>
@@ -92,7 +87,7 @@
           </div>
           <div class="map-empty" id="mapEmpty" hidden>
             <strong>No neighbors found</strong>
-            <span>Try another town filter.</span>
+            <span>Check back when neighbors are around.</span>
           </div>
         </div>
 
@@ -347,6 +342,6 @@
     <script src="assets/town-zones-auto.js?v=1"></script>
     <script src="town-zones.js?v=6"></script>
     <script src="realtime/online.js?v=1"></script>
-    <script src="app.js?v=66"></script>
+    <script src="app.js?v=67"></script>
   </body>
 </html>

@@ -60,7 +60,6 @@ let invitationNoticeMarkupCache = null;
 let respondingInvitation = null;
 let incomingMarkupCache = null;
 let selectedResident = null;
-let currentFilter = "all";
 let invitesOpen = true;
 const player = { id: 11, name: "You", x: 50, y: 59 };
 const scenePlayerPositions = {
@@ -373,10 +372,6 @@ function playerMarkup() {
     <span class="resident-state"></span><span class="resident-label">You</span><span class="self-online-dot" aria-hidden="true"></span>`;
 }
 
-function residentIsVisible(person) {
-  return currentFilter === "all" || (currentFilter === "other" && person.group === "other") || (currentFilter === "new" && person.donuts !== null && person.donuts <= 2);
-}
-
 // Cached pin markup: the sync loop calls the renderers on a timer whether or
 // not anything moved, and rebuilding identical DOM makes the town flicker.
 let lastTownMarkup = null;
@@ -403,7 +398,7 @@ function refreshOnlineStatus(){
 function renderNeighborDirectory() {
   const query=document.querySelector('#neighborSearch').value.trim().toLocaleLowerCase();
   const onlineOnly=document.querySelector('#onlineNeighbors').checked;
-  const matches=residents.filter(person=>(!onlineOnly||onlineRoster.status(person.slackId).state==='online')&&residentIsVisible(person)&&`${person.name} ${person.title||''}`.toLocaleLowerCase().includes(query))
+  const matches=residents.filter(person=>(!onlineOnly||onlineRoster.status(person.slackId).state==='online')&&`${person.name} ${person.title||''}`.toLocaleLowerCase().includes(query))
     .sort((a,b)=>a.name.localeCompare(b.name));
   document.querySelector('#directoryCount').textContent=onlineRoster.ready?`${residents.filter(p=>onlineRoster.status(p.slackId).state==='online').length} online · ${matches.length}`:String(matches.length);
   const markup=matches.map(person=>`<button type="button" class="directory-person" data-resident="${person.id}" aria-label="View ${escapeHtml(person.name)}"><span class="directory-face"><span class="directory-initials" data-avatar="${escapeHtml(person.avatarUrl || '')}" aria-hidden="true">${escapeHtml(initialsFor(person.name))}</span><i class="presence-dot unknown" aria-hidden="true"></i></span><span class="directory-copy"><strong>${escapeHtml(person.name)}</strong><small class="directory-presence"></small></span><span class="directory-state ${escapeHtml(person.status)}" title="${person.status==='booked'?'Booked this week':person.status==='pending'?'Invitation pending':'Open to invitations'}"><span class="sr-only">${person.status==='booked'?'Booked':person.status==='pending'?'Pending':'Open'}</span></span></button>`).join('')||'<p class="directory-empty">No neighbors found.</p>';
@@ -455,7 +450,7 @@ function browseNeighborDirectory(event) {
 function renderResidents() {
   renderNeighborDirectory();
   const residentsMarkup = residents.map(person => {
-    const visible = (person.scene || "town") === "town" && residentIsVisible(person) && !remotePlayers.has(person.slackId);
+    const visible = (person.scene || "town") === "town" && !remotePlayers.has(person.slackId);
     return `<button class="resident-pin ${onlineRoster.status(person.slackId).state==='online'?'member-online':''} ${person.status} ${person.activity || "path"} ${visible ? "" : "hidden"}" style="left:${person.x}%;top:${person.y}%;z-index:${Math.round(person.y * 10)}" data-id="${person.id}" aria-label="Open ${escapeHtml(person.name)}'s profile">
       ${personMarkup(person)}
     </button>`;
@@ -668,7 +663,7 @@ function renderLivePlayers(deltaSeconds) {
   const expectedIds = new Set();
   for (const remote of remotePlayers.values()) {
     const person = residents.find(resident => resident.slackId === remote.userId);
-    if (!person || remote.scene !== currentScene || (currentScene==='donutFactory' && remote.workshop!==factoryPage) || (currentScene==='town' && !residentIsVisible(person))) continue;
+    if (!person || remote.scene !== currentScene || (currentScene==='donutFactory' && remote.workshop!==factoryPage)) continue;
     expectedIds.add(remote.userId);
     const smoothing = deltaSeconds > 0 ? 1 - Math.exp(-14 * deltaSeconds) : 1;
     remote.x += (remote.targetX - remote.x) * smoothing;
@@ -1489,13 +1484,6 @@ async function syncSlackResidents(response) {
       };
     });
     selectedResident = null;
-    currentFilter = "all";
-    const filtersAvailable = residents.some(person => person.group !== "unknown" || person.donuts !== null);
-    document.querySelectorAll(".filter-button").forEach(button => {
-      button.classList.toggle("active", button.dataset.filter === "all");
-      button.disabled = button.dataset.filter !== "all" && !filtersAvailable;
-      if (button.disabled) button.title = "Team and participation data are not connected yet";
-    });
     summary.textContent = currentUser
       ? `${data.total} Slack members · ${townIndex} around town · ${chemPodIndex} in Chem Pod`
       : `${data.total} Slack residents + local player (identity not linked)`;
@@ -1731,12 +1719,6 @@ inviteButton.addEventListener("click", sendSelectedInvitation);
 document.querySelector("#profileButton").addEventListener("click", openProfile);
 document.querySelector("#closeProfile").addEventListener("click", closeProfile);
 document.querySelector("#profileScrim").addEventListener("click", closeProfile);
-document.querySelectorAll(".filter-button").forEach(button => button.addEventListener("click", () => {
-  currentFilter = button.dataset.filter;
-  document.querySelectorAll(".filter-button").forEach(item => item.classList.toggle("active", item === button));
-  renderResidents();
-}));
-
 document.querySelector("#availabilityButton").addEventListener("click", () => {
   if (currentUser?.status === "booked") return;
   invitesOpen = !invitesOpen;
